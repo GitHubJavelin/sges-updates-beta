@@ -214,6 +214,7 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif PLANE_ICAO == "Mi-24" then BeltLoaderFwdPosition = -4	-- Hind
     elseif PLANE_ICAO == "W3A" then BeltLoaderFwdPosition = -4		-- Sokol W3A
     elseif PLANE_ICAO == "H125" then BeltLoaderFwdPosition = -5
+    elseif string.find(PLANE_ICAO,"UH60") then BeltLoaderFwdPosition = -4.5 SGES_mirror = 1 sges_ahr = 1 sges_refuel_port_lateral = -1.2 sges_refuel_port_longitudinal = 30 sges_refuel_port_elev = -0.7 targetDoorZ_alternate = -5 targetDoorH_alternate = 0.72 targetDoorX_alternate = -1.5 airstart_unit_factor = 9.4
     elseif string.match(AIRCRAFT_PATH, "AS365")  then  BeltLoaderFwdPosition = 0	custom_fuel_finalX = -17 custom_fuel_finalY = -6	targetDoorX_alternate = 0.5 targetDoorZ_alternate = -3.75 targetDoorH_alternate = 0.6 --  Dauphin
 	elseif string.match(AIRCRAFT_PATH, "A318") then BeltLoaderFwdPosition = 7.5 SecondStairsFwdPosition = -8.3	-- print("A318")
     elseif PLANE_ICAO == "ALIA" then BeltLoaderFwdPosition = -4
@@ -418,7 +419,7 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif string.match(AIRCRAFT_PATH,"146") and string.find(SGES_Author,"Thranda") then  dataref_to_open_the_door = "sim/cockpit2/switches/door_open" 			index_to_open_the_door = 1 target_to_open_the_door = 1 -- Just Flight BAe 146
     elseif PLANE_ICAO == "A359" then											dataref_to_open_the_door = nil index_to_open_the_door = nil target_to_open_the_door = 1 -- not controlled by writable dataref (Flight Factor A350)
     elseif PLANE_ICAO == "B733" then 											dataref_to_open_the_door = nil index_to_open_the_door = nil target_to_open_the_door = 1 -- No door at all (IXEG for X-Plane 11)
-    elseif PLANE_ICAO == "B742" and SGES_Author == "Felis Leopard" then 		dataref_to_open_the_door = "B742/anim/pax_door_1_left"  index_to_open_the_door = 0 target_to_open_the_door = 1 -- Felis 742
+    elseif PLANE_ICAO == "B742" and SGES_Author == "Felis Leopard" then 		dataref_to_open_the_door = "B742/anim/pax_door_1_left"  index_to_open_the_door = 0 target_to_open_the_door = 1 SpeedyCopilotForFelis = true -- Felis 742
     --elseif PLANE_ICAO == "B742" and SGES_Author == "Felis Leopard" then 		dataref_to_open_the_door = nil index_to_open_the_door = nil target_to_open_the_door = 1 -- No door implemented yet (Felis 742)
     elseif PLANE_ICAO == "B721" and SGES_Author == "" then 						dataref_to_open_the_door = nil index_to_open_the_door = nil target_to_open_the_door = 1 -- No door at all (FlyJSim)
     elseif PLANE_ICAO == "B722" and SGES_Author == "" then 						dataref_to_open_the_door = nil index_to_open_the_door = nil target_to_open_the_door = 1 -- No door at all (FlyJSim)

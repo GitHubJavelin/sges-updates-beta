@@ -392,7 +392,7 @@ function load_WingWalkers()
 			wingwalker2_greenflag = false
 			------ human handlers :
 			if Baggage_instance[3] == nil and baggage3_show_only_once and not UseXplaneDefaultObject then
-				if military == 1 or military_default == 1 then
+				if sges_military == 1 or sges_military_default == 1 then
 					Baggage3Object = Prefilled_PassengerMilObject
 				else
 					Baggage3Object = Prefilled_GenericDriverObject_anim

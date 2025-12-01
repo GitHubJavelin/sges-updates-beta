@@ -96,6 +96,29 @@ function prepare_special_vehicles_for_aircraft()
 		end
 	end
 
+	-- set Pax or Freight variant of the ground handling : --------------------
+	if (string.find(AircraftPath ,"reight") or string.find(AircraftPath ,"argo"))
+	or (string.find(AIRCRAFT_FILENAME,"Cargo") or string.find(AIRCRAFT_FILENAME,"Freight"))
+
+	or string.find(AircraftPath ,"Chinese Spy Balloon")
+
+	or (PLANE_ICAO == "A3ST" or PLANE_ICAO == "MD11" or PLANE_ICAO == "AN12" or PLANE_ICAO == "C130" or PLANE_ICAO == "L100" or (string.match(AIRCRAFT_PATH, "C-17") and not PLANE_ICAO == "C172" and not PLANE_ICAO == "C170") or (PLANE_ICAO == "C17" or PLANE_ICAO == "3383"))
+
+	or (string.match(AircraftPath ,"146") and string.match(AircraftPath ,"3Q"))
+	or (string.match(AircraftPath ,"146") and string.match(AircraftPath ,"2Q"))
+
+	or (string.match(AircraftPath ,"321") and (string.find(AircraftPath ,"reight") or string.find(AircraftPath ,"argo") or string.find(AircraftPath ,"P2F") or string.find(AircraftPath ,"PCF") or string.find(AircraftPath ,"Titan") or string.find(AircraftPath ,"NAC") or string.find(AircraftPath ,"Fedex") or string.find(AircraftPath ,"UPS")))
+
+	then
+		IsPassengerPlane = 0
+		GUIIsPassengerPlane = false
+	end
+
+	if PLANE_ICAO == "CONC" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175" or PLANE_ICAO == "E190" or PLANE_ICAO == "E195" or PLANE_ICAO == "E19L" then
+		IsPassengerPlane = 1
+		GUIIsPassengerPlane = true
+	end
+	----------------------------------------------------------------------------
 
 	-- when a 748F
 	if PLANE_ICAO == "B742" or PLANE_ICAO == "B748" or PLANE_ICAO == "A3ST" then
@@ -103,9 +126,45 @@ function prepare_special_vehicles_for_aircraft()
 		Prefilled_ForkliftObject = Prefilled_CargoDeck_ULDLoaderObject
 	end
 
+	-- Default Laminar chocks instead of SGES chocks for aircraft that use them natively after XP 12.2 :
+	if IsXPlane1220 then
+		if PLANE_ICAO == "UH60M" and string.find(SGES_Author,"melbo") then
+			UseXplane1220Chocks = true
+		end
+	end
+
 	-- When a military asset :
 	-- and when the CH47D is installed and found, bring a hummer and the M978 HEMMET refueling truck
 	-- when the CH47 D is not installed, bring Paul Mort Willys Jeep
+	-- define the military status for some identified mil planes
+	if PLANE_ICAO == "VULC" or PLANE_ICAO == "AV8B" or PLANE_ICAO == "F4" or PLANE_ICAO == "F5" or PLANE_ICAO == "F14" or PLANE_ICAO == "F15" or PLANE_ICAO == "F16" or PLANE_ICAO == "F18" or PLANE_ICAO == "F22" or PLANE_ICAO == "F35" or PLANE_ICAO == "F104" or PLANE_ICAO == "F119" or PLANE_ICAO == "F19" or PLANE_ICAO == "HAWK" or PLANE_ICAO == "M346"
+	or PLANE_ICAO == "S92"
+	or PLANE_ICAO == "ch47"
+	or string.find(PLANE_ICAO,"UH60")
+	or (string.find(SGES_Author,"Tom Kyler") and AIRCRAFT_FILENAME == "F-4.acf")
+	or string.match(AIRCRAFT_PATH, "Tornado")
+	or string.match(AIRCRAFT_PATH, "Buckeye")
+	or (string.find(SGES_Author,"Alex Unruh") and AIRCRAFT_FILENAME == "F-14D.acf")
+	or (string.find(SGES_Author,"Brault") and AIRCRAFT_FILENAME == "F104A.acf")
+	or string.match(AIRCRAFT_PATH, "Military")
+	then
+		sges_military_default = 1
+		GUImilitary_default_sges = true
+		sges_military = 0
+		milheight = 1
+		GUImilitary_sges = false
+		print("[Ground Equipment " .. version_text_SGES .. "] Switching to MILITARY assets.")
+		BushObjectsToggle(sges_military_default)
+		if XTrident_Chinook_Directory ~= nil and file_exists(SCRIPT_DIRECTORY .. XTrident_Chinook_Directory   .. "/plugins/CH47/mission/loads/humvee.obj") then
+			sges_military = 1
+			milheight = 1.1
+			sges_military_default = 0 -- destroy default military
+			GUImilitary_sges = true
+			GUImilitary_default_sges = false
+			print("[Ground Equipment " .. version_text_SGES .. "] with assets from " .. XTrident_Chinook_Directory)
+			BushObjectsToggle(sges_military)
+		end
+	end
 
 	-- -- put two bus for long airliners and the concorde :
 	if (SecondStairsFwdPosition <= -20.0 and SecondStairsFwdPosition ~= -30) or PLANE_ICAO == "CONC" or PLANE_ICAO == "A321" or PLANE_ICAO == "A21N" or PLANE_ICAO == "A20N" or string.match(AIRCRAFT_PATH, "C-17") or (PLANE_ICAO == "C17" or PLANE_ICAO == "3383") then
@@ -222,8 +281,11 @@ if IsXPlane12 and SGES_IsHelicopter == 1 and AIRCRAFT_FILENAME == "AW109SP.acf" 
 	set("aw109/anim/rbf/engine2_plug",0)
 	-- I dont remove all remove before flight flags, just the ones relative to the engines.
 end
--- I don't like the cones for the X-Trident May 2024 A109.
-if AIRCRAFT_FILENAME == "AW109SP.acf" and PLANE_AUTHOR == "X-Trident" then
+-- I don't like having the cones for the X-Trident May 2024 A109.
+if sges_gs_plane_y_agl[0] < 1 and
+ (
+    (AIRCRAFT_FILENAME == "AW109SP.acf" and PLANE_AUTHOR == "X-Trident")
+ ) then
 	show_Cones = false Cones_chg = true
 	show_Chocks = true Chocks_chg = true
 	print("[Ground Equipment " .. version_text_SGES .. "] Applying " .. PLANE_AUTHOR .. " " .. AIRCRAFT_FILENAME .. " startup (no cones, chocks set).")
@@ -450,6 +512,9 @@ end
 if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 
 	--~ if B742ProcNumber == nil then	B742ProcNumber = -1 end
+
+	set("B742/anim/jit_off",1)
+	if SpeedyCopilotForFelis == nil then SpeedyCopilotForFelis = true end
 
 	local crew_accent_used = ""
 
@@ -900,8 +965,407 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/CPT/beforeTakeoffChecklist.wav")
 				print("[Ground Equipment " .. version_text_SGES .. "] Ready for the before takeoff checklist following the procedure.")
 				collectgarbage()
+				B742ProcNumber = 3
+				step_proc_742 = 1
 			end
 		}
+
+
+	local actions_Accel = {
+
+			function()
+				if SGES_vvi_fpm_pilot[0] > 100 and sges_gs_ias_spd[0] >= 110 then
+					print("[Ground Equipment " .. version_text_SGES .. "] In the climb segment...")
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				if XPLMFindDataRef("B742/SND/crew_accent_used") ~= nil then
+					crew_accent_used = get("B742/SND/crew_accent_used") -- actualize
+				else
+					crew_accent_used = "" -- the 742P doesn't have so far crew choice !
+				end
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/letSee.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Some sound files will not be loaded with the passenger variant of the B742.")
+				print("[Ground Equipment " .. version_text_SGES .. "] ==============================")
+				print("[Ground Equipment " .. version_text_SGES .. "]  Climb Procedure " .. crew_accent_used)
+				print("[Ground Equipment " .. version_text_SGES .. "] ==============================")
+			end,
+
+			function()
+				print("[Ground Equipment " .. version_text_SGES .. "] Confirming that crossfeed valves 1 & 4 still open. All takeoff are made using main tanks to engine,fuel feed with 1 and 4 crossfeed valves open. Continue until fuel in tanks 1 and 4 is 21 000 LBS and then switch to center tank to all engines fuel feed if available, or main tanks 2 and 3 to all engines if the center tank is not available.")
+				set_array("B742/FUEL/fuel_crossfeed_valve_rot",0,1)
+				set_array("B742/FUEL/fuel_crossfeed_valve_rot",3,1)
+			end,
+
+
+			function()
+				if SGES_vvi_fpm_pilot[0] > 300 and sges_gs_ias_spd[0] >= 130 then
+					set("B742/controls/gear_lever_pos",-1) -- UP
+				print("[Ground Equipment " .. version_text_SGES .. "] Gear UP")
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				if get("sim/flightmodel/controls/flaprqst") > 0.5 then
+					if SGES_vvi_fpm_pilot[0] > 500 and sges_gs_ias_spd[0] >= 165 then
+						SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+						print("[Ground Equipment " .. version_text_SGES .. "] Flaps retract to 10")
+						set("sim/flightmodel/controls/flaprqst",0.5) -- FLAPS 10 DEGREES
+						--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+						--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+						--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+						--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+						--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+						--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+					else -- wait for the condition to realize, do not progress later
+						step_proc_742 = step_proc_742 - 1
+					end
+				else
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps already at 10, skipping step.")
+				end
+			end,
+
+			function()
+				if SGES_vvi_fpm_pilot[0] > 100 and sges_gs_ias_spd[0] >= 185 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps retract to 5")
+					set("sim/flightmodel/controls/flaprqst",0.33) -- FLAPS 5 DEGREES
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/ignition.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] ignition OFF")
+
+				for _,eng in ipairs({0,1,2,3}) do
+					set_array("B742/OVHD/engine_ignition_sys_2", eng, 0)
+					set_array("B742/OVHD/engine_ignition_sys_1", eng, 0)
+				end
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/APUbleedAirSwitch.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] APU BLEED")
+				set("B742/APU/APU_bleed_air_sw",0)
+			end,
+
+			function()
+				print("[Ground Equipment " .. version_text_SGES .. "] BLEED from engines")
+				for i=0,3 do set_array("B742/AIR_COND/bleed_air_valves", i, 1) end
+				set("B742/AIR_COND/mode_sel_rotary",1)
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/packValves.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Pack ON")
+				set_array("B742/AIR_COND/pack_valves_rotary",0,1)
+				set_array("B742/AIR_COND/pack_valves_rotary",2,1)
+			end,
+
+			function()
+				set_array("B742/AIR_COND/pack_valves_rotary",1,1)
+				set("B742/AIR_COND/trim_air_sw",1)
+			end,
+
+			function()
+				set("B742/APU/APU_start_sw",0)
+			end,
+
+
+			function()
+				for i=0,3 do set_array("B742/AIR_COND/recilc_fan_zones_sw", i, 1) end
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/GalleyPower.wav")
+				set_array("B742/FE/galley_pwr_sw",2,1)
+			end,
+
+			function()
+				if sges_gs_ias_spd[0] >= 205 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					set("sim/flightmodel/controls/flaprqst",0.16) -- FLAPS 1 DEGREES
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps retract to 1")
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				if sges_gs_ias_spd[0] >= 225 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					set("sim/flightmodel/controls/flaprqst",0) -- FLAPS 0 DEGREES
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps retract to UP position")
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/landingLights.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] landing_lights OFF")
+				set("B742/ext_light/landing_outbd_L_sw",0)
+				set("B742/ext_light/landing_outbd_R_sw",0)
+			end,
+
+			function()
+				set("B742/ext_light/landing_inbd_L_sw",0)
+				set("B742/ext_light/landing_inbd_R_sw",0)
+			end,
+
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/set.wav")
+				set("B742/ext_light/runway_turnoff_L_sw",0)
+				set("B742/ext_light/runway_turnoff_R_sw",0)
+			end,
+
+			function()
+				print("[Ground Equipment " .. version_text_SGES .. "] GEAR lever to OFF")
+				set("B742/controls/gear_lever_pos",0) -- OFF
+			end,
+
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/CPT/afterTakeoffChecklist.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Ready for the after takeoff checklist following the procedure.")
+				SGES_B742_sound = nil
+				collectgarbage()
+			end
+		}
+
+	local actions_Descent = {
+
+			function()
+				if (SGES_vvi_fpm_pilot[0] < -600 or sges_gs_plane_y_agl[0] < 2000) and sges_gs_ias_spd[0] < 255 then
+					--~ SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					print("[Ground Equipment " .. version_text_SGES .. "] Below 250 knots IAS in descent in the Boeing 747-200")
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+					SGES_B742_sound = nil
+				end
+			end,
+
+			function()
+				if XPLMFindDataRef("B742/SND/crew_accent_used") ~= nil then
+					crew_accent_used = get("B742/SND/crew_accent_used") -- actualize
+				else
+					crew_accent_used = "" -- the 742P doesn't have so far crew choice !
+				end
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/letSee.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Some sound files will not be loaded with the passenger variant of the B742.")
+				print("[Ground Equipment " .. version_text_SGES .. "] ==============================")
+				print("[Ground Equipment " .. version_text_SGES .. "]  Descent  and approach Procedure " .. crew_accent_used)
+				print("[Ground Equipment " .. version_text_SGES .. "] ==============================")
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/landingLights.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] landing_lights ON")
+				set("B742/ext_light/landing_outbd_L_sw",1)
+				set("B742/ext_light/landing_outbd_R_sw",1)
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/set.wav")
+				set("B742/ext_light/landing_inbd_L_sw",1)
+				set("B742/ext_light/landing_inbd_R_sw",1)
+				set("B742/cockpit_light/FE_panel_bkgrd",0.15)
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/cabinSigns.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Cabin Signs")
+				set("B742/OVHD/no_smoking_button",1)
+				set("B742/OVHD/fasten_belts",1)
+				set("B742/OVHD/flt_dk_door_rel",1)
+			end,
+
+			function()
+				print("[Ground Equipment " .. version_text_SGES .. "] Reserve tank valves open")
+				set_array("B742/FUEL/fuel_crossfeed_valve_rot",4,1)
+				set_array("B742/FUEL/fuel_crossfeed_valve_rot",5,1)
+			end,
+
+			function()
+				print("[Ground Equipment " .. version_text_SGES .. "] Confirming that crossfeed valves 1 & 4 still open. All takeoff are made using main tanks to engine,fuel feed with 1 and 4 crossfeed valves open. Continue until fuel in tanks 1 and 4 is 21 000 LBS and then switch to center tank to all engines fuel feed if available, or main tanks 2 and 3 to all engines if the center tank is not available.")
+				set_array("B742/FUEL/fuel_crossfeed_valve_rot",0,1)
+				set_array("B742/FUEL/fuel_crossfeed_valve_rot",3,1)
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/ignition.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Ignition ON")
+				for _,eng in ipairs({0,1,2,3}) do
+					set_array("B742/OVHD/engine_ignition_sys_2", eng, -1)
+					set_array("B742/OVHD/engine_ignition_sys_1", eng, -1)
+				end
+			end,
+
+			function()
+				if sges_gs_ias_spd[0] <= 230 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					set("sim/flightmodel/controls/flaprqst",0.16) -- FLAPS 1 DEGREES
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps deploy to 1")
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				if (SGES_vvi_fpm_pilot[0] < 100 or sges_gs_plane_y_agl[0] < 4000) and sges_gs_ias_spd[0] <= 220 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps deploy to 5")
+					set("sim/flightmodel/controls/flaprqst",0.33) -- FLAPS 5 DEGREES
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+
+			function()
+				if sges_gs_ias_spd[0] <= 200 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps deploy to 10")
+					set("sim/flightmodel/controls/flaprqst",0.5) -- FLAPS 10 DEGREES
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+
+
+			function()
+				if sges_gs_ias_spd[0] < 189 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps deploy to 20")
+					set("sim/flightmodel/controls/flaprqst",0.66) -- FLAPS 20 DEGREES
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+
+
+			function()
+				if SGES_vvi_fpm_pilot[0] < -10 and sges_gs_ias_spd[0] < 160 then
+					set("B742/controls/gear_lever_pos",1) -- DOWN
+					print("[Ground Equipment " .. version_text_SGES .. "] Gear Down")
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/packValves.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Pack AUTO")
+				set_array("B742/AIR_COND/pack_valves_rotary",0,1)
+				set_array("B742/AIR_COND/pack_valves_rotary",2,1)
+				set("B742/ext_light/runway_turnoff_L_sw",1)
+			end,
+
+			function()
+				set_array("B742/AIR_COND/pack_valves_rotary",1,1)
+				set("B742/AIR_COND/trim_air_sw",1)
+				set("B742/ext_light/runway_turnoff_R_sw",1)
+			end,
+
+			function()
+				set("B742/APU/APU_start_sw",1)
+			end,
+
+			function()
+				if SGES_vvi_fpm_pilot[0] <= -100 and sges_gs_ias_spd[0] < 157 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
+					print("[Ground Equipment " .. version_text_SGES .. "] Flaps deploy to 25")
+					set("sim/flightmodel/controls/flaprqst",0.83) -- FLAPS 10 DEGREES
+					--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+					--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+					--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+					--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+					--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+					--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/flaps30.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Flaps deploy to 30 perhaps ?")
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/ohWait.wav")
+			end,
+
+			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/CPT/beforeLandingChecklist.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] Ready for the Before Landing checklist following the procedure.")
+				SGES_B742_sound = nil
+				collectgarbage()
+			end,
+
+
+			function()
+				if sges_gs_ias_spd[0] < 80 then
+					B742ProcNumber = 2 -- arm after landing procedure
+					step_proc_742 = 1
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
+			end
+		}
+
 
 	local actions_vacating = {
 		function()
@@ -920,22 +1384,65 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 		end,
 
 		function()
-			SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/bodyGearSteering.wav")
-			print("[Ground Equipment " .. version_text_SGES .. "] body gear steering armed")
-			set("B742/OVHD/body_gear_steer_cap",1)
-			set("B742/OVHD/body_gear_steer_sw",0)
+			if math.abs(sges_gs_gnd_spd[0]) < 40 then
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/bodyGearSteering.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] body gear steering armed")
+				set("B742/OVHD/body_gear_steer_cap",1)
+				set("B742/OVHD/body_gear_steer_sw",0)
+			else
+				step_proc_742 = step_proc_742 - 1
+			end
+		end,
+
+
+		function()
+			if math.abs(sges_gs_gnd_spd[0]) <= 15 then
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/speedbrakes.wav")
+				print("[Ground Equipment " .. version_text_SGES .. "] speed brake handle")
+				set("B742/controls/spd_brake_lever",0)
+			else
+				step_proc_742 = step_proc_742 - 1
+			end
 		end,
 
 		function()
-			SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/CPT/autoBrakeOff.wav")
+			if math.abs(sges_gs_gnd_spd[0]) <= 10 then
+				set("sim/flightmodel/controls/flaprqst",0.5)
+				--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+				--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+				--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+				--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+				--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+				--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+			else
+				step_proc_742 = step_proc_742 - 1
+			end
+		end,
+
+		function()
+			set("sim/flightmodel/controls/flaprqst",0.33)
+			--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+			--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+			--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+			--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+			--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+			--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+		end,
+
+		function()
+			print("[Ground Equipment " .. version_text_SGES .. "] Flaps retraction after landing")
+			--~ set("sim/flightmodel/controls/flaprqst",0)
+			--~ sim/flightmodel/controls/flaprqst = 0.16 <=> FLAPS 1
+			--~ sim/flightmodel/controls/flaprqst = 0.33 <=> FLAPS 5
+			--~ sim/flightmodel/controls/flaprqst = 0.5  <=> FLAPS 10
+			--~ sim/flightmodel/controls/flaprqst = 0.66 <=> FLAPS 20
+			--~ sim/flightmodel/controls/flaprqst = 0.83 <=> FLAPS 25
+			--~ sim/flightmodel/controls/flaprqst = 1    <=> FLAPS 30
+		end,
+
+		function()
 			print("[Ground Equipment " .. version_text_SGES .. "] auto brake switch off")
 			set("B742/OVHD/auto_brake_sel",0)
-		end,
-
-		function()
-			SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/speedbrakes.wav")
-			print("[Ground Equipment " .. version_text_SGES .. "] speed brake handle")
-			set("B742/controls/spd_brake_lever",0)
 		end,
 
 		function()
@@ -946,7 +1453,7 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 		end,
 
 		function()
-			set("B742/ext_light/landing_inbd_L_sw",0)
+			if SGES_local_time_in_simulator_hours[0] > 8 and SGES_local_time_in_simulator_hours[0] < 18 then set("B742/ext_light/landing_inbd_L_sw",0) end
 			set("B742/ext_light/landing_inbd_R_sw",0)
 		end,
 
@@ -954,6 +1461,21 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 			set("B742/ext_light/runway_turnoff_L_sw",1)
 			set("B742/ext_light/runway_turnoff_R_sw",1)
 			set("B742/ext_light/logo_sw",1)
+		end,
+
+		function()
+			print("[Ground Equipment " .. version_text_SGES .. "] Retracting flaps (UP)")
+			set("sim/cockpit2/controls/flap_handle_request_ratio",0)
+		end,
+
+
+		function()
+			print("[Ground Equipment " .. version_text_SGES .. "] Waiting (1/1)")
+		end,
+
+
+		function()
+			print("[Ground Equipment " .. version_text_SGES .. "] Waiting (2/2)")
 		end,
 
 		function()
@@ -1069,29 +1591,54 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 		end,
 
 		function()
-			SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/flaps.wav")
-			print("[Ground Equipment " .. version_text_SGES .. "] Retracting flaps")
-			set("sim/cockpit2/controls/flap_handle_request_ratio",0)
+			print("[Ground Equipment " .. version_text_SGES .. "] Waiting (1/3)")
 		end,
 
 		function()
-			SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/CPT/cutoff.wav")
-			print("[Ground Equipment " .. version_text_SGES .. "] Eng 3 shutdown")
+			print("[Ground Equipment " .. version_text_SGES .. "] Waiting (2/3)")
+			set("B742/cockpit_light/ovhd_noname",1)
+		end,
+
+		function()
+			print("[Ground Equipment " .. version_text_SGES .. "] Waiting (3/3) - reduce ground speed to continue.")
+			set("B742/cockpit_light/FE_panel_bkgrd",0.75)
+		end,
+
+		function()
+			if math.abs(sges_gs_gnd_spd[0]) <= 7 then
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/CPT/cutoff.wav")
+			else
+				step_proc_742 = step_proc_742 - 1
+			end
 		end,
 
 		function()
 			SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/CPT/num3.wav")
+		end,
+
+		function()
+			if sges_EngineState[2] < 40 and math.abs(sges_gs_gnd_spd[0]) <= 7 then
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/shutdown.wav")
+				if XPLMFindDataRef("B742/OVHD/auto_brake_takeoff_sw") == nil then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/off.wav")
+				end
+			else
+				step_proc_742 = step_proc_742 - 1
+			end
+		end,
+
+		function()
 			print("[Ground Equipment " .. version_text_SGES .. "] Eng 3 shutdown")
 			set("B742/controls/fuel_cut_off_pos_3",0)
 		end,
 
 		function()
 			set("B742/cockpit_light/dome",0.95)
-			set("B742/cockpit_light/ovhd_noname",1)
 		end,
 
 		function()
-			set("B742/cockpit_light/FE_panel_bkgrd",0.75)
+			SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/GalleyPower.wav")
+			set_array("B742/FE/galley_pwr_sw",2,0)
 		end,
 
 		function()
@@ -1103,7 +1650,7 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 		end
 	}
 	-------------------------------------------------
-	-- MOTEUR DE SÉQUENCE (1 action/seconde)
+	-- MOTEUR DE SÉQUENCE (1 action/ n secondes)
 	-------------------------------------------------
 	--~ B742ProcNumber = -1
 	local last_time = os.clock()
@@ -1115,7 +1662,9 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 
 		if  i == 0 and step_proc_742 > #actions_BeforeStart or
 			i == 1 and step_proc_742 > #actions_TO    or
-			i == 2 and step_proc_742 > #actions_vacating
+			i == 2 and step_proc_742 > #actions_vacating or
+			i == 3 and step_proc_742 > #actions_Accel or
+			i == 4 and step_proc_742 > #actions_Descent
 		then
 			step_proc_742 = 99
 			return
@@ -1128,6 +1677,10 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 			actions_TO[step_proc_742]()  -- exécuter l'étape
 		elseif i == 2 then
 			actions_vacating[step_proc_742]()  -- exécuter l'étape
+		elseif i == 3 then
+			actions_Accel[step_proc_742]()  -- exécuter l'étape
+		elseif i == 4 then
+			actions_Descent[step_proc_742]()  -- exécuter l'étape
 		end
 
 		if SGES_B742_sound ~= nil then
@@ -1146,5 +1699,24 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 			--~ print("proc " .. proc)
 		end
 	end
-	do_often("if B742ProcNumber ~= nil then B742_Drive_Procedure_sequence(B742ProcNumber) end")
+
+	do_often("if B742ProcNumber ~= nil and SGES_XPlaneIsPaused == 0 and SpeedyCopilotForFelis ~= nil and SpeedyCopilotForFelis then B742_Drive_Procedure_sequence(B742ProcNumber) end")
+
+
+	function B742_monitor_sequence()
+		-- auto-monitor the need of the descent and approach procedure
+		if (SGES_vvi_fpm_pilot[0] < -950 or sges_gs_plane_y_agl[0] < 2000) and sges_gs_ias_spd[0] < 260 and (B742ProcNumber == nil or B742ProcNumber ~= 4) then
+			print("[Ground Equipment " .. version_text_SGES .. "] Passing the gate for the descent and approach procedure.")
+			B742ProcNumber = 4
+			step_proc_742 = 1
+		end
+	end
+
+	do_sometimes("if SGES_XPlaneIsPaused == 0 and sges_gs_ias_spd[0] > 200 and SpeedyCopilotForFelis ~= nil and SpeedyCopilotForFelis then B742_monitor_sequence() end")
 end
+
+--~ print("[Ground Equipment " .. version_text_SGES .. "] PLAY SOUND.")
+--~ SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/US/FE/letSee.wav")
+--~ set_sound_gain(SGES_B742_sound, 1)
+--~ play_sound(SGES_B742_sound)
+--~ SGES_B742_sound = nil

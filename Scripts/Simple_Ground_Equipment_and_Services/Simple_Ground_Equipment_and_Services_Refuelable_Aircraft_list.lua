@@ -128,6 +128,9 @@ or string.match(PLANE_ICAO, "S3") -- Lockheed S-3 Viking
 or PLANE_ICAO == "Q4"   -- RQ-4 Global Hawk
 or string.match(PLANE_ICAO, "Q")  -- Other drones
 
+--[[ Armed Forces Helicopters ]]--
+or string.match(PLANE_ICAO, "UH60")
+
 --[[ Commercial & Civilian Aircraft (Military Paints) ]]--
 or PLANE_ICAO == "A319"  -- Airbus A319
 or PLANE_ICAO == "B738"  -- Boeing 737-800 (Military livery)

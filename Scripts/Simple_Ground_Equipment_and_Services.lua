@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.1"
+version_text_SGES = "78.2"
 --------------------------------------------------------------------------------
 --[[
 
@@ -620,6 +620,7 @@ function SGES_script()
 	UseXplane1220Chocks = false
 	UseXplane1220Chocks_specific = UseXplane1220Chocks
 	LoadXplane1220Chocks_specific = false
+	LuaJITForFelis = true
 	-- if they want some custom objects instead, as this master setting is amended later from the config file
 
 	debugging_passengers = false -- accelerate testing conditions
@@ -633,6 +634,7 @@ function SGES_script()
 	-- many variable are just temporary set, and should not be changed here, but changed in the configuration files instead !
 	User_prefers_containerized_freight = false
 	reduce_even_more_the_number_of_passengers = false
+	SpeedyCopilotForFelis = true
 	walking_direction_changed_armed = false
 	get_hospital_ambulance = false
 	BeltLoaderFwdPosition = 10 -- do not change here
@@ -16452,6 +16454,7 @@ function SGES_script()
 					end
 					if l_changed then
 						config_options = l_newval
+						Buttonstring = "Save the changes"
 						-- save when closing the options :
 						if not config_options then WriteToDisk_SGES_USER_CONFIG() end
 					end
@@ -18266,9 +18269,19 @@ function SGES_script()
 				imgui.Separator()
 				imgui.TextUnformatted("SGES OPTIONS")
 				imgui.TextUnformatted("Keep the mouse button down\nfor a description.")
+				imgui.PushStyleColor(imgui.constant.Col.Button,  0xFF505090)
+				if imgui.Button(Buttonstring,210,30)  then
+					WriteToDisk_SGES_USER_CONFIG()
+					if SGES_local_time_in_simulator_hours[0] ~= nil then
+						Buttonstring = "Saved (" .. string.format("%02d",SGES_local_time_in_simulator_hours[0]) .. "h" .. string.format("%02d",SGES_local_time_in_simulator_mins[0]) .. ")"
+					else
+						Buttonstring = "Saved"
+					end
+				end
+				imgui.PopStyleColor()
 				imgui.Spacing()
 				imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
-				imgui.TextUnformatted("*Options in color aren't saved\nfor the next X-Plane session.")
+				imgui.TextUnformatted("* Options in color aren't saved\nfor the next X-Plane session.")
 				imgui.PopStyleColor()
 				imgui.Spacing()
 				imgui.Separator()
@@ -18277,8 +18290,7 @@ function SGES_script()
 					if l_changed then
 						UseXplane1214DefaultObject = l_newval
 						if l_newval then UseXplaneDefaultObject = false end
-						--~ SGES_WriteToDisk()
-						WriteToDisk_SGES_USER_CONFIG()
+						Buttonstring = "Save the changes"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
@@ -18319,20 +18331,37 @@ function SGES_script()
 				elseif not IsXPlane1220 and UseXplane1220Chocks then UseXplane1220Chocks = false
 				end
 
+				-- Speedy Copilot for Felis
 				if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
-					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
 					if SpeedyCopilotForFelis == nil then SpeedyCopilotForFelis = true end
-					l_changed, l_newval = imgui.Checkbox(" Activate the copilot and\n flight engineer (Felis 742)*", SpeedyCopilotForFelis)
+					l_changed, l_newval = imgui.Checkbox(" Activate the copilot and\n flight engineer (Felis 742)", SpeedyCopilotForFelis)
 					if l_changed then
 						SpeedyCopilotForFelis = l_newval
+						Buttonstring = "Save the changes"
 					end
-					imgui.PopStyleColor()
+					if imgui.IsItemActive() then
+						imgui.BeginTooltip()
+						imgui.PushTextWrapPos(imgui.GetFontSize() * 17)
+						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+						imgui.TextUnformatted("My Speedy Copilot series are stand-alone packages to bring a crew to X-Plane 12 models. Here some 742 procedures (but not all) are directly available through SGES, not as a separate stand-alone. Click on B/ST to start the before start procedure. After landing and approach flows start automatically.")
+						imgui.PopStyleColor()
+						imgui.PopTextWrapPos()
+						imgui.EndTooltip()
+					end
+					l_changed, l_newval = imgui.Checkbox(" Disable Lua JIT at startup\n (Felis 742F fails to do it)", LuaJITForFelis)
+					if l_changed then
+						LuaJITForFelis = l_newval
+						if LuaJITForFelis then
+							set("B742/anim/jit_off",1)
+						end
+						Buttonstring = "Save the changes"
+					end
 				end
 
 				l_changed, l_newval = imgui.Checkbox(" Use automatic stairs at 1L", show_auto_stairs)
 				if l_changed then
 					show_auto_stairs = l_newval
-					--~ SGES_WriteToDisk()
+					Buttonstring = "Save the changes"
 				end
 				if imgui.IsItemActive() then
 					imgui.BeginTooltip()
@@ -18348,7 +18377,7 @@ function SGES_script()
 					if l_changed then
 						SGES_sound = l_newval
 						if l_newval then load_xp11_sges_sounds() end
-						--~ SGES_WriteToDisk()
+						Buttonstring = "Save the changes"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
@@ -18423,10 +18452,7 @@ function SGES_script()
 					l_changed, l_newval = imgui.Checkbox(" Prefer containerized cargo\n for the Airbus A320 series.",User_prefers_containerized_freight)
 					if  l_changed then
 						User_prefers_containerized_freight = l_newval
-						-- patch
-					   --~ if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and IsPassengerPlane == 1 and not User_prefers_containerized_freight then
-							--~ Stored_Prefilled_BeltLoaderObject = User_Custom_Prefilled_BeltLoaderObject
-						--~ end
+						Buttonstring = "Save the changes"
 					end
 					--~ imgui.PopStyleColor()
 				end
@@ -18466,16 +18492,19 @@ function SGES_script()
 					imgui.Spacing()
 					imgui.TextUnformatted("Deicing service : aircraft is\nprotected from ice for " .. math.abs(Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand/60) .. " min.")
 					if  imgui.SmallButton("Deice +")  then
+						Buttonstring = "Save the changes"
 						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand + 300
 						if Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand >= 3600 then Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 3600 end
 					end
 					imgui.SameLine()
 					if  imgui.SmallButton("Deice -")  then
+						Buttonstring = "Save the changes"
 						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand - 300
 						if Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand < 900 then Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 900 end
 					end
 					imgui.SameLine()
 					if  imgui.SmallButton("Deice 45")  then
+						Buttonstring = "Save the changes"
 						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 2700
 					end
 					imgui.Spacing()
@@ -18489,13 +18518,13 @@ function SGES_script()
 						set_sound_gain(SGES_is_available_sound, 0.25)
 						play_sound(SGES_is_available_sound)
 						SGES_is_available_sound = nil
-						WriteToDisk_SGES_USER_CONFIG()
-					 end
+					end
+					Buttonstring = "Save the changes"
 				end
 				l_changed, l_newval = imgui.Checkbox(" Show cones at startup", show_Cones_initially)
 				if l_changed then
 					show_Cones_initially = l_newval
-					WriteToDisk_SGES_USER_CONFIG()
+					Buttonstring = "Save the changes"
 				end
 				if imgui.IsItemActive() then
 					imgui.BeginTooltip()
@@ -18516,7 +18545,7 @@ function SGES_script()
 					aviationweather_source_us = l_newval
 					aviationweather_source_eu = not l_newval
 					aviationweather_source_es = not l_newval
-					WriteToDisk_SGES_USER_CONFIG()
+					Buttonstring = "Save the changes"
 				end
 				imgui.Bullet()   imgui.SameLine()
 				l_changed, l_newval = imgui.Checkbox(" METAR source is in Norway", aviationweather_source_eu)
@@ -18524,7 +18553,7 @@ function SGES_script()
 					aviationweather_source_eu = l_newval
 					aviationweather_source_us = not l_newval
 					aviationweather_source_es = not l_newval
-					WriteToDisk_SGES_USER_CONFIG()
+					Buttonstring = "Save the changes"
 				end
 				if imgui.IsItemActive() then
 					imgui.BeginTooltip()
@@ -18541,14 +18570,14 @@ function SGES_script()
 					aviationweather_source_es = l_newval
 					aviationweather_source_us = not l_newval
 					aviationweather_source_eu = not l_newval
-					WriteToDisk_SGES_USER_CONFIG()
+					Buttonstring = "Save the changes"
 				end
 				imgui.PopStyleColor()
 				imgui.PopStyleVar()
 				l_changed, l_newval = imgui.Checkbox(" Autodetect 3rd-party assets", scan_third_party_initially)
 				if l_changed then
 					scan_third_party_initially = l_newval
-					WriteToDisk_SGES_USER_CONFIG()
+					Buttonstring = "Save the changes"
 				end
 				if imgui.IsItemActive() then
 					imgui.BeginTooltip()
@@ -18564,7 +18593,7 @@ function SGES_script()
 					l_changed, l_newval = imgui.Checkbox(" X-Trident Chinook installed\n Used for the Army set.", XTrident_Chinook_Directory)
 					if l_changed then
 						XTrident_Chinook_Directory = scan_for_external_asset("CH47 v2.0","CH47-D Chinook v1.0",1) -- 1 is verbose
-						WriteToDisk_SGES_USER_CONFIG()
+						Buttonstring = "Save the changes"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
@@ -18588,7 +18617,7 @@ function SGES_script()
 					if l_changed then
 						XTrident_NaveCavour_Directory= scan_for_external_asset("AV-8B v2","AV-8B v3",1) -- 1 is verbose
 						if XTrident_NaveCavour_Directory ~= nil then XTrident_NaveCavour_Object =  SCRIPT_DIRECTORY .. XTrident_NaveCavour_Directory .. "/extra/Nave Cavour/Nimitz.obj" end
-						WriteToDisk_SGES_USER_CONFIG()
+						Buttonstring = "Save the changes"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
@@ -18612,7 +18641,7 @@ function SGES_script()
 					l_changed, l_newval = imgui.Checkbox(" FF/STS B777 v2 installed\n Used for the Boeing 777.", FFSTS_777v2_Directory)
 					if l_changed then
 						FFSTS_777v2_Directory= scan_for_external_asset("Boeing777-200ER","Boeing777-200ER",1) -- 1 is verbose
-						WriteToDisk_SGES_USER_CONFIG()
+						Buttonstring = "Save the changes"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
@@ -18635,7 +18664,7 @@ function SGES_script()
 					l_changed, l_newval = imgui.Checkbox(" Activate the CDB-Library\n Used for people.", Cami_de_Bellis_Directory)
 					if l_changed then
 						Cami_de_Bellis_Directory= scan_for_external_asset("is in custom scenery folder","CDB-Library",1) -- 1 is verbose
-						WriteToDisk_SGES_USER_CONFIG()
+						Buttonstring = "Save the changes"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
@@ -18684,7 +18713,7 @@ function SGES_script()
 					l_changed, Cami_de_Bellis_authorized = imgui.Checkbox(" Use CDB-Library people\n installed on your computer.", Cami_de_Bellis_authorized)
 					if l_changed then
 						Load_Cami_de_Bellis_Objects()
-						WriteToDisk_SGES_USER_CONFIG()
+						Buttonstring = "Save the changes"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
@@ -18726,7 +18755,7 @@ function SGES_script()
 				l_changed, l_newval = imgui.Checkbox(" Load the stairs automatically\n during the loading sequence ?\n (Manual request stays\n available at all times).", stairs_authorized)
 				if l_changed then
 					stairs_authorized = l_newval
-					WriteToDisk_SGES_USER_CONFIG()
+					Buttonstring = "Save the changes"
 				end
 
 				if stairs_authorized then

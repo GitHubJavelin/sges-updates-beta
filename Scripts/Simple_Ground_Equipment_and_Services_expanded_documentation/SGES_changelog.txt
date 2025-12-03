@@ -1,8 +1,12 @@
 
     == Caution ! The sole file skunkcrafts_updater.cfg should go into the root FlyWithLua folder ("X-Plane 12/Resources/plugins/FlyWithLua"), but all other SGES files go one folder below into "...FlyWithLua/Scripts/" as usual. ==
 
-Version 78.1, 1st of December, 2025
+Version 78.2, 3rd of December, 2025
+	Copilot and Flight Engineer for the Felis B747-200 options made as rememberable permanent option
+	YAK-42 ground handling set added
+	For more clarity : new "save" button to save the options, this button from now on MUST be used.
 
+Version 78.1, 1st of December, 2025
 	Copilot and Flight Engineer actions for the Felis B747-200 (ie Speedy Copilot "light edition" for Felis B747-200) integrated. The before start procedure, before takeoff procedure, climb procedure, descent and approach procedure, after-landing procedure scripted flows are now available directly in SGES. An option allows to disable the feature.
 	Added direct access to Melbo's UH-60M setup panel, and UH-60M support
 

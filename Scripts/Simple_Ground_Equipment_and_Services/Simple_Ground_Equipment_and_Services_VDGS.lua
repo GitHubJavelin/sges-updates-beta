@@ -137,7 +137,7 @@ function unload_VDGS()
 	show_VDGS_only_once = true
 end
 
-	
+
 
 do_on_exit("unload_VDGS()")
 
@@ -205,7 +205,10 @@ function VDGS_object_physics()
 
 	if VDGS_chg == true then
 	  if show_VDGS then
-
+		if BeltLoaderFwdPosition >= 14 and show_Stairs and (show_StopSign or show_TargetMarker) then
+			show_Stairs = false
+			Stairs_chg = true
+		end
 		--~ print("[Ground Equipment " .. version_text_SGES .. "] Loading 3D objects part of the visual docking guidance system " .. VDGS_x .. " ; " .. VDGS_z)
 		load_VDGS()
 	  else

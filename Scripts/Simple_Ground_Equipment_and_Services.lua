@@ -2,7 +2,7 @@
 --    --------------------------------------------------------------------------
 --          LICENSE
 --    --------------------------------------------------------------------------
---    Copyright (c) 2022,, 2023, 2024 XPJavelin
+--    Copyright (c) 2022, 2023, 2024, 2025, 2026 XPJavelin
 
 --    Permission is hereby granted, free of charge, to any person obtaining a copytargetDoorX_alternate
 --    of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.2"
+version_text_SGES = "78.3"
 --------------------------------------------------------------------------------
 --[[
 
@@ -2993,7 +2993,18 @@ function SGES_script()
 				h = 90 + 201
 			end
 			-- -------------------------------------------------------------- --
-			Stairs_chg = draw_static_object(x+ targetDoorX_alternate, z+ targetDoorZ_alternate, h+ targetDoorH_alternate,Stairs_instance[0],"Stairs")
+			if BeltLoaderFwdPosition >= 14 and show_StopSign and not show_VDGS then
+				x = 0
+				z = 16.6
+				h = 270 -- for the fun
+				-- when the follow me is visible, move the marshaller a bit to the side :
+				if show_FM then x = 1.2 end
+
+				Stairs_chg = draw_static_object(x, z, h,Stairs_instance[0],"MarshallerStairs")
+			else
+				Stairs_chg = draw_static_object(x+ targetDoorX_alternate, z+ targetDoorZ_alternate, h+ targetDoorH_alternate,Stairs_instance[0],"Stairs")
+			end
+
 		  end
 	  end
 	end
@@ -7118,6 +7129,11 @@ function SGES_script()
 			objpos_value[0].y = ground - 0.05
 		elseif flag ~= nil and (flag == "stairs") then -- climbing passenger NOT on ground
 			objpos_value[0].y = y
+		elseif flag ~= nil and BeltLoaderFwdPosition >= 14 and show_StopSign and not show_VDGS and flag == "StopSign" then
+			-- When the marshaller is on stairs, you want it "on the stairs" not on the ground :
+			print("[Ground Equipment " .. version_text_SGES .. "] The marshaller is climbing on stairs because BeltLoaderFwdPosition is above 14 (" .. BeltLoaderFwdPosition .. ")" )
+			--~ if object_name == "MarshallerStairs" then
+				objpos_value[0].y = ground + 2.3
 		elseif flag ~= nil and (flag == "ASU_ACU") and Prefilled_ASU_ACU ~= User_Custom_Prefilled_ASUObject then -- object not on ground due to 3D
 			objpos_value[0].y = ground + 4.28
 		--~ elseif flag ~= nil and (flag == "BusLight") then -- object not on ground due to 3D
@@ -7222,20 +7238,19 @@ function SGES_script()
 			object_hdg_corr = object_hdg_corr + 180
 		end
 		--print("[Ground Equipment " .. version_text_SGES .. "]  draw_static_object at " .. placeToBeX .. ", " .. placeToBeZ)
-		if object_name ~= nil and Instance ~= nil and placeToBeX ~= nil and placeToBeZ ~= nil then
+		if object_name ~= nil and Instance ~= nil and placeToBeX ~= nil and placeToBeZ ~= nil and  TargetMarkerZ_stored ~= nil and TargetMarkerZ_stored ~= nil then
 			if object_hdg_corr == nil then object_hdg_corr = 0 end
 			local reference_x = sges_gs_plane_x[0]
 			local reference_z = sges_gs_plane_z[0]
 			local reference_heading = sges_gs_plane_head[0]
-			if object_name == "StopSign" or object_name == "Arms" then -- the marshaller is referenced to the final destination (changed for that option 4/11/23)
+			if object_name == "StopSign" or object_name == "Arms" or object_name == "MarshallerStairs" then -- the marshaller is referenced to the final destination (changed for that option 4/11/23)
 				reference_x = TargetMarkerX_stored
 				reference_z = TargetMarkerZ_stored
-				print("body z = " .. reference_z)
 				if automatic_marshaller_requested then
 					reference_heading = retained_parking_position_heading
 				end
-				print("[Ground Equipment " .. version_text_SGES .. "] the reference as anchor :  " .. reference_x .. ", " .. reference_z .. ", " .. math.floor(reference_heading)) -- place the static carrier on world coordinates as required
-				print("[Ground Equipment " .. version_text_SGES .. "] placing the Marshaller on " .. TargetMarkerX_stored .. ", " .. TargetMarkerZ_stored .. ", " .. math.floor(reference_heading)) -- place the static carrier on world coordinates as required
+				--~ print("[Ground Equipment " .. version_text_SGES .. "] the reference as anchor :  " .. reference_x .. ", " .. reference_z .. ", " .. math.floor(reference_heading)) -- place the static carrier on world coordinates as required
+				print("[Ground Equipment " .. version_text_SGES .. "] Placing the Marshaller on " .. TargetMarkerX_stored .. ", " .. TargetMarkerZ_stored .. ", " .. math.floor(reference_heading)) -- place the static carrier on world coordinates as required
 			end
 
 			if object_name == "Arms" then
@@ -7302,9 +7317,12 @@ function SGES_script()
 				wildfire_z = g_shifted_z
 			end
 
+			--------------------------------------------------------
+
 			objpos_addr, float_addr, wetness = OnScenery(g_shifted_x,g_shifted_z,g_shifted_y,reference_heading+object_hdg_corr,nil,object_name)
 			local 	changed = object_name .. "_chg"
 			local  objpos_target_value_y = ground -- default value
+
 
 			if string.match(object_name,"TargetSelfPushback")   then -- NOP draw_from_simulator_coordinates
 				--~ print("[Ground Equipment " .. version_text_SGES .. "] placing the TargetSelfPushback on " .. g_shifted_x .. ", " .. g_shifted_z .. ", wetness is " .. wetness)
@@ -7334,6 +7352,9 @@ function SGES_script()
 				objpos_value[0].y = objpos_target_value_y
 				objpos_value[0].pitch = pitch_hel
 			end
+
+
+
 
 
 			if object_name == "Submarine" then
@@ -7426,7 +7447,6 @@ function SGES_script()
 					--~ --objpos_value[0].roll = distance_to_sges_stand / 2
 				end
 			end
-
 
 
 			if (wetness == 0 and not string.match(object_name,"Ship") and not string.match(object_name,"XP12Carrier") and not string.find(object_name,"Submarine") ) or
@@ -11567,7 +11587,15 @@ function SGES_script()
 			if show_StopSign then
 				--~ print("command load marshaller")
 				load_StopSign()
+				if BeltLoaderFwdPosition >= 14 and not show_VDGS then
+					show_Stairs = true
+					Stairs_chg = true
+				end
 			else
+				if BeltLoaderFwdPosition >= 14 then
+					show_Stairs = false
+					Stairs_chg = true
+				end
 				--~ print("command unload marshaller")
 				if TargetMarker_instance[1] ~= nil then _,TargetMarker_instance[1],rampservicerefStopSign = common_unload("StopSign",TargetMarker_instance[1],rampservicerefStopSign) end
 				if TargetMarker_instance[2] ~= nil then StopSign_chg,TargetMarker_instance[2],rampservicerefArms = common_unload("Arms",TargetMarker_instance[2],rampservicerefArms) end
@@ -11580,6 +11608,7 @@ function SGES_script()
 				local x = 0
 				local z = 8.5
 				if BeltLoaderFwdPosition > 5 then x = 1 z = 15 end -- for airliner, make him backward
+				if BeltLoaderFwdPosition > 14 then x = 1 z = 17 end -- for airliner, make him backward
 				local h = 0
 				-- when the follow me is visible, move the marshaller a bit to the side :
 				if show_FM then x = 2 h = -7 end

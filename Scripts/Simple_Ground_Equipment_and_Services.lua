@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.3"
+version_text_SGES = "78.4"
 --------------------------------------------------------------------------------
 --[[
 
@@ -123,45 +123,47 @@ function SGES_script()
 			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane is not X-Plane 12.")
 		end
 
-
+		xpversionobjects = 11
 		if SGES_xplane_internal_version >= 120907 then -- 3D objects changed in X-Plane 12.0.9 and subsequent editions, so we need to test that
 			IsXPlane1209 = true
-			print("[Ground Equipment " .. version_text_SGES .. "] Utilizing 3D objects introduced in : ")
-			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane 12.0.9")
+			xpversionobjects = "12.0.9"
 		end
 		if SGES_xplane_internal_version >= 121100 then -- 3D objects changed in X-Plane 12.1.1 and subsequent editions, so we need to test that
 			IsXPlane1211 = true
-			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane 12.1.1")
+			xpversionobjects = "12.1.1"
 		end
 		if SGES_xplane_internal_version >= 121200 then -- 3D objects changed in X-Plane 12.1.2 and subsequent editions, so we need to test that
 			IsXPlane1212 = true
-			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane 12.1.2")
+			xpversionobjects = "12.1.2"
 		else
 			IsXPlane1212 = false
 		end
 		if SGES_xplane_internal_version >= 121400 then  -- I think you undestood it by now.
 			IsXPlane1214 = true
-			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane 12.1.4")
+			xpversionobjects = "12.1.4"
 		else
 			IsXPlane1214 = false
 		end
 		if SGES_xplane_internal_version >= 122000 then  -- I think you undestood it by now.
 			IsXPlane1220 = true -- true !
-			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane 12.2.0")
+			xpversionobjects = "12.2.0"
 		else
 			IsXPlane1220 = false
 		end
 		if SGES_xplane_internal_version >= 122100 then
 			IsXPlane1221 = true
-			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane 12.2.1")
+			xpversionobjects = "12.2.1"
 		else
 			IsXPlane1221 = false
 		end
 		if SGES_xplane_internal_version >= 123000 then
 			IsXPlane1230 = true
-			print("[Ground Equipment " .. version_text_SGES .. "] X-Plane 12.3.0")
+			xpversionobjects = "12.3.0"
 		else
 			IsXPlane1230 = false
+		end
+		if xpversionobjects ~= 11 then
+			print("[Ground Equipment " .. version_text_SGES .. "] Utilizing 3D objects introduced in X-Plane " .. xpversionobjects)
 		end
 	end
 	----------------------------------------------------------------------------
@@ -1186,8 +1188,11 @@ function SGES_script()
 	end
 
 	if Bollard_installed then
+		XP1203_Cone_3_installed = file_exists(XPlane12_Common_Equipment_directory    .. "traffic_cone_3.obj")
 		if BeltLoaderFwdPosition < 2 then  --  8th march 2024
 			Prefilled_BollardObject = XPlane12_Common_Equipment_directory    .. "traffic_cone_1.obj" -- prefered the more visble Lübeck conus when avail.
+		elseif BeltLoaderFwdPosition >= 8 and XP1203_Cone_3_installed then  --  8th march 2024
+			Prefilled_BollardObject = XPlane12_Common_Equipment_directory    .. "traffic_cone_3.obj" -- prefered the more visble Lübeck conus when avail.
 		else -- before 8 march 2024 only that
 			Prefilled_BollardObject = XPlane12_Common_Equipment_directory   .. "traffic_pole_1.obj"
 		end
@@ -2058,13 +2063,14 @@ function SGES_script()
 		if XTrident_NaveCavour_Directory ~= nil then XTrident_NaveCavour_Object =  SCRIPT_DIRECTORY .. XTrident_NaveCavour_Directory .. "/extra/Nave Cavour/Nimitz.obj" end
 
 
-		if sges_EngineState[0] < 5 and sges_StarterState[0] == 0 and SGES_is_glider == 0 and sges_gs_plane_y_agl[0] < 2 then
+		if sges_EngineState[0] < 5 and SGES_is_glider == 0 and sges_gs_plane_y_agl[0] < 1 then
 			-- only ring SGES ready when aircraft is parked.
 			if play_sound_SGES_is_available then
 				SGES_is_available_sound = load_WAV_file(SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/Sounds/SGES_is_available.wav") -- -- sound number 2
 				set_sound_gain(SGES_is_available_sound, 0.25)
 				play_sound(SGES_is_available_sound)
 				SGES_is_available_sound = nil
+				--~ print("[Ground Equipment " .. version_text_SGES .. "] Good to go, sound up.")
 			end
 			print("[Ground Equipment " .. version_text_SGES .. "] Good to go, we should have loaded everything by now.")
 		else
@@ -2089,6 +2095,9 @@ function SGES_script()
 	local TargetMarkerY = sges_gs_plane_y[0]
 	--~ local TargetMarkerX_stored = sges_gs_plane_x[0] + 10
 	--~ local TargetMarkerZ_stored = sges_gs_plane_z[0] + 10
+
+	local TargetMarkerX_backup = TargetMarkerX
+	local TargetMarkerZ_backup = TargetMarkerZ -- tempo value
 
 	local follow_me_x = sges_gs_plane_x[0]
 	local follow_me_z = sges_gs_plane_z[0]
@@ -3958,6 +3967,10 @@ function SGES_script()
 
 			 load_TargetMarker()
 		  else
+			TargetMarkerX_backup = TargetMarkerX_stored
+			TargetMarkerZ_backup = TargetMarkerZ_stored
+			retained_parking_position_heading_backup = retained_parking_position_heading
+
 			TargetMarker_chg,TargetMarker_instance[0],rampservicerefTargetMarker = common_unload("TargetMarker",TargetMarker_instance[0],rampservicerefTargetMarker)
 			--unload_TargetMarker()
 			TargetMarkerH = sges_gs_plane_head[0]
@@ -4053,6 +4066,7 @@ function SGES_script()
 
 
 				if (string.match(PLANE_ICAO,"P28") and PLANE_AUTHOR == "JustFlight") or (string.match(PLANE_AUTHOR,"Thranda") and not string.match(AIRCRAFT_PATH,"146")) then -- toggle Jusflight Piper
+					print("[Ground Equipment " .. version_text_SGES .. "] Applying Thranda animations along with SGES chocks.")
 					if XPLMFindDataRef("thranda/covers/TieDownR") ~= nil then	set("thranda/covers/TieDownR",1) end
 					if XPLMFindDataRef("thranda/covers/TieDownL") ~= nil then	set("thranda/covers/TieDownL",1) end
 					if XPLMFindDataRef("thranda/covers/TieDownT") ~= nil then	set("thranda/covers/TieDownT",1) end
@@ -4119,6 +4133,7 @@ function SGES_script()
 				if not string.match(AIRCRAFT_PATH,"146") and ((PLANE_ICAO and string.match(PLANE_ICAO, "P28") and PLANE_AUTHOR == "JustFlight")
 					or (PLANE_AUTHOR and string.match(PLANE_AUTHOR, "Thranda"))) then 					-- toggle JustFlight Piper
 
+					print("[Ground Equipment " .. version_text_SGES .. "] Applying Thranda animations along with SGES chocks.")
 					if XPLMFindDataRef("thranda/covers/TieDownR") ~= nil then	set("thranda/covers/TieDownR",0) end
 					if XPLMFindDataRef("thranda/covers/TieDownL") ~= nil then	set("thranda/covers/TieDownL",0) end
 					if XPLMFindDataRef("thranda/covers/TieDownT") ~= nil then	set("thranda/covers/TieDownT",0) end
@@ -7131,7 +7146,7 @@ function SGES_script()
 			objpos_value[0].y = y
 		elseif flag ~= nil and BeltLoaderFwdPosition >= 14 and show_StopSign and not show_VDGS and flag == "StopSign" then
 			-- When the marshaller is on stairs, you want it "on the stairs" not on the ground :
-			print("[Ground Equipment " .. version_text_SGES .. "] The marshaller is climbing on stairs because BeltLoaderFwdPosition is above 14 (" .. BeltLoaderFwdPosition .. ")" )
+			--~ print("[Ground Equipment " .. version_text_SGES .. "] The marshaller is climbing on stairs because BeltLoaderFwdPosition is above 14 (" .. BeltLoaderFwdPosition .. ")" )
 			--~ if object_name == "MarshallerStairs" then
 				objpos_value[0].y = ground + 2.3
 		elseif flag ~= nil and (flag == "ASU_ACU") and Prefilled_ASU_ACU ~= User_Custom_Prefilled_ASUObject then -- object not on ground due to 3D
@@ -7238,19 +7253,37 @@ function SGES_script()
 			object_hdg_corr = object_hdg_corr + 180
 		end
 		--print("[Ground Equipment " .. version_text_SGES .. "]  draw_static_object at " .. placeToBeX .. ", " .. placeToBeZ)
-		if object_name ~= nil and Instance ~= nil and placeToBeX ~= nil and placeToBeZ ~= nil and  TargetMarkerZ_stored ~= nil and TargetMarkerZ_stored ~= nil then
+		if object_name ~= nil and Instance ~= nil and placeToBeX ~= nil and placeToBeZ ~= nil  then
 			if object_hdg_corr == nil then object_hdg_corr = 0 end
 			local reference_x = sges_gs_plane_x[0]
 			local reference_z = sges_gs_plane_z[0]
 			local reference_heading = sges_gs_plane_head[0]
-			if object_name == "StopSign" or object_name == "Arms" or object_name == "MarshallerStairs" then -- the marshaller is referenced to the final destination (changed for that option 4/11/23)
+			if object_name == "StopSign" or object_name == "Arms" or object_name == "MarshallerStairs" and TargetMarkerX_stored ~= nil and TargetMarkerX_stored ~= nil then -- the marshaller is referenced to the final destination (changed for that option 4/11/23)
 				reference_x = TargetMarkerX_stored
 				reference_z = TargetMarkerZ_stored
 				if automatic_marshaller_requested then
 					reference_heading = retained_parking_position_heading
 				end
 				--~ print("[Ground Equipment " .. version_text_SGES .. "] the reference as anchor :  " .. reference_x .. ", " .. reference_z .. ", " .. math.floor(reference_heading)) -- place the static carrier on world coordinates as required
-				print("[Ground Equipment " .. version_text_SGES .. "] Placing the Marshaller on " .. TargetMarkerX_stored .. ", " .. TargetMarkerZ_stored .. ", " .. math.floor(reference_heading)) -- place the static carrier on world coordinates as required
+				print("[Ground Equipment " .. version_text_SGES .. "] Placing the Marshaller on " .. TargetMarkerX_stored .. ", " .. TargetMarkerZ_stored .. ", " .. math.floor(reference_heading) .. " " .. object_name) -- place the static carrier on world coordinates as required
+			elseif object_name == "StopSign" or object_name == "Arms" or object_name == "MarshallerStairs" and (TargetMarkerX_stored == nil or TargetMarkerX_stored == nil) then
+				if automatic_marshaller_requested then
+					reference_heading = retained_parking_position_heading_backup
+				end
+				if TargetMarkerX_backup ~= nil then
+					reference_x = TargetMarkerX_backup
+					reference_z = TargetMarkerZ_backup
+					print("[Ground Equipment " .. version_text_SGES .. "] Drawing a Marshaller object was made with a backup location. " .. object_name)
+				else
+					reference_x = sges_gs_plane_x[0] + 15 -- dumb
+					reference_z = sges_gs_plane_z[0] + 15 -- dumb
+					print("[Ground Equipment " .. version_text_SGES .. "] ERROR : drawing a marshaller object is affected by a missing TargetMarkerZ_stored value.")
+					print("[Ground Equipment " .. version_text_SGES .. "] Drawing a Marshaller object was made with a temporary unrelated value to avoid a crash.")
+					SGES_is_available_sound = load_WAV_file(SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/Sounds/SGES_is_available.wav") -- -- sound number 2
+					set_sound_gain(SGES_is_available_sound, 0.55)
+					play_sound(SGES_is_available_sound)
+					SGES_is_available_sound = nil
+				end
 			end
 
 			if object_name == "Arms" then
@@ -7535,9 +7568,13 @@ function SGES_script()
 			print("[Ground Equipment " .. version_text_SGES .. "]  We wanted to draw a static object but couldn't, due to a missing x coordinate.")
 		elseif object_name == nil then
 			print("[Ground Equipment " .. version_text_SGES .. "]  We wanted to draw a static object but couldn't, due to a missing name.")
+		elseif TargetMarkerZ_stored == nil then
+			print("[Ground Equipment " .. version_text_SGES .. "]  We wanted to draw a static object but couldn't (missing TargetMarkerZ_stored for " .. object_name .. ").")
 		else
 			print("[Ground Equipment " .. version_text_SGES .. "]  We wanted to draw a static object but couldn't (missing instance for " .. object_name .. ").")
 		end
+
+				--~ if object_name ~= nil and Instance ~= nil and placeToBeX ~= nil and placeToBeZ ~= nil and  TargetMarkerZ_stored ~= nil and TargetMarkerZ_stored ~= nil then
 	end
 
 	function draw_AAR_object(placeToBeX,placeToBeZ,object_hdg_corr,Instance,object_name)
@@ -11587,12 +11624,8 @@ function SGES_script()
 			if show_StopSign then
 				--~ print("command load marshaller")
 				load_StopSign()
-				if BeltLoaderFwdPosition >= 14 and not show_VDGS then
-					show_Stairs = true
-					Stairs_chg = true
-				end
 			else
-				if BeltLoaderFwdPosition >= 14 then
+				if BeltLoaderFwdPosition >= 14 and show_Stairs then
 					show_Stairs = false
 					Stairs_chg = true
 				end
@@ -11656,6 +11689,10 @@ function SGES_script()
 				if not show_VDGS then
 					show_StopSign = true
 					StopSign_chg = true
+				end
+				if BeltLoaderFwdPosition >= 14 and not show_VDGS then -- only upon a change of parking place make the marshaller stairs appear
+					show_Stairs = true
+					Stairs_chg = true
 				end
 				guidance_active = true
 				automatic_marshaller_already_requested_once = true -- forbids the automatic search which spoils the experience at this point
@@ -11761,6 +11798,18 @@ function SGES_script()
 			if automatic_marshaller_requested then
 				reference_heading = retained_parking_position_heading
 			end
+
+			if (TargetMarkerX_stored == nil or TargetMarkerX_stored == nil) and retained_parking_position_heading_backup ~= nil and TargetMarkerZ_backup ~= nil then
+				if automatic_marshaller_requested then
+					reference_heading = retained_parking_position_heading_backup
+				else
+					reference_heading = sges_gs_plane_head[0]
+				end
+				reference_x = TargetMarkerX_backup
+				reference_z = TargetMarkerZ_backup
+				print("[Ground Equipment " .. version_text_SGES .. "] Drawing a Marshaller object was made with a backup location. " .. object_name)
+			end
+
 			coordinates_of_adjusted_ref_rampservice(reference_x, reference_z, placeToBeX, placeToBeZ, reference_heading)
 			objpos_addr, float_addr, wetness = OnScenery(g_shifted_x,g_shifted_z,g_shifted_y,reference_heading+object_hdg_corr,nil,object_name)
 			local 	changed = object_name .. "_chg"
@@ -12581,6 +12630,10 @@ function SGES_script()
 					end
 					show_StopSign = not l_newval
 					StopSign_chg = true
+					if BeltLoaderFwdPosition >= 14 and not show_VDGS then -- only upon a change of parking place make the marshaller stairs appear
+						show_Stairs = true
+						Stairs_chg = true
+					end
 					if not show_VDGS then --IAS24
 						VDGS_slider_factor = 0 --IAS24
 						if BeltLoaderFwdPosition >= 15 then VDGS_slider_factor = 2 end --IAS24
@@ -18544,7 +18597,7 @@ function SGES_script()
 					play_sound_SGES_is_available = l_newval
 					if l_newval then
 						SGES_is_available_sound = load_WAV_file(SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/Sounds/SGES_is_available.wav") -- -- sound number 2
-						set_sound_gain(SGES_is_available_sound, 0.25)
+						set_sound_gain(SGES_is_available_sound, 0.35)
 						play_sound(SGES_is_available_sound)
 						SGES_is_available_sound = nil
 					end

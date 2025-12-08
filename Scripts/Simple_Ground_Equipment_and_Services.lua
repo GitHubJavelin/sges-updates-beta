@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.4"
+version_text_SGES = "78.5"
 --------------------------------------------------------------------------------
 --[[
 
@@ -736,6 +736,14 @@ function SGES_script()
 
 		-- STAIRS -----------------------------------------------------------------
 		Prefilled_StairsObject = User_Custom_Prefilled_StairsObject
+		-- however when it's abig airliner and when it is used as the marshaller stairs, we must use our variant instead, which is higher than the LR maintenance stairs
+		if BeltLoaderFwdPosition >= 14 then
+			if file_exists(SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/Stair_maintenance.obj") then
+				print("[Ground Equipment " .. version_text_SGES .. "] Preparing custom marshalling stairs.")
+				Prefilled_StairsObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/Stair_maintenance.obj"
+				User_Custom_Prefilled_StairsObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/Stair_maintenance.obj"
+			end
+		end
 
 		-- GPU --------------------------------------------------------------------
 		Prefilled_GPUObject = User_Custom_Prefilled_GPUObject
@@ -767,7 +775,6 @@ function SGES_script()
 			Prefilled_ULDLoaderObject = XPlane_Ramp_Equipment_directory .. "cargo_loader_ch70w.obj"
 			Prefilled_CargoDeck_ULDLoaderObject = XPlane_Ramp_Equipment_directory .. "cargo_loader_ch70w_up.obj"
 		end
-
 
 		-- FOLLOW ME VEHICLE ------------------------------------------------------
 		if BeltLoaderFwdPosition < 4 and (not string.match(PLANE_ICAO,"B46") and not string.match(PLANE_ICAO,"RJ") ) then
@@ -7150,6 +7157,9 @@ function SGES_script()
 			--~ print("[Ground Equipment " .. version_text_SGES .. "] The marshaller is climbing on stairs because BeltLoaderFwdPosition is above 14 (" .. BeltLoaderFwdPosition .. ")" )
 			--~ if object_name == "MarshallerStairs" then
 				objpos_value[0].y = ground + 2.3
+				if Prefilled_StairsObject == SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/Stair_maintenance.obj" then
+					objpos_value[0].y = ground + 3.2
+				end
 		elseif flag ~= nil and (flag == "ASU_ACU") and Prefilled_ASU_ACU ~= User_Custom_Prefilled_ASUObject then -- object not on ground due to 3D
 			objpos_value[0].y = ground + 4.28
 		--~ elseif flag ~= nil and (flag == "BusLight") then -- object not on ground due to 3D
@@ -13949,8 +13959,15 @@ function SGES_script()
 		  if l_changed then
 			show_StairsH = false
 			StairsH_chg = true
-			show_Stairs = false
-			Stairs_chg = true
+			if BeltLoaderFwdPosition >= 14 and show_StopSign and not show_VDGS and
+			Prefilled_StairsObject == SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/Stair_maintenance.obj" then
+				-- none
+				show_Stairs = show_Stairs -- easy patch
+				-- the marshaller steps cannot be removed when the marshaller has climb on stairs !
+			else
+				show_Stairs = false
+				Stairs_chg = true
+			end
 			show_StairsXPJ = l_newval
 			StairsXPJ_chg = true
 			option_StairsXPJ_override = l_newval -- once action, absolutely required

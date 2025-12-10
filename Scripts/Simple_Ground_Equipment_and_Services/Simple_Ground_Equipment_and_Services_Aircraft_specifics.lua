@@ -109,6 +109,8 @@ function prepare_special_vehicles_for_aircraft()
 
 	or (string.match(AircraftPath ,"321") and (string.find(AircraftPath ,"reight") or string.find(AircraftPath ,"argo") or string.find(AircraftPath ,"P2F") or string.find(AircraftPath ,"PCF") or string.find(AircraftPath ,"Titan") or string.find(AircraftPath ,"NAC") or string.find(AircraftPath ,"Fedex") or string.find(AircraftPath ,"UPS")))
 
+	or PLANE_ICAO == "B77L"
+
 	then
 		IsPassengerPlane = 0
 		GUIIsPassengerPlane = false
@@ -408,8 +410,22 @@ if PLANE_ICAO == "CAML" or
 		end
 end
 
+--------------------------------------------------------------------------------
+		----------   FF/STS 777v2 Freighter -------------
+--------------------------------------------------------------------------------
 
-
+if PLANE_ICAO == "B77L" and AIRCRAFT_FILENAME == "777-F_xp12.acf" and string.find(PLANE_AUTHOR,"StepToSky") then
+	if file_exists(AIRCRAFT_PATH .. "objects/service/cLoader.obj")  then
+		-- Use FF/STS Cargo loader insted of SGES one, to reach the correct deck height
+		print("[Ground Equipment " .. version_text_SGES .. "] Applying " .. PLANE_AUTHOR .. " " .. AIRCRAFT_FILENAME .. " startup specifics (cLoader.obj).")
+		Prefilled_CargoDeck_ULDLoaderObject = AIRCRAFT_PATH .. "objects/service/cLoader.obj"
+		set("1-sim/anim/service/mdlmainliftcargo",1)  -- 1 for the FF/STS 777 v2
+		--~ mdlfrontliftcargo = define_shared_DataRef("1-sim/anim/service/mdlfrontliftcargo", "Float")
+		--~ mdlfrontliftcargo = 1
+		set("1-sim/anim/service/mdlfrontliftcargo",1)
+		CargoDeck_ULDLoaderObject = "highly_high_variant"
+	end
+end
 
 
 if PLANE_ICAO == "AV8B" and AIRCRAFT_FILENAME == "AV8B.acf" and string.find(PLANE_AUTHOR,"X-ALBERTO") then
@@ -511,11 +527,9 @@ end
 
 if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 
+
 	--~ if B742ProcNumber == nil then	B742ProcNumber = -1 end
 	if LuaJITForFelis then
-		set("B742/anim/jit_off",0)
-		set("B742/anim/jit_off",0)
-		set("B742/anim/jit_off",1)
 		set("B742/anim/jit_off",1)
 	end
 	if SpeedyCopilotForFelis == nil then SpeedyCopilotForFelis = true end

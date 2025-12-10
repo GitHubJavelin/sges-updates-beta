@@ -39,6 +39,7 @@ function AircraftParameters() -- don't remove the function
     elseif PLANE_ICAO == "B788" then BeltLoaderFwdPosition = 15.5 	SecondStairsFwdPosition = -15.6 	airstart_unit_factor = 28 custom_fuel_finalX = -17 custom_fuel_finalY = -6 custom_fuel_pump_finalX = -17 custom_fuel_pump_finalY = -6
     elseif PLANE_ICAO == "B789" then BeltLoaderFwdPosition = 18.5 	SecondStairsFwdPosition = -19.7		airstart_unit_factor = 27	custom_fuel_finalX = -17 custom_fuel_finalY = -6 custom_fuel_pump_finalX = 18 custom_fuel_pump_finalY = -6
     elseif PLANE_ICAO == "B772" then BeltLoaderFwdPosition = 17.9	SecondStairsFwdPosition = -20		airstart_unit_factor = 22.8 BeltLoaderRearPosition = -12.40 	custom_fuel_pump_finalX = 15  custom_fuel_pump_finalY = 0.5
+    elseif PLANE_ICAO == "B77L" then BeltLoaderFwdPosition = 17.9	SecondStairsFwdPosition = -20		airstart_unit_factor = 22.8 BeltLoaderRearPosition = -12.40 	custom_fuel_pump_finalX = 15  custom_fuel_pump_finalY = 0.5
     elseif PLANE_ICAO == "B773" then BeltLoaderFwdPosition = 17.5	SecondStairsFwdPosition = -26.5		airstart_unit_factor = 24	custom_fuel_pump_finalX = 15  custom_fuel_pump_finalY = 0.5
     elseif PLANE_ICAO == "B779" then BeltLoaderFwdPosition = 17.5	SecondStairsFwdPosition = -28		airstart_unit_factor = 19
     elseif PLANE_ICAO == "MD82" then BeltLoaderFwdPosition = 12.3										airstart_unit_factor = -1  targetDoorX_alternate = 0.001 targetDoorZ_alternate = 0 targetDoorH_alternate = 0.8 custom_fuel_pump_finalX = 21.5
@@ -293,7 +294,7 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif PLANE_ICAO == "B762F" then vertical_door_position = -2.2 deltaDoorX = 7.7
     elseif PLANE_ICAO == "B788" then vertical_door_position = -1.6 deltaDoorX = 8.6
     elseif PLANE_ICAO == "B789" then vertical_door_position = -1.6 deltaDoorX = 8.8
-    elseif PLANE_ICAO == "B772" then vertical_door_position = -2.7 deltaDoorX = 8.85 -- STS/FF 777 v2 : 777-200ER
+    elseif PLANE_ICAO == "B772" or PLANE_ICAO == "B77L" then vertical_door_position = -2.7 deltaDoorX = 8.85 -- STS/FF 777 v2 : 777-200ER
     elseif PLANE_ICAO == "B773" then vertical_door_position = -3.0 deltaDoorX = 8.6
     elseif PLANE_ICAO == "B779" then vertical_door_position = -3.0 deltaDoorX = 8.6
     elseif PLANE_ICAO == "IL96" then vertical_door_position = -0.1 deltaDoorX = 8.3
@@ -355,7 +356,7 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif PLANE_ICAO == "B763" then vertical_door_position2 = -1.9 deltaDoorX2 = 7.7
     elseif PLANE_ICAO == "B762" then vertical_door_position2 = -1.9 deltaDoorX2 = 7.7
     elseif PLANE_ICAO == "B762F" then vertical_door_position2 = -1.9 deltaDoorX2 = 7.7
-    elseif PLANE_ICAO == "B772" then vertical_door_position2 = -2 deltaDoorX2 = 8.8		sges_gs_plane_head_correction2 = -0.2	longitudinal_factor3 = 12.9
+    elseif PLANE_ICAO == "B772" or PLANE_ICAO == "B77L" then vertical_door_position2 = -2 deltaDoorX2 = 8.8		sges_gs_plane_head_correction2 = -0.2	longitudinal_factor3 = 12.9
     elseif PLANE_ICAO == "B773" then vertical_door_position2 = -3.0 deltaDoorX2 = 9.9	sges_gs_plane_head_correction2 = -0.2
     elseif PLANE_ICAO == "B779" then vertical_door_position2 = -3.0 deltaDoorX2 = 9.9	sges_gs_plane_head_correction2 = -0.2
     elseif PLANE_ICAO == "B788" then vertical_door_position2 = -1.1 deltaDoorX2 = 8.65 	sges_gs_plane_head_correction2 = -1	longitudinal_factor3 = 0 height_factor3 = 0 lateral_factor3 = 0
@@ -407,7 +408,7 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif PLANE_ICAO == "B764" and string.find(SGES_Author,"FlightFactor") then dataref_to_open_the_door = "sim/cockpit2/switches/custom_slider_on"   	index_to_open_the_door = 0 target_to_open_the_door = 1 index_to_open_the_second_door = 4  -- FF/STS 767
     elseif PLANE_ICAO == "B763" and string.find(SGES_Author,"FlightFactor") then dataref_to_open_the_door = "sim/cockpit2/switches/custom_slider_on"   	index_to_open_the_door = 0 target_to_open_the_door = 1 index_to_open_the_second_door = 4  -- FF/STS 767
 
-    elseif PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then dataref_to_open_the_door = "1-sim/anim/doorL1"   	index_to_open_the_door = 0 target_to_open_the_door = 1 index_to_open_the_second_door = 5  -- FF/STS 767
+    elseif (PLANE_ICAO == "B772" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then dataref_to_open_the_door = "1-sim/anim/doorL1"   	index_to_open_the_door = 0 target_to_open_the_door = 1 index_to_open_the_second_door = 5  -- FF/STS 767
 
     elseif PLANE_ICAO == "B788" and SGES_Author == "Magknight" then 			dataref_to_open_the_door = "aero787/doors/door_open_ratio" 			 	index_to_open_the_door = 0 target_to_open_the_door = 0.9 index_to_open_the_second_door = 1  -- Magknight
     elseif PLANE_ICAO == "B789" and SGES_Author == "Magknight" then 			dataref_to_open_the_door = "aero787/doors/door_open_ratio"  			index_to_open_the_door = 0 target_to_open_the_door = 0.9 index_to_open_the_second_door = 1  -- Magknight

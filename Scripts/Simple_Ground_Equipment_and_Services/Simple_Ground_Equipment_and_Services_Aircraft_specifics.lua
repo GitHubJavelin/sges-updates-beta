@@ -1161,13 +1161,13 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 			end,
 
 			function()
+				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/set.wav")
 				set("B742/ext_light/landing_inbd_L_sw",0)
 				set("B742/ext_light/landing_inbd_R_sw",0)
 			end,
 
 
 			function()
-				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/set.wav")
 				set("B742/ext_light/runway_turnoff_L_sw",0)
 				set("B742/ext_light/runway_turnoff_R_sw",0)
 			end,

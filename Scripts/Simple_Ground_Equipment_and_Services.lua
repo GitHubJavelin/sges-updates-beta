@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.5"
+version_text_SGES = "78.7"
 --------------------------------------------------------------------------------
 --[[
 
@@ -1270,7 +1270,8 @@ function SGES_script()
 		if test_777v2_a then --and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then
 			print("[Ground Equipment " .. version_text_SGES .. "] Loading STS/FF objects found in the Boeing 777-200ER folder.")
 			if BeltLoaderFwdPosition >= 7 then
-				Prefilled_CateringObject = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cater.obj" if PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/caterigtrucklift",1) end
+				Prefilled_CateringObject = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cater.obj"
+				if (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/caterigtrucklift",1) end
 				Prefilled_CateringHighPartObject = 	Prefilled_LightObject
 				Prefilled_CateringHighPart_GG_Object = Prefilled_LightObject
 				Prefilled_CateringHighPart_NR_Object = Prefilled_LightObject
@@ -1284,15 +1285,35 @@ function SGES_script()
 			Prefilled_PeopleObject2 = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/workers/worker6.obj"
 			Prefilled_PeopleObject3 = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/workers/worker3.obj"
 			Prefilled_PeopleObject4 = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/workers/worker2.obj"
-			Prefilled_CleaningTruckObject = 	SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/lsu.obj"	if PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/lavatoryservicelift",0.9) end Original_CleaningTruckObject = Prefilled_CleaningTruckObject
-			if PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then
+			Prefilled_CleaningTruckObject = 	SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/lsu.obj"
+			if (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/lavatoryservicelift",0.9) end Original_CleaningTruckObject = Prefilled_CleaningTruckObject
+			if (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
 				Prefilled_PushBack1Object = 		Prefilled_LightObject
 				Prefilled_PushBackObject = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/Tug2.obj"
 			end
 		end
 	end
-	----------------------------------------------------------------------------
 
+	function Reuse_special_B777v2_Cargo()
+		if FFSTS_777v2_Directory ~= nil and file_exists(SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cLoader.obj") then
+			-- only when the B742 in use is a crago variant !
+			-- only when the freighter variant is installed of the 777 v2 by FF/STS
+			-- change the SGES main deck cargo loader for a FF/STS cargo loader which can reach the 747F deck !
+			Prefilled_CargoDeck_ULDLoaderObject = SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cLoader.obj"
+			Prefilled_ForkliftObject = Prefilled_CargoDeck_ULDLoaderObject
+			-- You can create your own DataRefs to share them with other plugins
+			-- A string must be created as a "Data" type
+			-- When the FF/STS 77 is not loaded, we need to create the dataref !
+			--~ mdlmainliftcargo = create_dataref_table("1-sim/anim/service/mdlmainliftcargo", "FloatArray")
+			--~ mdlmainliftcargo[0] = 0.9
+			define_shared_DataRef("1-sim/anim/service/mdlmainliftcargo", "Float")
+			set("1-sim/anim/service/mdlmainliftcargo",0.92)
+			define_shared_DataRef("1-sim/anim/service/mdlfrontliftcargo", "Float")
+			set("1-sim/anim/service/mdlfrontliftcargo",0.90)
+			CargoDeck_ULDLoaderObject = "highly_high_variant"
+		end
+	end
+	----------------------------------------------------------------------------
 
 	-- to allow X-Plane to toggle between bush mode or not, we save the current selection of objects
 
@@ -2066,7 +2087,14 @@ function SGES_script()
 			end
 		end
 		-- When the Boeing 777 from Flight Factor and STS, load their own objects instead.
-		if FFSTS_777v2_Directory ~= nil and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then 	load_special_B777v2_objects(FFSTS_777v2_Directory)	end
+		if FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
+		 	load_special_B777v2_objects(FFSTS_777v2_Directory)
+		 end
+		-- When the Felis 742 Freighter, then use the FF/STS 777F Cargo loader also :
+		if AIRCRAFT_FILENAME == "B742_Cargo_Felis_XP12.acf" then
+			Reuse_special_B777v2_Cargo() -- this function safely does nothing if the 777 folder is not found, so it's secure to use like that
+		end
+
 		if XTrident_NaveCavour_Directory ~= nil then XTrident_NaveCavour_Object =  SCRIPT_DIRECTORY .. XTrident_NaveCavour_Directory .. "/extra/Nave Cavour/Nimitz.obj" end
 
 
@@ -3383,8 +3411,20 @@ function SGES_script()
 	function service_object_physics_ULDloader()
 	  if ULDLoader_chg == true then
 		  if show_ULDLoader then
-			  load_ULDLoader()
+			load_ULDLoader()
+			if PLANE_ICAO == "B77L" and string.find(SGES_Author,"FlightFactor") and sges_EngineState[0] < 10 then
+				if XPLMFindDataRef("1-sim/anim/doorCargo") ~= nil  then set("1-sim/anim/doorCargo",0.85) end
+				if XPLMFindDataRef("1-sim/anim/cargoDoorBar") ~= nil  then set("1-sim/anim/cargoDoorBar",1) end -- 1 removes it ! 0 displays the barrier !
+				if XPLMFindDataRef("1-sim/anim/doorFwd") ~= nil  then set("1-sim/anim/doorFwd",1) end
+				if XPLMFindDataRef("1-sim/anim/doorAft") ~= nil  then set("1-sim/anim/doorAft",1) end
+			end
 		  else
+			if PLANE_ICAO == "B77L" and string.find(SGES_Author,"FlightFactor") then
+				if XPLMFindDataRef("1-sim/anim/doorCargo") ~= nil  then set("1-sim/anim/doorCargo",0) end
+				if XPLMFindDataRef("1-sim/anim/cargoDoorBar") ~= nil  then set("1-sim/anim/cargoDoorBar",0) end -- 1 removes it ! 0 displays the barrier !
+				if XPLMFindDataRef("1-sim/anim/doorFwd") ~= nil  then set("1-sim/anim/doorFwd",0) end
+				if XPLMFindDataRef("1-sim/anim/doorAft") ~= nil  then set("1-sim/anim/doorAft",0) end
+			end
 			show_CargoULD = false
 			CargoULD_chg = true
 			-- apply this directly :
@@ -3411,6 +3451,7 @@ function SGES_script()
 			elseif PLANE_ICAO == "B744" then ULDLoaderFwdPositionFactor = -0.7
 			elseif PLANE_ICAO == "B763" then ULDLoaderFwdPositionFactor = 0.9
 			elseif PLANE_ICAO == "B772" then ULDLoaderFwdPositionFactor = 1
+			elseif PLANE_ICAO == "B77L" then ULDLoaderFwdPositionFactor = -0.66
 			elseif PLANE_ICAO == "B752" then ULDLoaderFwdPositionFactor = 1.15
 			elseif PLANE_ICAO == "SF34" then ULDLoaderFwdPositionFactor = -1.1
 			elseif PLANE_ICAO == "B462" then ULDLoaderFwdPositionFactor = 1.03
@@ -3422,6 +3463,7 @@ function SGES_script()
 			if PLANE_ICAO == "B763" then x = targetDoorX+8 end
 			if PLANE_ICAO == "A306" then x = targetDoorX+8 end
 			if PLANE_ICAO == "B722" then x = targetDoorX+9.5 end
+			if PLANE_ICAO == "B77L" then x = targetDoorX+8.75 end
 			local z = ULDLoaderFwdPositionFactor*BeltLoaderFwdPosition
 			local h = 90
 			if UseXplaneDefaultObject == true then
@@ -3443,6 +3485,10 @@ function SGES_script()
 					x = x + 3
 				end
 
+				if string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") then --77F FF/STS
+					x = x + 1.7
+				end
+
 			end
 
 			if (string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) and IsPassengerPlane == 0 then
@@ -3458,6 +3504,10 @@ function SGES_script()
 			z = z + longitudinal_factor3_ULDLoader
 			uld_x = x
 			uld_x_stored = x
+			if CargoDeck_ULDLoaderObject == "highly_high_variant" and string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") then --77F FF/STS
+				uld_x = x + 4.5
+				uld_x_stored = uld_x_stored + 4.5
+			end
 			uld_z = z
 			ULDLoader_chg = draw_static_object(x,z,h,ULDLoader_instance[0],"ULD Loader")
 		  end
@@ -4622,6 +4672,7 @@ function SGES_script()
 
 		  if show_Bus and string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") and uld_x ~= nil and uld_x > -2  and Baggage_instance[5] ~= nil  then
 			if uld_z == nil then uld_z = ULDLoaderFwdPositionFactor*BeltLoaderFwdPosition end
+
 				CargoULD_chg = draw_static_object(uld_x,uld_z,left_ULD_heading + baggage_heading_swap,Baggage_instance[5],"CargoULD")
 
 				if CargoULD_chg == false and show_Bus then
@@ -4633,18 +4684,21 @@ function SGES_script()
 					if ((string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) or CargoDeck_ULDLoaderObject == "low_variant") then
 						uld_x = uld_x - 0.0050
 					else
-						uld_x = uld_x - 0.0025
+						uld_x = uld_x - 0.0030
 					end
+					if debugging_passengers then uld_x = uld_x - 0.5 end
 
 					-- when using a low ULD Loader, we cannot start the cargo pallet far away from the fuselage, because it would be on the empty.
 					if ((string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) or
-					CargoDeck_ULDLoaderObject == "low_variant") and uld_x > 4 then
-						uld_x = 4
+					CargoDeck_ULDLoaderObject == "low_variant") and uld_x > 6 then
+						uld_x = 5.9 -- raccourcir la branche juste sur la partie haute
+						if uld_x_stored > 6 then uld_x_stored = 6 end
 					end
-					if string.find(PLANE_ICAO,"B73") and uld_x < 4 then
+					if string.find(PLANE_ICAO,"B73") and uld_x < 2 then
 						uld_x 	= uld_x_stored - 0.8
 						if baggage_heading_swap == 0 then baggage_heading_swap = 180
 						elseif baggage_heading_swap== 180 then baggage_heading_swap = 0 end
+						--~ print("B73")
 					elseif BeltLoaderFwdPosition >= ULDthresholdx and uld_x < 4 then
 						uld_x 	= uld_x_stored - 0.8
 						if baggage_heading_swap == 0 then baggage_heading_swap = 180
@@ -4662,6 +4716,7 @@ function SGES_script()
 					end -- once the baggage as reached the fuselage, restart
 				else -- deboarding situation
 					uld_x = uld_x + 0.0025 -- animate the baggage --
+					if debugging_passengers then uld_x = uld_x + 0.5 end
 					if (PLANE_ICAO == "B722" or string.find(PLANE_ICAO,"B73")) and uld_x >= uld_x_stored - 0.75 then
 						uld_x = 4 --
 						if baggage_heading_swap == 0 then baggage_heading_swap = 180
@@ -4672,7 +4727,6 @@ function SGES_script()
 						if baggage_heading_swap == 0 then baggage_heading_swap = 180
 						elseif baggage_heading_swap== 180 then baggage_heading_swap = 0 end
 						left_ULD_heading = math.random(-3,3)
-
 					-- when using a low ULD Loader, we cannot move the cargo pallet far away from the fuselage
 					elseif ((string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) or CargoDeck_ULDLoaderObject == "low_variant") and uld_x > 4.5 then
 						uld_x = 0.5
@@ -4689,7 +4743,6 @@ function SGES_script()
 		  end
 		end
 	end
-
 
 	function service_object_physics_AllDeicing()
 		if Deice_chg == true then
@@ -4881,9 +4934,15 @@ function SGES_script()
 			-- POSITIVE LEFT < x > NEGATIVE RIGHT
 			-- POSITIVE FWD < z > NEGATIVE AFT
 
-			if Prefilled_ForkliftObject == 	Prefilled_ULDLoaderObject or Prefilled_ForkliftObject == Prefilled_CargoDeck_ULDLoaderObject then
+			if Prefilled_ForkliftObject == 	Prefilled_ULDLoaderObject or
+			Prefilled_ForkliftObject == Prefilled_CargoDeck_ULDLoaderObject then
 				if PLANE_ICAO == "B742" then
-					Forklift_chg = draw_static_object(0,1.63 * gear1Z,181,Forklift_instance[0],"Forklift") -- Beluga
+					if string.find(Prefilled_ForkliftObject,"cLoader.obj") then -- when using the FF/STS 777F nose loader, reduce the distance
+						Forklift_chg = draw_static_object(0,1.38 * gear1Z,181,Forklift_instance[0],"Forklift")
+					else -- when using SGES nose loader :
+						Forklift_chg = draw_static_object(0,1.56 * gear1Z,181,Forklift_instance[0],"Forklift")
+					end
+
 				elseif PLANE_ICAO == "A3ST" then
 					Forklift_chg = draw_static_object(0,2.1 * gear1Z,179,Forklift_instance[0],"Forklift") -- Beluga
 				else
@@ -6004,18 +6063,30 @@ function SGES_script()
 
 	function load_ULDLoader()
 		if ULDLoader_instance[0] == nil and ULDLoader_show_only_once then
-		   if PLANE_ICAO == "A346" then Prefilled_CargoDeck_ULDLoaderObject = XPlane_Ramp_Equipment_directory   .. "Belt_Loader.obj" end
-			if (string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) or string.match(PLANE_ICAO,"B73") or string.match(PLANE_ICAO,"B72") or string.match(PLANE_ICAO,"MD8") or string.match(PLANE_ICAO,"MD9") or string.match(PLANE_ICAO,"E19") or string.match(PLANE_ICAO,"E17") then
-				-- The ULD Loader from Laminar Research is too high for the BAe-146 QT Main cargo door.
-				if IsXPlane1211 then
-					Prefilled_CargoDeck_ULDLoaderObject = XPlane_Ramp_Equipment_directory .. "cargo_loader_ch70w.obj"
+			if CargoDeck_ULDLoaderObject ~= "highly_high_variant" then --- 777F height !
+			   if PLANE_ICAO == "A346" then Prefilled_CargoDeck_ULDLoaderObject = XPlane_Ramp_Equipment_directory   .. "Belt_Loader.obj" end
+				if (string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) or string.match(PLANE_ICAO,"B73") or string.match(PLANE_ICAO,"B72") or string.match(PLANE_ICAO,"MD8") or string.match(PLANE_ICAO,"MD9") or string.match(PLANE_ICAO,"E19") or string.match(PLANE_ICAO,"E17") then
+					-- The ULD Loader from Laminar Research is too high for the BAe-146 QT Main cargo door.
+					if IsXPlane1211 then
+						Prefilled_CargoDeck_ULDLoaderObject = XPlane_Ramp_Equipment_directory .. "cargo_loader_ch70w.obj"
+					else
+						Prefilled_CargoDeck_ULDLoaderObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/MisterX_Lib/"   .. "ULDLoader/Generic.obj"
+					end
+					print("The ULD Loader from Laminar Research is too high for the BAe-146 Quiet trader or the " .. PLANE_ICAO .. ". Let's change it.")
+					CargoDeck_ULDLoaderObject = "low_variant" -- used to trigger othr animations
+				elseif PLANE_ICAO == "B77L" and AIRCRAFT_FILENAME == "777-F_xp12.acf" and string.find(PLANE_AUTHOR,"StepToSky") then
+					CargoDeck_ULDLoaderObject = "highly_high_variant"
 				else
-					Prefilled_CargoDeck_ULDLoaderObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/MisterX_Lib/"   .. "ULDLoader/Generic.obj"
+					CargoDeck_ULDLoaderObject = "high_variant" --normal
 				end
-				print("The ULD Loader from Laminar Research is too high for the BAe-146 Quiet trader or the " .. PLANE_ICAO .. ". Let's change it.")
-				CargoDeck_ULDLoaderObject = "low_variant" -- used to trigger othr animations
-			else
-				CargoDeck_ULDLoaderObject = "high_variant" --normal
+			elseif CargoDeck_ULDLoaderObject == "highly_high_variant" and PLANE_ICAO ~= "B77L" and PLANE_ICAO ~= "B772" and PLANE_ICAO ~= "B773" and XPLMFindDataRef("1-sim/anim/service/mdlmainliftcargo") ~= nil and XPLMFindDataRef("1-sim/anim/service/mdlfrontliftcargo") ~= nil then
+				if PLANE_ICAO == "B742" then
+					set("1-sim/anim/service/mdlmainliftcargo",0.92) -- Felis cargo deck 742F
+					set("1-sim/anim/service/mdlfrontliftcargo",0.90)
+				else
+					set("1-sim/anim/service/mdlmainliftcargo",0.90) -- Room for future expansions
+					set("1-sim/anim/service/mdlfrontliftcargo",0.88)
+				end
 			end
 		   XPLM.XPLMLoadObjectAsync(Prefilled_CargoDeck_ULDLoaderObject,
 					function(inObject, inRefcon)
@@ -6149,7 +6220,7 @@ function SGES_script()
 					end
 
 				elseif show_StairsXPJ2 then
-					if index_to_open_the_second_door ~= nil and PaxDoorRearLeft == nil and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then
+					if index_to_open_the_second_door ~= nil and PaxDoorRearLeft == nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
 						dataref("PaxDoorRearLeft","1-sim/anim/doorL5","writable",index_to_open_the_second_door)
 					elseif index_to_open_the_second_door ~= nil and  PaxDoorRearLeft == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
 						dataref("PaxDoorRearLeft",dataref_to_open_the_door,"writable",index_to_open_the_second_door)
@@ -7222,7 +7293,7 @@ function SGES_script()
 				objpos_value[0].y = objpos_value[0].y - 0.3
 			end
 
-			if (FFSTS_777v2_Directory ~= nil and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
+			if (FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
 
 				groundPitch[flag] = 0
 				objpos_value[0].y = ground
@@ -7458,6 +7529,10 @@ function SGES_script()
 				objpos_target_value_y = ground + 3.68
 				if ((string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) or CargoDeck_ULDLoaderObject == "low_variant") then
 					objpos_target_value_y = ground + 1.82
+				elseif string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") and PLANE_ICAO == "B77L" then
+					objpos_target_value_y = ground + 5.54
+				elseif string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") and PLANE_ICAO == "B742" then
+					objpos_target_value_y = ground + (5.60 * 0.92)
 				end
 				objpos_value[0].y = objpos_target_value_y
 			end
@@ -8632,7 +8707,7 @@ function SGES_script()
 						groundPitch[object_name] = 8
 					end
 
-					if (FFSTS_777v2_Directory ~= nil and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
+					if (FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
 						groundPitch[object_name] = 0
 						if ground ~= nil then groundAlt[object_name] = ground end
 					end
@@ -9792,9 +9867,9 @@ function SGES_script()
 
 				--~ So, some notes for myself as I follow the debugging process : the passengers has got the status 4 (passenger is walking to the bus) correctly. At the end of 4, the passenger normally detects the final destination (has reached the bus). As a consequence, the switch to status -1 (passenger is at the aircraft door ready to disembark) is correct. However, regeneration back from status 4 to status -1 happens on wrong coordinates if the passenger is emanating from the front door, if dual deboarding is activated, if early in the FlyWithLua session run, if dual board happened first. The height goes back correctly to door height, but not the latitude and longitude.
 				if SGES_stairs_type ~= "Boarding_without_stairs" then
-					if BoardStairsXPJ2 then
+					if BoardStairsXPJ2 and StairHigherPartX_stairIV ~= nil then
 						Pax_lat_t[Paxname] =  StairHigherPartX_stairIV - depart_lat_correcting_term-- was missing until 4th of november, 2023 - reported by an user on the forum
-					else
+					elseif StairHigherPartX_stairIII ~= nil then
 						Pax_lat_t[Paxname] =  StairHigherPartX_stairIII - depart_lat_correcting_term -- was missing until 4th of november, 2023 - reported by an user on the forum
 					end
 				end
@@ -11625,6 +11700,7 @@ function SGES_script()
 			-- reset for next cycle
 			StopSignObject = 	Prefilled_StopSignObject
 			StopSign_show_only_once = false
+
 		end
 	end
 
@@ -11658,6 +11734,12 @@ function SGES_script()
 				if show_FM then x = 2 h = -7 end
 				if TargetMarker_instance[1] ~= nil  then StopSign_chg = draw_marshaller_object(x,z,h,TargetMarker_instance[1],"StopSign") end
 				if TargetMarker_instance[2] ~= nil  then StopSign_chg = draw_marshaller_object(x,z,h,TargetMarker_instance[2],"Arms") end -- optional
+
+				if BeltLoaderFwdPosition >= 14 and show_StopSign and not show_Stairs then
+				-- Force making the marshaller stairs appear
+					show_Stairs = true
+					Stairs_chg = true
+				end
 			end
 		end
 
@@ -11689,7 +11771,9 @@ function SGES_script()
 				distance_factor = 180
 			end
 
+
 			_,distance_to_sges_stand =	 Marshaller_stand_distance_calc(NosePositionX, NosePositionZ, TargetMarkerX_stored, TargetMarkerZ_stored, sges_gs_plane_head[0], 0)
+
 
 			if distance_to_sges_stand < distance_factor and approaching_TargetMarker == 0 then
 				approaching_TargetMarker = 1
@@ -11698,12 +11782,12 @@ function SGES_script()
 				--~ print("approaching_TargetMarker = 1,  distance_to_sges_stand = " .. distance_to_sges_stand .. "------------------------------------------------------")
 
 				if not show_VDGS then
-					show_StopSign = true
+					show_StopSign = true  -- show_StopSign is actually a human figure
 					StopSign_chg = true
-				end
-				if BeltLoaderFwdPosition >= 14 and not show_VDGS then -- only upon a change of parking place make the marshaller stairs appear
-					show_Stairs = true
-					Stairs_chg = true
+					if BeltLoaderFwdPosition >= 14 then -- only upon a change of parking place make the marshaller stairs appear
+						show_Stairs = true
+						Stairs_chg = true
+					end
 				end
 				guidance_active = true
 				automatic_marshaller_already_requested_once = true -- forbids the automatic search which spoils the experience at this point
@@ -11881,7 +11965,7 @@ function SGES_script()
 	function show_windoz() -- new version on 27th of June, 2022, floatting variant.
 		-- SGES_XPlane_user_interface_scale == 1 or 1.5 or 2
 		--if groundservices_float_wnd == nil and sges_gs_ias_spd[0] < 260 and sges_gs_plane_y_agl[0] < 3333 then -- IAS24
-		if groundservices_float_wnd == nil and sges_gs_ias_spd[0] < 295 then -- IAS24
+		if groundservices_float_wnd == nil and sges_gs_ias_spd[0] < 250 then -- IAS24
 			time_opening_groundservices_float_wnd = SGES_total_flight_time_sec
 			larg = 267																											----- GUI SIZE HERE
 			local haut = 530
@@ -12019,7 +12103,7 @@ function SGES_script()
 			set_array("sim/operation/override/override_boats", 1, 0) -- frigate
 			float_wnd_destroy(groundservices_float_wnd)
 			groundservices_float_wnd = nil
-			if config_helper ~= nil then config_helper = false end
+			if config_helper ~= nil then config_helper = false 	debugging_passengers = false end
 			sges_ship_cancelled_cause_land = false -- also reset that conveniently
 		end
 	end
@@ -12390,7 +12474,12 @@ function SGES_script()
 				automatic_marshaller_capture_position_threshold = 0.0021 -- this value is very important, because we use 0.0021 elsewehre to allow more than 6 parking stands for the user --IAS24
 				stand_found_flag = get_airport_intell_Core("standard")
 				stand_searched_flag = true
-				if show_DockingSystem then show_VDGS = true end
+				if show_DockingSystem then
+					show_VDGS = true
+				--~ elseif BeltLoaderFwdPosition >= 14 then -- only upon a change of parking place make the marshaller stairs appear
+					--~ show_Stairs = true
+					--~ Stairs_chg = true
+				end
 				VDGS_manual = false
 
 				if TargetMarker_instance[0] ~= nil then TargetMarker_chg,TargetMarker_instance[0],rampservicerefTargetMarker = common_unload("TargetMarker",TargetMarker_instance[0],rampservicerefTargetMarker) end --IAS24
@@ -12420,7 +12509,12 @@ function SGES_script()
 				automatic_marshaller_capture_position_threshold = 0.0007 -- IAS24 value changed
 				stand_found_flag = get_airport_intell_Core("standard")
 				stand_searched_flag = true
-				if show_DockingSystem then show_VDGS = true end
+				if show_DockingSystem then
+					show_VDGS = true
+				--~ elseif BeltLoaderFwdPosition >= 14 then -- only upon a change of parking place make the marshaller stairs appear
+					--~ show_Stairs = true
+					--~ Stairs_chg = true
+				end
 				VDGS_manual = false
 				if TargetMarker_instance[0] ~= nil then TargetMarker_chg,TargetMarker_instance[0],rampservicerefTargetMarker = common_unload("TargetMarker",TargetMarker_instance[0],rampservicerefTargetMarker) end --IAS24
 				Prefilled_TargetMarkerObject =       SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/Arrow_tubular_noticeable.obj" --IAS24
@@ -12454,7 +12548,12 @@ function SGES_script()
 				automatic_marshaller_capture_position_threshold = 0.0003 --IAS24
 				stand_found_flag = get_airport_intell_Core("standard")
 				stand_searched_flag = true
-				if show_DockingSystem then show_VDGS = true end
+				if show_DockingSystem then
+					show_VDGS = true
+				--~ elseif BeltLoaderFwdPosition >= 14 then -- only upon a change of parking place make the marshaller stairs appear
+					--~ show_Stairs = true
+					--~ Stairs_chg = true
+				end
 				VDGS_manual = false
 				if TargetMarker_instance[0] ~= nil then TargetMarker_chg,TargetMarker_instance[0],rampservicerefTargetMarker = common_unload("TargetMarker",TargetMarker_instance[0],rampservicerefTargetMarker) end --IAS24
 				Prefilled_TargetMarkerObject =       SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/Arrow_tubular.obj" --IAS24
@@ -12492,7 +12591,9 @@ function SGES_script()
 					stand_found_flag = get_airport_intell_Core("standard")
 					stand_searched_flag = true
 					if stand_found_flag > 1 then
-						if show_DockingSystem then show_VDGS = true end
+						if show_DockingSystem then
+							show_VDGS = true
+						end
 						show_StopSign = false --------------------------------------
 						StopSign_chg = true
 						-- includes some work :
@@ -12565,6 +12666,9 @@ function SGES_script()
 						TargetMarker_chg = true
 						show_StopSign = false
 						StopSign_chg = true
+						if BeltLoaderFwdPosition >= 14 then -- only upon a change of parking place make the marshaller stairs appear
+							Stairs_chg = true
+						end
 						automatic_marshaller_requested = true
 						-- save the time to reduce the pointing arrow from noticeable to standard after some elapsed time -- IAS24
 						SGES_park_designation_flight_time_sec = SGES_total_flight_time_sec
@@ -15392,10 +15496,10 @@ function SGES_script()
 				show_StairsXPJ = l_newval
 				StairsXPJ_chg = true
 
-				if IsPassengerPlane == 0  and string.find(AIRCRAFT_FILENAME,"Felis")  then
+				if IsPassengerPlane == 1  and string.find(AIRCRAFT_FILENAME,"Felis")  then
 					show_StairsXPJ3 = l_newval
 					StairsXPJ3_chg = true
-				else
+				elseif IsPassengerPlane == 1 then
 					show_StairsXPJ2 = l_newval
 					StairsXPJ2_chg = true
 				end
@@ -16771,6 +16875,7 @@ function SGES_script()
 					show_Chocks = false
 					Chocks_chg = true
 					config_helper = false -- remove any unwanted displaced click to the developper button just below
+					debugging_passengers = false
 					if IsToLiSs then
 						set("AirbusFBW/Chocks",0)
 					end
@@ -17200,6 +17305,7 @@ function SGES_script()
 						config_helper = true
 					else
 						config_helper = false
+						debugging_passengers = false
 					end
 				end
 				imgui.PopStyleColor()
@@ -17279,6 +17385,7 @@ function SGES_script()
 						config_helper = true
 					else
 						config_helper = false
+						debugging_passengers = false
 					end
 				end
 				imgui.PopStyleColor()
@@ -17323,6 +17430,7 @@ function SGES_script()
 						config_helper = true
 					else
 						config_helper = false
+						debugging_passengers = false
 					end
 				end
 				imgui.PopStyleColor()
@@ -17471,6 +17579,7 @@ function SGES_script()
 							config_helper = true
 						else
 							config_helper = false
+							debugging_passengers = false
 						end
 					end
 					imgui.PopStyleColor()
@@ -17542,6 +17651,7 @@ function SGES_script()
 				imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
 				if  imgui.Button("Close this page",125,23)  then
 					config_helper = false
+					debugging_passengers = false
 				end
 				imgui.PopStyleColor()
 				imgui.TextUnformatted("")
@@ -18354,6 +18464,12 @@ function SGES_script()
 				elseif  (LATITUDE > 24 and LATITUDE < 44) and (LONGITUDE > -84 and LONGITUDE < -69) then -- East Coast USA
 				imgui.TextUnformatted("In the Eastern time zones today.")
 				end
+
+
+				l_changed, l_newval = imgui.Checkbox(" debugging_passengers", debugging_passengers)
+				if l_changed then
+					debugging_passengers = l_newval
+				end
 				imgui.PopStyleColor()
 
 			end
@@ -18520,7 +18636,7 @@ function SGES_script()
 				if math.abs(BeltLoaderFwdPosition) > 5 then
 					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
 					l_changed, l_newval = imgui.Checkbox(" Use a pushback tug with bar*\n Currently : " .. current_PB_mention, Prefilled_PushBackObject == 		PushBackBar)
-					if  l_changed and math.abs(BeltLoaderFwdPosition) > 5 and PLANE_ICAO ~= "B772" then -- the STS FF B772 will always use a TBL tug  then
+					if  l_changed and math.abs(BeltLoaderFwdPosition) > 5 and PLANE_ICAO ~= "B772" and PLANE_ICAO ~= "B773" and PLANE_ICAO ~= "B77L" then -- the STS FF B772 will always use a TBL tug  then
 						if Prefilled_PushBack1Object == Prefilled_LightObject and Prefilled_PushBackObject_civ ~= nil and Prefilled_PushBack1Object_civ ~= nil then
 							--~ Prefilled_PushBackObject = 	Prefilled_PushBackObject_civ
 							Prefilled_PushBackObject = 		PushBackBar
@@ -19270,7 +19386,6 @@ function SGES_script()
 				service_object_physics_GPU() -- GPU Ground power unit
 				service_object_physics_Beltloader()
 				service_object_physics_RearBeltloader()
-				service_object_physics_XPlane_stairs() -- static stairs
 				service_object_physics_Catering()	--
 				service_object_physics_PRM()	-- People with reduced mobility cart
 				service_object_physics_ULDloader()
@@ -19291,6 +19406,10 @@ function SGES_script()
 				--automatic_parking_search() -- Marshaller : one cycle of autoamtic search per Follow me -- removed for performance on 4th of Nov 2023
 				if show_auto_stairs then react_to_door_dataref() end -- Show the stairs if the doors open, but in auto stairs mode only
 			end
+			if sges_gs_gnd_spd[0] < 30 then
+				service_object_physics_XPlane_stairs() -- static stairs, also used at higher speed for the marshaller
+			end
+
 			service_object_physics_Cleaning() -- cleaning and multipurpose truck, also used in emergency situation outside the airport scope
 			if show_Automatic_sequence_start	then Automatic_sequence_start() end
 		end

@@ -489,16 +489,9 @@ function load_PB()
 				math.randomseed(os.time())
 				local randompouchbaq = math.random()
 				if randompouchbaq > 0.50 or (sges_big_airport ~= nil and sges_big_airport) or BeltLoaderFwdPosition >= 13 then
-					if UseXplane1214DefaultObject and file_exists(Native_PushBack_Tug) then
+					if UseXplane1214DefaultObject and file_exists(Native_PushBack_Tug) and Prefilled_PushBack1Object ~= Prefilled_LightObject then
 						logMsg("[Ground Equipment " .. version_text_SGES .. "] Object exists: default scenery/airport scenery/Dynamic_Vehicles/Tug_GT110.obj")
 						Prefilled_PushBack1Object = Native_PushBack_Tug -- adding this in 2025 broke the special code for 777v2.
-						-- I will simply patch that by adding again the 777v2 test :
-						if FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
-							logMsg("[Ground Equipment " .. version_text_SGES .. "] but if it is a FF/STS 777v2 we will use its own tug instead... (patch 2025-12-12).")
-							load_special_B777v2_objects(FFSTS_777v2_Directory)
-						else
-							logMsg("[Ground Equipment " .. version_text_SGES .. "] After 2025-10-09 we decided to sample as well the native X-Plane pushback tug.")
-						end
 
 						if (LATITUDE > 48 and LATITUDE < 50) and (LONGITUDE > -5 and LONGITUDE < 8) then
 							Prefilled_PushBackObject = 	XPlane_Ramp_Equipment_directory   .. "towbar_15ft_1.obj" -- White -- French towbar
@@ -513,6 +506,13 @@ function load_PB()
 						end
 						-- else default towbar selection started at session starts applies.
 						-- You can safely load it
+						-- I will simply patch that by adding again the 777v2 test :
+						if FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
+							logMsg("[Ground Equipment " .. version_text_SGES .. "] but if it is a FF/STS 777v2 we will use its own tug instead... (patch 2025-12-12).")
+							load_special_B777v2_objects(FFSTS_777v2_Directory)
+						else
+							logMsg("[Ground Equipment " .. version_text_SGES .. "] After 2025-10-09 we decided to sample as well the native X-Plane pushback tug.")
+						end
 					elseif file_exists(Native_PushBack_Tug) and Prefilled_PushBack1Object == Native_PushBack_Tug then
 						logMsg("[Ground Equipment " .. version_text_SGES .. "] Object exists: default scenery/airport scenery/Dynamic_Vehicles/Tug_GT110.obj.")
 						logMsg("[Ground Equipment " .. version_text_SGES .. "] But SGES options state to not use it.")

@@ -205,7 +205,7 @@ if test_777v2_c == nil then test_777v2_c = false end
 --------- STS/FF 777v2 YOKE AND PITCH PATCH --------------------------------
 --------- STS/FF 777v2 YOKE AND PITCH PATCH --------------------------------
 print("[Ground Equipment " .. version_text_SGES .. "] The sub-script Pushback.lua will now load the required datarefs.")
-if XPLMFindDataRef("1-sim/ckpt/rightYokeRoll/anim") ~= nil and  XPLMFindDataRef("1-sim/ckpt/rightYokePitch/anim") ~= nil  and PLANE_ICAO == "B772" then
+if XPLMFindDataRef("1-sim/ckpt/rightYokeRoll/anim") ~= nil and  XPLMFindDataRef("1-sim/ckpt/rightYokePitch/anim") ~= nil  and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") then
 	-- Flight factor does not activate the usual dataref, I'm looking for the private dataref for animation as a workaround :
 	dataref("SGES_777_pushTurn_ratio","1-sim/ckpt/rightYokeRoll/anim")
 	dataref("SGES_777_yoke_pitch_ratio","1-sim/ckpt/rightYokePitch/anim")
@@ -312,7 +312,7 @@ function service_object_physics_Push_back()
   if PB_chg == true then
 	  if show_PB then
 		load_PB()
-		if (test_777v2_a or test_777v2_b or test_777v2_c) and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then
+		if (test_777v2_a or test_777v2_b or test_777v2_c) and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
 			set("1-sim/service/lights/emerlights",1)
 			set("1-sim/service/lights/backheadlight",1)
 			set("1-sim/service/lights/frontheadlight",0)
@@ -490,9 +490,16 @@ function load_PB()
 				local randompouchbaq = math.random()
 				if randompouchbaq > 0.50 or (sges_big_airport ~= nil and sges_big_airport) or BeltLoaderFwdPosition >= 13 then
 					if UseXplane1214DefaultObject and file_exists(Native_PushBack_Tug) then
-						logMsg("[Ground Equipment " .. version_text_SGES .. "] Object exists: default scenery/airport scenery/Dynamic_Vehicles/Tug_GT110.obj.")
-						logMsg("[Ground Equipment " .. version_text_SGES .. "] After 2025-10-09 we decided to sample as well the native X-Plane pushback tug.")
-						Prefilled_PushBack1Object = Native_PushBack_Tug
+						logMsg("[Ground Equipment " .. version_text_SGES .. "] Object exists: default scenery/airport scenery/Dynamic_Vehicles/Tug_GT110.obj")
+						Prefilled_PushBack1Object = Native_PushBack_Tug -- adding this in 2025 broke the special code for 777v2.
+						-- I will simply patch that by adding again the 777v2 test :
+						if FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
+							logMsg("[Ground Equipment " .. version_text_SGES .. "] but if it is a FF/STS 777v2 we will use its own tug instead... (patch 2025-12-12).")
+							load_special_B777v2_objects(FFSTS_777v2_Directory)
+						else
+							logMsg("[Ground Equipment " .. version_text_SGES .. "] After 2025-10-09 we decided to sample as well the native X-Plane pushback tug.")
+						end
+
 						if (LATITUDE > 48 and LATITUDE < 50) and (LONGITUDE > -5 and LONGITUDE < 8) then
 							Prefilled_PushBackObject = 	XPlane_Ramp_Equipment_directory   .. "towbar_15ft_1.obj" -- White -- French towbar
 						elseif (LATITUDE > 29 and LATITUDE < 43) and (LONGITUDE > 18 and LONGITUDE < 49) then
@@ -596,7 +603,7 @@ function draw_PB() -- the bar
 		if PLANE_ICAO == "E190" and SGES_Author == "Marko Mamula" then z_corr = 2.8	end
 		if PLANE_ICAO == "E195" and SGES_Author == "Marko Mamula" then z_corr = 3.8	end
 
-		if ((test_777v2_a or test_777v2_b or test_777v2_c) and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == 	SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj" )then
+		if ((test_777v2_a or test_777v2_b or test_777v2_c) and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == 	SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj" )then
 			-- in this case, the bar is not a bar, it's the integrated lifting tug, not an assembly of tractor and bar.
 			z_corr = 2 - math.abs(sges_nosewheel[0] / 50)
 			-- anticipate the rotation of the tug by moving it lateraly :
@@ -657,12 +664,12 @@ function draw_PB() -- the bar
 		else
 			bar_hdg = sges_gs_plane_head[0] - 1.5  * sges_nosewheel[0] / 1.5
 		end
-		if ((test_777v2_a or test_777v2_b or test_777v2_c) and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
+		if ((test_777v2_a or test_777v2_b or test_777v2_c) and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
 			-- in this case, the bar is not a bar, it's the integrated lifting tug, not an assembly of tractor and bar.
 			-- the orientation follow a different rule than when the object is a bar
 			bar_hdg = sges_gs_plane_head[0] - 1.7 * sges_nosewheel[0]
 		end
-		if (test_777v2_a or test_777v2_b or test_777v2_c) and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then
+		if (test_777v2_a or test_777v2_b or test_777v2_c) and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
 			set("1-sim/anim/frontGearAngle",sges_nosewheel[0]*1.75) -- animate the 777-200 ER gear
 			set("1-sim/anim/frontGearCopress",0.15)
 			set("sim/joystick/yoke_heading_ratio",sges_nosewheel[0]*1.75)
@@ -1311,7 +1318,7 @@ function execute_PUSHBACK_service_objects ()
 							service_object_physicsTargetSelfPushback(SPB_distance,SPB_orientation)
 
 							print("[Ground Equipment " .. version_text_SGES .. "] Set the parking brake.")
-							if ((test_777v2_a or test_777v2_b or test_777v2_c) and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") ) or Prefilled_PushBackObject ==	SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj" then
+							if ((test_777v2_a or test_777v2_b or test_777v2_c) and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") ) or Prefilled_PushBackObject ==	SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj" then
 								show_People2 = true
 								People2_chg = true
 							else
@@ -1319,7 +1326,7 @@ function execute_PUSHBACK_service_objects ()
 								People1_chg = true
 							end
 
-							if (test_777v2_a or test_777v2_b or test_777v2_c) and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then
+							if (test_777v2_a or test_777v2_b or test_777v2_c) and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
 								set("1-sim/service/lights/emerlights",0)
 								set("1-sim/service/lights/backheadlight",0)
 								set("1-sim/service/lights/frontheadlight",1)
@@ -1396,7 +1403,7 @@ function execute_PUSHBACK_service_objects ()
 			set("sim/flightmodel/position/Rrad",0)
 			--~ adjust_Strength = true
 		elseif show_PB and (show_People1 or show_People2) and Go_PB == false and pushback_manual == false and turn_flag == false and show_TargetSelfPushback == false and SGES_parkbrake > 0.8 then
-			if (test_777v2_a or test_777v2_b or test_777v2_c) and PLANE_ICAO == "B772" and string.find(SGES_Author,"FlightFactor") then
+			if (test_777v2_a or test_777v2_b or test_777v2_c) and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
 				set("1-sim/service/lights/emerlights",0)
 				set("1-sim/service/lights/backheadlight",0)
 				set("1-sim/service/lights/frontheadlight",1)

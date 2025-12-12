@@ -1049,7 +1049,7 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 			end,
 
 			function()
-				if SGES_vvi_fpm_pilot[0] > 100 and sges_gs_ias_spd[0] >= 185 then
+				if sges_gs_ias_spd[0] >= 185 then
 					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
 					print("[Ground Equipment " .. version_text_SGES .. "] Flaps retract to 5")
 					set("sim/flightmodel/controls/flaprqst",0.33) -- FLAPS 5 DEGREES
@@ -1129,7 +1129,7 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 			end,
 
 			function()
-				if sges_gs_ias_spd[0] >= 225 then
+				if sges_gs_ias_spd[0] >= 220 then
 					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/COP/checked.wav")
 					set("sim/flightmodel/controls/flaprqst",0) -- FLAPS 0 DEGREES
 					print("[Ground Equipment " .. version_text_SGES .. "] Flaps retract to UP position")
@@ -1145,10 +1145,19 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 			end,
 
 			function()
-				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/landingLights.wav")
-				print("[Ground Equipment " .. version_text_SGES .. "] landing_lights OFF")
-				set("B742/ext_light/landing_outbd_L_sw",0)
-				set("B742/ext_light/landing_outbd_R_sw",0)
+				print("[Ground Equipment " .. version_text_SGES .. "] GEAR lever to OFF")
+				set("B742/controls/gear_lever_pos",0) -- OFF
+			end,
+
+			function()
+				if sges_gs_plane_y_agl[0] >= 1828 then
+					SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/landingLights.wav")
+					print("[Ground Equipment " .. version_text_SGES .. "] landing_lights OFF")
+					set("B742/ext_light/landing_outbd_L_sw",0)
+					set("B742/ext_light/landing_outbd_R_sw",0)
+				else -- wait for the condition to realize, do not progress later
+					step_proc_742 = step_proc_742 - 1
+				end
 			end,
 
 			function()
@@ -1161,11 +1170,6 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 				SGES_B742_sound = load_WAV_file(AircraftPath .. "../../" .. "Custom Sounds/crew/" .. crew_accent_used .. "/FE/set.wav")
 				set("B742/ext_light/runway_turnoff_L_sw",0)
 				set("B742/ext_light/runway_turnoff_R_sw",0)
-			end,
-
-			function()
-				print("[Ground Equipment " .. version_text_SGES .. "] GEAR lever to OFF")
-				set("B742/controls/gear_lever_pos",0) -- OFF
 			end,
 
 
@@ -1723,7 +1727,7 @@ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
 
 	function B742_monitor_sequence()
 		-- auto-monitor the need of the descent and approach procedure
-		if (SGES_vvi_fpm_pilot[0] < -950 or sges_gs_plane_y_agl[0] < 2000) and sges_gs_ias_spd[0] < 260 and (B742ProcNumber == nil or B742ProcNumber ~= 4) then
+		if (SGES_vvi_fpm_pilot[0] < -950 and sges_gs_plane_y_agl[0] < 3048) and sges_gs_ias_spd[0] < 260 and (B742ProcNumber == nil or B742ProcNumber ~= 4) then
 			print("[Ground Equipment " .. version_text_SGES .. "] Passing the gate for the descent and approach procedure.")
 			B742ProcNumber = 4
 			step_proc_742 = 1

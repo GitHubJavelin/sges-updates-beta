@@ -1,5 +1,5 @@
 zone|custom
 module|https://raw.githubusercontent.com/GitHubJavelin/sges-updates-beta/refs/heads/main
 name|Simple Ground Equip. & Services
-version|78.7
+version|Rolling_Beta
 locked|false

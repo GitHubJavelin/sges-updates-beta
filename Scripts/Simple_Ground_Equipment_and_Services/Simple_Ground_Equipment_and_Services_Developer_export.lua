@@ -166,5 +166,7 @@ function Wipe_SGES_USER_CONFIG()
 	XTrident_NaveCavour_Directory = nil
 	FFSTS_777v2_Directory = nil
 	Cami_de_Bellis_Directory = nil
+	Airstairs_with_lights = nil
+	LuaJITForFelis = nil
 	WriteToDisk_SGES_USER_CONFIG()
 end

@@ -1761,6 +1761,7 @@ function SGES_script()
 	Cami_de_Bellis_authorized = true
 	scan_third_party_initially = false
 	show_Cones_initially = true
+	Airstairs_with_lights = true
 	show_Cones =  false
 	show_ASU =  false
 	show_ACU =  false

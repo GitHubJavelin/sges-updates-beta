@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.7"
+version_text_SGES = "78.8"
 --------------------------------------------------------------------------------
 --[[
 
@@ -161,6 +161,12 @@ function SGES_script()
 			xpversionobjects = "12.3.0"
 		else
 			IsXPlane1230 = false
+		end
+		if SGES_xplane_internal_version >= 124000 then
+			IsXPlane1240 = true
+			xpversionobjects = "12.4.0"
+		else
+			IsXPlane1240 = false
 		end
 		if xpversionobjects ~= 11 then
 			print("[Ground Equipment " .. version_text_SGES .. "] Utilizing 3D objects introduced in X-Plane " .. xpversionobjects)
@@ -5294,8 +5300,10 @@ function SGES_script()
 					------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
 				end
 			elseif sges_military == 1 and XTrident_Chinook_Directory ~= nil then Prefilled_CleaningTruckObject = SCRIPT_DIRECTORY .. XTrident_Chinook_Directory   .. "/plugins/CH47/mission/loads/humvee.obj"
+			elseif SGES_BushMode and IsXPlane1240 and outsideAirTemp < 14 and sges_big_airport ~= nil and not sges_big_airport then
+				Prefilled_CleaningTruckObject = XPlane_objects_directory .. "../../airport scenery/Common_Elements/camping/tent_04_orange_open.obj" -- Tent XP 12.4
 			elseif SGES_BushMode and IsXPlane12 then
-				Prefilled_CleaningTruckObject = XPlane12_BushObjects_directory   .. "DkGrpMed1.obj"
+				Prefilled_CleaningTruckObject = XPlane12_BushObjects_directory   .. "DkGrpMed1.obj" -- table and chairs X-Plane 11
 			else
 				Prefilled_CleaningTruckObject = Original_CleaningTruckObject
 				------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
@@ -7005,21 +7013,6 @@ function SGES_script()
 					end,
 					inRefcon )
 			StairsXPJ3_1_show_only_once = false
-		end
-	end
-
-	function load_TargetSelfPushback()
-		if TargetSelfPushback_show_only_once then
-			if TargetSelfPushback_instance[0] == nil then
-				   --print("[Ground Equipment " .. version_text_SGES .. "] load Prefilled_TargetSelfPushback Object " .. Prefilled_TargetSelfPushbackObject)
-				   XPLM.XPLMLoadObjectAsync(Prefilled_TargetSelfPushbackObject,
-							function(inObject, inRefcon)
-								TargetSelfPushback_instance[0] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
-								rampservicerefTargetSelfPushback = inObject
-							end,
-							inRefcon )
-			end
-			TargetSelfPushback_show_only_once = false
 		end
 	end
 
@@ -13653,6 +13646,8 @@ function SGES_script()
 
 		if SGES_BushMode and IsXPlane12 and (sges_military == 1 or sges_military_default == 1) then
 			l_changed, l_newval = imgui.Checkbox(" Car", show_Cleaning)
+		elseif SGES_BushMode and IsXPlane1240 and outsideAirTemp < 14 and sges_big_airport ~= nil and not sges_big_airport then
+			l_changed, l_newval = imgui.Checkbox(" Tent", show_Cleaning)
 		elseif SGES_BushMode and IsXPlane12 then
 			l_changed, l_newval = imgui.Checkbox(" Table & sunshade", show_Cleaning)
 		else

@@ -643,6 +643,7 @@ function SGES_script()
 	User_prefers_containerized_freight = false
 	reduce_even_more_the_number_of_passengers = false
 	SpeedyCopilotForFelis = true
+	SpeedyCopilotForFelis_wait4spoilers = true
 	walking_direction_changed_armed = false
 	get_hospital_ambulance = false
 	BeltLoaderFwdPosition = 10 -- do not change here
@@ -18605,6 +18606,14 @@ function SGES_script()
 						imgui.PopStyleColor()
 						imgui.PopTextWrapPos()
 						imgui.EndTooltip()
+					end
+					if SpeedyCopilotForFelis then
+					if SpeedyCopilotForFelis_wait4spoilers == nil then SpeedyCopilotForFelis_wait4spoilers = true end
+						l_changed, l_newval = imgui.Checkbox(" The 742 copilot waits for\n spoiler down to start\n the after landing procedure.", SpeedyCopilotForFelis_wait4spoilers)
+						if l_changed then
+							SpeedyCopilotForFelis_wait4spoilers = l_newval
+							Buttonstring = "Save the changes"
+						end
 					end
 					l_changed, l_newval = imgui.Checkbox(" Disable Lua JIT at startup\n (Felis 742F fails to do it)", LuaJITForFelis)
 					if l_changed then

@@ -122,6 +122,7 @@ function WriteToDisk_SGES_USER_CONFIG()
 	if User_prefers_containerized_freight ~= nil and User_prefers_containerized_freight~= false then file:write("\nUser_prefers_containerized_freight = true") end
 	if reduce_even_more_the_number_of_passengers ~= nil and reduce_even_more_the_number_of_passengers~= false then file:write("\nreduce_even_more_the_number_of_passengers = true") end
 	if SpeedyCopilotForFelis ~= nil and SpeedyCopilotForFelis~= true then file:write("\nSpeedyCopilotForFelis = false") end
+	if SpeedyCopilotForFelis_wait4spoilers ~= nil and SpeedyCopilotForFelis_wait4spoilers~= true then file:write("\nSpeedyCopilotForFelis_wait4spoilers = false") end
 	if LuaJITForFelis ~= nil and LuaJITForFelis~= true then file:write("\nLuaJITForFelis = false") end
 
 
@@ -168,5 +169,6 @@ function Wipe_SGES_USER_CONFIG()
 	Cami_de_Bellis_Directory = nil
 	Airstairs_with_lights = nil
 	LuaJITForFelis = nil
+	SpeedyCopilotForFelis_wait4spoilers = nil
 	WriteToDisk_SGES_USER_CONFIG()
 end

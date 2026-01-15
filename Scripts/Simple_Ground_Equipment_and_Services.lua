@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.8"
+version_text_SGES = "78.9"
 --------------------------------------------------------------------------------
 --[[
 
@@ -1473,6 +1473,8 @@ function SGES_script()
 
 	if SGES_IsHelicopter ~= nil and SGES_IsHelicopter == 1 then
 		SGES_Throttle = dataref_table("sim/flightmodel2/engines/propwash_mtr_sec") --Caution, SGES_Throttle is PROP WASH for an HELICOPTER !
+
+		create_command("Simple_Ground_Equipment_and_Services/Services/Release_slung_load", "Hook or release the slung load (if avail.)", "if get('sim/aircraft/overflow/acf_jett_is_slung') == 1 then set('sim/aircraft/overflow/acf_jett_is_slung',0) else set('sim/aircraft/overflow/acf_jett_is_slung',1) end", "", "")
 	else
 		SGES_Throttle = dataref_table("sim/cockpit2/engine/actuators/throttle_ratio")
 	end
@@ -17359,10 +17361,12 @@ function SGES_script()
 				imgui.SameLine()
 				if  imgui.Button("Hook",45,25)  then
 					command_once("sim/flight_controls/jettison_reset")
+					set("sim/aircraft/overflow/acf_jett_is_slung",1)
 				end
 				imgui.SameLine()
 				if  imgui.Button("Release",60,25)  then
-					command_once("sim/flight_controls/jettison_payload")
+					--~ command_once("sim/flight_controls/jettison_payload")
+					set("sim/aircraft/overflow/acf_jett_is_slung",0)
 				end
 				imgui.TextUnformatted("Cable length")
 				imgui.SameLine()

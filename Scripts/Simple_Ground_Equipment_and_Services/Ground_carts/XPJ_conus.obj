@@ -109577,13 +109577,17 @@ ANIM_trans -3.246376 -0.693653 2.225250 -3.246376 -0.693653 2.225250 0.000000 0.
 TRIS 145434 384
 ANIM_end
 ANIM_begin
-	ANIM_hide -1.000000 -0.500000 sim/graphics/animation/ping_pong_2
-	ANIM_hide 0.5000000 -1.00000 sim/graphics/animation/ping_pong_2
-	ANIM_trans	-0.003054 0.792445 0.000000	-0.003054 0.792445 0.000000
-	ANIM_rotate	1	0	0	90.0000025	90.0000025
-	ANIM_rotate_begin	0	0	1.00000012	sim/time/total_running_time_sec
-	ANIM_rotate_key	0	0
-	ANIM_rotate_key	0.25	-50
-	ANIM_rotate_end
-	LIGHT_PARAM	sodium_flood_XYZBTSS 0 0 0 0  0.023  0.023  3 3 1  1
+ANIM_hide 0 0 sges/airstairs/light
+	ANIM_begin
+		ANIM_hide 0 0 sges/airstairs/light
+		ANIM_hide -1.000000 -0.500000 sim/graphics/animation/ping_pong_2
+		ANIM_hide 0.5000000 -1.00000 sim/graphics/animation/ping_pong_2
+		ANIM_trans	-0.003054 0.792445 0.000000	-0.003054 0.792445 0.000000
+		ANIM_rotate	1	0	0	90.0000025	90.0000025
+		ANIM_rotate_begin	0	0	1.00000012	sim/time/total_running_time_sec
+		ANIM_rotate_key	0	0
+		ANIM_rotate_key	0.25	-50
+		ANIM_rotate_end
+		LIGHT_PARAM	sodium_flood_XYZBTSS 0 0 0 0  0.023  0.023  3 3 1  1
+	ANIM_end
 ANIM_end

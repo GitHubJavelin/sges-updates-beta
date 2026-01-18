@@ -1216,6 +1216,8 @@ function SGES_script()
 	-- 14th July 2023 cones with strips :
 	Linked_cones = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/XPJ_conus.obj"
 
+
+
 	if string.find(Prefilled_CargoDeck_ULDLoaderObject,"cargo_loader_ch70w") then
 		CargoDeck_ULDLoaderPlateObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/MisterX_Lib/ULDLoader/ULD_plate.obj"
 	end
@@ -5120,7 +5122,14 @@ function SGES_script()
 				and ground_level_difference_LR < 11 -- takes into account the roll of the terrain slope in the acft axis
 				then
 
-					ConeObject1 = Linked_cones
+				randomView = math.random()
+				if randomView < 0.25 then
+					Linked_cones = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/XPJ_conus_2.obj"
+					else
+					Linked_cones = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/Ground_carts/XPJ_conus.obj"
+				end
+				ConeObject1 = Linked_cones
+
 					--~ print("[Ground Equipment " .. version_text_SGES .. "] OGL_plane_pitch " .. math.abs(OGL_plane_pitch) .. "°. OGL_plane_roll " .. math.abs(OGL_plane_roll) .. "°. The wide set of cones can be used.")
 					--print("[Ground Equipment " .. version_text_SGES .. "] ground_level_difference= " .. ground_level_difference .. ".")
 					--print("[Ground Equipment " .. version_text_SGES .. "] ground_level_difference_LR= " .. ground_level_difference_LR .. ". The wide set of cones with a fabric strip is used.")
@@ -5663,6 +5672,10 @@ function SGES_script()
 			end
 			------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
 
+			---------------- KAI TAK YELLOW BLUE BUS ---------------------------
+			if IsPassengerPlane == 1 and sges_military_default == 0 and sges_airport_ID ~= nil and (sges_airport_ID == "VHHX" or sges_airport_ID == "VHHH") then
+				Prefilled_BusObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/MisterX_Lib/"   .. "Cobus/Cobus_2700_VHHX.obj"
+			end
 
 			--print("[Ground Equipment " .. version_text_SGES .. "] load Bus Object : " .. Prefilled_BusObject)
 			XPLM.XPLMLoadObjectAsync(Prefilled_BusObject,
@@ -18807,7 +18820,7 @@ function SGES_script()
 					imgui.EndTooltip()
 				end
 
-				l_changed, _ = imgui.Checkbox(" Airstairs cast light", Airstairs_with_lights)
+				l_changed, _ = imgui.Checkbox(" Airstairs & cones cast light", Airstairs_with_lights)
 				if l_changed then
 					Buttonstring = "Save the changes"
 					set("sges/airstairs/light",math.abs(get("sges/airstairs/light")-1))

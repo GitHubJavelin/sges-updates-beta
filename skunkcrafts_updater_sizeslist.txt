@@ -1,5 +1,5 @@
 Scripts/SGES_quick_start.pdf|316240
-Scripts/Simple_Ground_Equipment_and_Services.lua|972905
+Scripts/Simple_Ground_Equipment_and_Services.lua|974216
 Scripts/Simple_Ground_Equipment_and_Services/VDGS/VDGSFixed-zulu.obj|230859
 Scripts/Simple_Ground_Equipment_and_Services/VDGS/VDGS.png|2787818
 Scripts/Simple_Ground_Equipment_and_Services/VDGS/VDGSMobile.png|564
@@ -393,7 +393,7 @@ Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Ships/Fishing_Boat_1.ob
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Ships/Akula1.obj|1824195
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Ships/Fishing_Boat_1.obj.ori|185391
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Ships/Sentosa_Leader.obj|620154
-Scripts/Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_CONFIG_aircraft.lua|59835
+Scripts/Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_CONFIG_aircraft.lua|60056
 Scripts/Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_VDGS.lua|8986
 Scripts/Simple_Ground_Equipment_and_Services/Airstairs/new/small/MobileAirstairsSlider_small.obj|507765
 Scripts/Simple_Ground_Equipment_and_Services/Airstairs/new/small/MobileAirstairsBase_small.obj|429222

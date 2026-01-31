@@ -1645,6 +1645,8 @@ function SGES_script()
 	or PLANE_ICAO == "E55P"
 	or PLANE_ICAO == "C525"
 	or PLANE_ICAO == "E19L"
+	or PLANE_ICAO == "E19L"
+	or PLANE_ICAO == "VF14"
 	or string.match(PLANE_ICAO,"K35")
 	or string.match(PLANE_ICAO,"AT4")
 	or (string.match(PLANE_ICAO,"AT7") or SGES_Author == "ATGCAB (Alfredo Torrado & Juan Alcon)")
@@ -4133,6 +4135,20 @@ function SGES_script()
 					--~ set("Colimata/F104_A_SW_canopy_i",1)
 				end
 
+
+
+				if PLANE_ICAO == "VF14" and string.find(PLANE_AUTHOR,"Hager") and IsXPlane12 then -- toggle F104 chocks
+					set("com/petersaircraft/airbus/cabin_door_pos",1)
+					set("com/petersaircraft/airbus/ckpt_door_pos",1)
+					set("com/petersaircraft/airbus/lava_door_pos",0.05)
+					set("com/petersaircraft/airbus/main_door_handle_pos",0)
+					set("com/petersaircraft/airbus/main_door_pos",0)
+					set("com/petersaircraft/VFW614/inner_door_pos",0)
+					if get("sim/cockpit2/electrical/GPU_generator_volts") == 0 then
+						command_once("sim/ground_ops/toggle_gpu_request")
+					end
+				end
+
 				if AIRCRAFT_FILENAME == "AW109SP.acf" and PLANE_AUTHOR == "X-Trident" then set("aw109/servicing/wheel_chocks",1) end
 
 
@@ -4202,6 +4218,19 @@ function SGES_script()
 					set("Colimata/F104_A_SW_GROUND_ladder_i",0)
 				end
 
+
+				if PLANE_ICAO == "VF14" and string.find(PLANE_AUTHOR,"Hager") and IsXPlane12 then -- toggle F104 chocks
+					set("com/petersaircraft/airbus/cabin_door_pos",0)
+					set("com/petersaircraft/airbus/ckpt_door_pos",0)
+					set("com/petersaircraft/airbus/lava_door_pos",0.7)
+					set("com/petersaircraft/airbus/main_door_handle_pos",1)
+					set("com/petersaircraft/airbus/main_door_pos",1)
+					set("com/petersaircraft/VFW614/inner_door_pos",2)
+					if get("sim/cockpit2/electrical/GPU_generator_volts") > 0 then
+						command_once("sim/ground_ops/toggle_gpu_request") -- remove the x-plane GPU
+					end
+					distance_to_fuselage = 2.7
+				end
 
 				if AIRCRAFT_FILENAME == "AW109SP.acf" and PLANE_AUTHOR == "X-Trident" then set("aw109/servicing/wheel_chocks",0) end
 

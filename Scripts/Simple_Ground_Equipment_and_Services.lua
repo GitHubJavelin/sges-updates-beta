@@ -2678,7 +2678,7 @@ function SGES_script()
 	function service_object_physics_Fuel()
 
 	  if FUEL_chg == true then
-		  if active_fueling_is_possible then active_fueling_is_possible = false end  			-- in every case as soon as the fuel is touched, active fueling will be stoped.
+		  if active_fueling_is_possible then active_fueling_is_possible = false end  			-- in every case as soon as the fuel is touched, active fueling will be stopped.
 		  if show_FUEL then
 			  load_FUEL()
 			  hide_temporarily_cart = false
@@ -2730,6 +2730,17 @@ function SGES_script()
 		  end
 		  if FUEL_instance[0] ~= nil and show_FUEL  then
 			  draw_FUEL()
+		  end
+		  if FUEL_instance[0] ~= nil and FuelTruck_is_deer  then
+			if SGES_deer_run_cycle == nil then
+				SGES_deer_run_cycle = create_dataref_table("sges/sim/graphics/animation/deer/deer_run_cycle", "FloatArray")
+				SGES_deer_run_cycle[0] = -1
+			end
+			if SGES_deer_run_cycle[0] < 1 then
+				SGES_deer_run_cycle[0] = SGES_deer_run_cycle[0] + 0.02
+			elseif SGES_deer_run_cycle[0] >= 1 then
+				SGES_deer_run_cycle[0] = -1
+			end
 		  end
 	  end
 
@@ -5254,7 +5265,15 @@ function SGES_script()
 	function load_FUEL()
 		if FUEL_instance[0] == nil and fuel_show_only_once then
 
-			if IsXPlane12 and show_Pump then-- fuel pump choice activated and forced
+			if FuelTruck_is_deer then
+				math.randomseed(os.time())
+				randomView = math.random()
+				if randomView > 0.2 then
+					Prefilled_FuelObject = DeerF
+				else
+					Prefilled_FuelObject = DeerM
+				end
+			elseif IsXPlane12 and show_Pump then-- fuel pump choice activated and forced
 				Prefilled_FuelObject = XPlane_Ramp_Equipment_directory   .. "../Dynamic_Vehicles/fuelHydDisp_truck.obj"
 				-- watch your steps ! in service_object_physics_Fuel()
 			elseif PLANE_ICAO == "SR71" then -- special JP-7 fuel for the SR-71 means a special truck everywhere :-)
@@ -8182,7 +8201,9 @@ function SGES_script()
 				end
 				Fuel_heading_correcting_factor = -27
 			end
-
+			if FuelTruck_is_deer then -- a deer is far faster than a fuel truck
+				fuel_dY= fuel_dY + 0.15
+			end
 			fuel_currentX = fuel_currentX + fuel_dX
 			fuel_currentY = fuel_currentY + fuel_dY
 
@@ -8242,6 +8263,15 @@ function SGES_script()
 			-- store final position to start disappearance later
 			FuelFinalX = fuel_currentX
 			FuelFinalY = fuel_currentY
+
+			-- When the fuel truck animation is used to display wildlife instead of a fuel truck :
+			if FuelTruck_is_deer then
+				show_FUEL = false
+				FUEL_chg = true
+				print("[Ground Equipment " .. version_text_SGES .. "]  The curious deer has reached its observation point and starts running away again.")
+			else
+				print("[Ground Equipment " .. version_text_SGES .. "]  Fuel truck has reached final position " .. fuel_currentX .. " , " .. fuel_currentY)
+			end
 
 		end
 
@@ -8674,6 +8704,8 @@ function SGES_script()
 			end
 			if object_name_t[object_name] == "FUEL" and Prefilled_FuelObject == XPlane12_ford_carrier_accessories_directory .. "SH60_Seahawk_animated.obj"	then
 				obj_finalZ = Initial_Z + 400
+			elseif object_name_t[object_name] == "FUEL" and FuelTruck_is_deer then
+				obj_finalZ = Initial_Z + 400
 			end
 
 			if current_Z[object_name] < obj_finalZ then
@@ -8697,6 +8729,11 @@ function SGES_script()
 					elseif current_Z[object_name] > obj_finalZ - 0.6 then --kept on 16-7-23
 						heading_corr[object_name] = heading_corr[object_name] + 0.2
 					end
+
+					if object_name_t[object_name] == "FUEL" and FuelTruck_is_deer then -- a deer is far faster than a fuel truck
+						current_Z[object_name]= current_Z[object_name] + 0.25
+					end
+
 				end
 
 				if object_name_t[object_name] == "Hydrant" then
@@ -8853,7 +8890,7 @@ function SGES_script()
 				changed = false               -- indicate that the possible change in ramp/gate has been processed
 				print("[Ground Equipment " .. version_text_SGES .. "]  " .. object_name_t[object_name] .. " has reached final position before disappearance. Bye bye !")
 				--
-
+				if object_name_t[object_name] == "FUEL" and FuelTruck_is_deer then FuelTruck_is_deer = false end
 				-- send the vehicle to Common_unload :
 				changed,Instance,refrce = common_unload(object_name_t[object_name],Instance,refrce)
 				current_X[object_name] = nil -- important
@@ -13558,7 +13595,9 @@ function SGES_script()
 		imgui.Columns(1)
 
 	  if PLANE_ICAO ~= "ALIA" then -- ALIA doesn't require petroleum derivatives directly
-		if SGES_BushMode and IsXPlane12 and sges_military == 0 and sges_military_default == 0 then
+	    if FuelTruck_is_deer and SGES_deer_run_cycle ~= nil then
+		  l_changed, l_newval = imgui.Checkbox(" The curious deer (" .. math.floor(SGES_deer_run_cycle[0]*10)/10 .. ")", show_FUEL)
+	    elseif SGES_BushMode and IsXPlane12 and sges_military == 0 and sges_military_default == 0 then
 		  l_changed, l_newval = imgui.Checkbox(" Small fuel", show_FUEL)
 		elseif  Prefilled_FuelObject == XPlane12_ford_carrier_accessories_directory .. "SH60_Seahawk_animated.obj" then
 		  l_changed, l_newval = imgui.Checkbox(" Fuel (air delivery)", show_FUEL)
@@ -13568,6 +13607,7 @@ function SGES_script()
 		  if l_changed then
 			show_FUEL = l_newval
 			FUEL_chg = true
+			if show_FUEL and FuelTruck_is_deer then FuelTruck_is_deer = false end
 
 
 			if not IsXPlane12 then
@@ -16695,6 +16735,14 @@ function SGES_script()
 						else
 							BushObjectsToggle(0)
 						end
+
+						if IsXPlane12 and SGES_BushMode and BeltLoaderFwdPosition < 2 and outsideAirTemp > 5 and outsideAirTemp <= 35 and SGES_local_time_in_simulator_hours ~= nil and (SGES_local_time_in_simulator_hours[0] <= 10 or SGES_local_time_in_simulator_hours[0] >= 16) and sges_big_airport ~= nil and not sges_big_airport then
+							FuelTruck_is_deer = true
+							show_FUEL = true
+							FUEL_chg = true
+							print("[Ground Equipment " .. version_text_SGES .. "] Have you seen the wildlife here ?")
+						end
+
 						if SGES_BushMode then show_Pump = false sges_big_airport = false end
 					end
 

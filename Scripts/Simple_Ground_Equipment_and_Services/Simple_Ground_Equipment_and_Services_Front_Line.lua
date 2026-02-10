@@ -209,21 +209,83 @@ function densify_Front_Line(step_distance_m)
 	--~ print("[Front Line] Total in-between points added : " .. tostring(#FLx_densified))
 end
 
+
 function load_Front_Line()
+	local count_all_gaps = 0
+	local gap_threshold = 0.1
+	local battles_with_sounds = 0
+	math.randomseed(os.time())
 	for i = 1, #FLx_densified do
+		-- February 2026, add some randmness to avoid having a continuous front, add some gaps without firearms action for a more realistic landscape
+
+		randomBattleGap = math.random()
+		if frontline_points <= 2 then randomBattleGap = 1 end -- we want the battle always displayed when only one point is in the dataset or when only a few coordinates define the battle
 		--~ print("[Ground Equipment " .. version_text_SGES .. "] Checking Front Line... ...point " .. i)
-		if FrontLine_instance[i] == nil then
+		if (i == 1 or i == #FLx_densified or randomBattleGap > gap_threshold) and FrontLine_instance[i] == nil then -- always draw at least one battle
 			local object = Prefilled_FireAndSmokeObject -- X-Plane 11
-			if IsXPlane12 then object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_battle.obj" end
+			if IsXPlane12 then
+				if (i == 1 or i == #FLx_densified) or (i % 5 == 0) then
+					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_battle.obj"
+					battles_with_sounds = battles_with_sounds + 1
+				else
+					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_battle_no_sound.obj"
+				end
+			end
+			--~ enqueue_frontline_object(object, i)
 			XPLM.XPLMLoadObjectAsync(object,
 					function(inObject, inRefcon)
 					FrontLine_instance[i] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
 					FrontLineRef[i] = inObject
 					end,
 					inRefcon )
+			if i == 1 then
+				print("[Front Line] (Always drawing first battle of the line).")
+			elseif i == #FLx_densified then
+				print("[Front Line] (Always drawing last battle of the line).")
+			end
+		elseif randomBattleGap <= gap_threshold and FrontLine_instance[i] == nil then
+			count_all_gaps = count_all_gaps + 1
+			--~ print("[Front Line] Creating a small gap in the front line.")
 		end
 	end
+	if count_all_gaps > 0 then print("[Front Line] Creating " .. count_all_gaps .. " more peacefull gaps in the front line for realism.") end
+	if battles_with_sounds > 0 then print("[Front Line] Creating only " .. battles_with_sounds .. " battles with embedded sounds to reduce the load on the FMOD system.") end
 end
+
+
+-- Queue pour tous les objets à charger
+--~ FrontLine_load_queue = {}
+--~ FrontLine_loading = false -- indique si un objet est en train d'être chargé
+
+--~ function enqueue_frontline_object(obj_path, index)
+    --~ table.insert(FrontLine_load_queue, {path=obj_path, idx=index})
+--~ end
+
+--~ -- Callback unique pour charger les objets progressivement
+--~ function process_frontline_load_queue()
+	--~ if FrontLine_loading then return end -- on attend que l'objet courant soit fini
+    --~ if #FrontLine_load_queue == 0 then return end
+
+    --~ local max_per_frame = 100 -- nombre max d'objets à créer par frame pour ne pas bloquer
+    --~ for i=1, math.min(max_per_frame, #FrontLine_load_queue) do
+        --~ local item = table.remove(FrontLine_load_queue, 1)
+		--~ FrontLine_loading = true
+
+        --~ XPLM.XPLMLoadObjectAsync(item.path,
+            --~ function(inObject, inRefcon)
+                --~ FrontLine_instance[item.idx] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+                --~ FrontLineRef[item.idx] = inObject
+				--~ FrontLine_loading = false -- objet chargé, on peut passer au suivant
+            --~ end,
+            --~ inRefcon
+        --~ )
+		--~ print("[Front Line] Inserting Front Line progressively to avoid the too many callback error ..." .. item.idx)
+    --~ end
+	--~ print("[Front Line] Inserted the Front Line progressively to avoid the too many callback error ...")
+--~ end
+-- Dans do_often, on traite la queue progressivement
+--~ do_often("if SGES_XPlaneIsPaused == 0 and show_Front_Line then process_frontline_load_queue() end")
+
 
 function unload_Front_Line_Objects()
 	print("[Front Line] Unloading Front Line...")
@@ -246,6 +308,9 @@ function unload_Front_Line_Objects()
 	Front_Line_object_spacing = Front_Line_object_spacing_init
 	--~ Front_line_title  = nil
 	total_number_of_battles = nil
+	-- Force un passage du garbage collector
+	collectgarbage("collect")
+	--~ FrontLine_load_queue = {} -- vider la queue
 end
 
 function draw_Front_Line()
@@ -306,41 +371,40 @@ end
 local Front_Line_object_spacing = 250
 local Front_Line_object_spacing_init = 250
 
-function Front_Line_object_physics()
+--~ function Front_Line_object_physics_OFF()
 
-    --~ print("Appel de Front_Line_object_physics()")  -- DEBUG
-	if Front_Line_chg == true then
-		if show_Front_Line then
-			if FrontLine_instance[1] == nil then
-				sges_Load_locations()
-				densify_Front_Line(Front_Line_object_spacing)  -- <-- ICI : densification tous les 100 m ou 5000 m
-				if #FLx_densified > frontline_points then
-					while(#FLx_densified > max_objects)
-					do
-						Front_Line_object_spacing = Front_Line_object_spacing * 2
-						densify_Front_Line(Front_Line_object_spacing)
-						print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
-					end
-				end
-				print("[Front Line] In the end, spacing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
-				print("[Front Line] All battle points away from your plane will be hidden in X-Plane to ease the GPU workload.")
-				total_number_of_battles = tonumber(#FLx_densified)
-				load_Front_Line()
-				Front_Line_object_spacing = Front_Line_object_spacing_init -- reinit
-			end
-		else
-			unload_Front_Line_Objects()
-		end
-		if FrontLine_instance[1] ~= nil  then
-			draw_Front_Line()
-		end
-	end
+	--~ if Front_Line_chg == true then
+		--~ if show_Front_Line then
+			--~ if FrontLine_instance[1] == nil then
+				--~ sges_Load_locations()
+				--~ densify_Front_Line(Front_Line_object_spacing)  -- <-- ICI : densification tous les 100 m ou 5000 m
+				--~ if #FLx_densified > frontline_points then
+					--~ while(#FLx_densified > max_objects)
+					--~ do
+						--~ Front_Line_object_spacing = Front_Line_object_spacing * 1.25
+						--~ densify_Front_Line(Front_Line_object_spacing)
+						--~ print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
+					--~ end
+				--~ end
+				--~ print("[Front Line] In the end, spacing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
+				--~ print("[Front Line] All battle points away from your plane will be hidden in X-Plane to ease the GPU workload.")
+				--~ total_number_of_battles = tonumber(#FLx_densified)
+				--~ load_Front_Line()
+				--~ Front_Line_object_spacing = Front_Line_object_spacing_init -- reinit
+			--~ end
+		--~ else
+			--~ unload_Front_Line_Objects()
+		--~ end
+		--~ if FrontLine_instance[1] ~= nil  then
+			--~ draw_Front_Line()
+		--~ end
+	--~ end
 
-	if show_Front_Line and FrontLine_instance[1] ~= nil then
-		-- Mise à jour continue pendant le vol
-		draw_Front_Line()
-	end
-end
+	--~ if show_Front_Line and FrontLine_instance[1] ~= nil then
+		--~ -- Mise à jour continue pendant le vol
+		--~ draw_Front_Line()
+	--~ end
+--~ end
 
 function Front_Line_object_physics()
 
@@ -351,7 +415,7 @@ function Front_Line_object_physics()
 
 			if #FLx_densified > frontline_points then
 				while (#FLx_densified > max_objects) do
-					Front_Line_object_spacing = Front_Line_object_spacing * 2
+					Front_Line_object_spacing = Front_Line_object_spacing * 1.25
 					densify_Front_Line(Front_Line_object_spacing)
 					print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
 				end
@@ -370,4 +434,4 @@ function Front_Line_object_physics()
 	end
 end
 
-do_often("if SGES_XPlaneIsPaused == 0 then Front_Line_object_physics() end") --make that once by button pressure
+do_often("if SGES_XPlaneIsPaused == 0 and (Front_Line_chg or show_Front_Line) then Front_Line_object_physics() end") --make that once by button pressure

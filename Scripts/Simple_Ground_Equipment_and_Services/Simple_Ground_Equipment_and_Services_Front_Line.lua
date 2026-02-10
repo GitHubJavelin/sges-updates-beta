@@ -326,7 +326,7 @@ function draw_Front_Line()
 			if sges_gs_ias_spd[0] >= 200 then -- when the aircraft is fast, preload more
 				draw_distance_max = 22000
 			elseif sges_gs_ias_spd[0] < 1 then -- when the aircraft is stopped
-				draw_distance_max = 5000
+				draw_distance_max = 9000
 			else
 				draw_distance_max = 15000 -- ortherwise keep FPS high
 			end
@@ -371,42 +371,42 @@ end
 local Front_Line_object_spacing = 250
 local Front_Line_object_spacing_init = 250
 
---~ function Front_Line_object_physics_OFF()
-
-	--~ if Front_Line_chg == true then
-		--~ if show_Front_Line then
-			--~ if FrontLine_instance[1] == nil then
-				--~ sges_Load_locations()
-				--~ densify_Front_Line(Front_Line_object_spacing)  -- <-- ICI : densification tous les 100 m ou 5000 m
-				--~ if #FLx_densified > frontline_points then
-					--~ while(#FLx_densified > max_objects)
-					--~ do
-						--~ Front_Line_object_spacing = Front_Line_object_spacing * 1.25
-						--~ densify_Front_Line(Front_Line_object_spacing)
-						--~ print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
-					--~ end
-				--~ end
-				--~ print("[Front Line] In the end, spacing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
-				--~ print("[Front Line] All battle points away from your plane will be hidden in X-Plane to ease the GPU workload.")
-				--~ total_number_of_battles = tonumber(#FLx_densified)
-				--~ load_Front_Line()
-				--~ Front_Line_object_spacing = Front_Line_object_spacing_init -- reinit
-			--~ end
-		--~ else
-			--~ unload_Front_Line_Objects()
-		--~ end
-		--~ if FrontLine_instance[1] ~= nil  then
-			--~ draw_Front_Line()
-		--~ end
-	--~ end
-
-	--~ if show_Front_Line and FrontLine_instance[1] ~= nil then
-		--~ -- Mise à jour continue pendant le vol
-		--~ draw_Front_Line()
-	--~ end
---~ end
-
 function Front_Line_object_physics()
+
+	if Front_Line_chg == true then
+		if show_Front_Line then
+			if FrontLine_instance[1] == nil then
+				sges_Load_locations()
+				densify_Front_Line(Front_Line_object_spacing)  -- <-- ICI : densification tous les 100 m ou 5000 m
+				if #FLx_densified > frontline_points then
+					while(#FLx_densified > max_objects)
+					do
+						Front_Line_object_spacing = Front_Line_object_spacing * 1.25
+						densify_Front_Line(Front_Line_object_spacing)
+						print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
+					end
+				end
+				print("[Front Line] In the end, spacing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
+				print("[Front Line] All battle points away from your plane will be hidden in X-Plane to ease the GPU workload.")
+				total_number_of_battles = tonumber(#FLx_densified)
+				load_Front_Line()
+				Front_Line_object_spacing = Front_Line_object_spacing_init -- reinit
+			end
+		else
+			unload_Front_Line_Objects()
+		end
+		if FrontLine_instance[1] ~= nil  then
+			draw_Front_Line()
+		end
+	end
+
+	if show_Front_Line and FrontLine_instance[1] ~= nil then
+		-- Mise à jour continue pendant le vol
+		draw_Front_Line()
+	end
+end
+
+function Front_Line_object_physics_OFF()
 
 	if show_Front_Line then
 		if Front_Line_chg and FrontLine_instance[1] == nil then

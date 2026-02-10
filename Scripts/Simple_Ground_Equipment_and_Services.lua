@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.9"
+version_text_SGES = "78.91"
 --------------------------------------------------------------------------------
 --[[
 
@@ -2190,6 +2190,9 @@ function SGES_script()
 			--
 	local	approaching_TargetMarker = 0
 	local	stand_found_flag = 0
+
+
+	local FrontCount = 0
 
 	local Busobject = XPlane_Ramp_Equipment_directory   .. "../../1000 roads/objects/cars_EU/dynamic/d_busIC_01.obj"
 	local CatObject = XPlane_Ramp_Equipment_directory   .. "../../1000 roads/objects/cars_EU/dynamic/d_busIC_01.obj"
@@ -5692,6 +5695,11 @@ function SGES_script()
 			end
 			------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
 
+			---------------- KAI TAK YELLOW BLUE BUS ---------------------------
+			if IsPassengerPlane == 1 and sges_military_default == 0 and sges_airport_ID ~= nil and (sges_airport_ID == "VHHX" or sges_airport_ID == "VHHH") then
+				Prefilled_BusObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/MisterX_Lib/"   .. "Cobus/Cobus_2700_VHHX.obj"
+			end
+
 			------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
 			-- CASE OF THE REGULAR DAY ONLY BUS WITH ENHANCED CUSTOM LIGHTS
 			if (IsXPlane1214 and Cobus_light_flashing_lights_addonObject ~= nil)
@@ -5720,10 +5728,7 @@ function SGES_script()
 			end
 			------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
 
-			---------------- KAI TAK YELLOW BLUE BUS ---------------------------
-			if IsPassengerPlane == 1 and sges_military_default == 0 and sges_airport_ID ~= nil and (sges_airport_ID == "VHHX" or sges_airport_ID == "VHHH") then
-				Prefilled_BusObject = SCRIPT_DIRECTORY ..  "Simple_Ground_Equipment_and_Services/MisterX_Lib/"   .. "Cobus/Cobus_2700_VHHX.obj"
-			end
+
 
 			--print("[Ground Equipment " .. version_text_SGES .. "] load Bus Object : " .. Prefilled_BusObject)
 			XPLM.XPLMLoadObjectAsync(Prefilled_BusObject,
@@ -16625,9 +16630,13 @@ function SGES_script()
 
 			imgui.PopStyleColor()
 			imgui.Separator()
-			if not Front_Line_chg then
+			if FrontCount > 2 and not show_Front_Line then
+				imgui.TextUnformatted(" Front Line (now limited)")
+				imgui.Button(preselected_Front_line_title,200,18)
+			elseif not Front_Line_chg then
 				l_changed, l_newval = imgui.Checkbox(" Front Line", show_Front_Line)
 				if l_changed and preselected_Front_line_title ~= "Select" then
+					if l_newval then FrontCount = FrontCount + 1 end
 					show_Front_Line = l_newval
 					Front_Line_chg = true
 					if show_Front_Line and sges_Load_locations == nil then
@@ -16648,7 +16657,7 @@ function SGES_script()
 					preselected_Front_line_title = sges_retrieve_profile_title()
 				end
 			else
-				imgui.Checkbox(" Front Line...", false)
+				imgui.TextUnformatted("     Front Line...")
 			end
 			if show_Front_Line and not Front_Line_chg and Front_line_title ~= nil then
 				imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)

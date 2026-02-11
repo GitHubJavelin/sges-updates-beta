@@ -60,6 +60,8 @@ local z1_value = ffi.new("double[1]")
 
 -- to store in values of the local nature of the terrain (wet / land)
 ffi.cdef("void XPLMWorldToLocal(double inLatitude, double inLongitude, double inAltitude, double * outX, double * outY, double * outZ)")
+
+
 -----------------------------------
 -- FIND FRONT LINE LOCATION
 -----------------------------------
@@ -70,7 +72,6 @@ FLz = {}
 frontline_points = 0
 
 --------------- FIND ALL PROFILES
-
 --~ local profile_files = {"Arras-1917.txt","France-1917.txt","Clairmarais-1917.txt","Normandy-1944.txt","Custom-1.txt","Custom-2.txt","Custom-3.txt","Custom-4.txt"}
 local profile_files = {"Arras-1917.txt","Clairmarais-1917.txt","Normandy-1944.txt","AShau-1965.txt","Custom-1.txt","Custom-2.txt"}
 
@@ -102,6 +103,13 @@ function sges_Load_locations()
 	--~ if Default_Front_line_profile ~= nil and not Default_Front_line_profile then
 		--~ file_path = SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/Front_line_profiles/" .. "Custom.txt"
 	--~ end
+
+	if front_line_file_path == nil then
+		front_line_file_path = load_next_profile()
+		file_path  = front_line_file_path
+		file_path = "Custom-2.txt"
+		preselected_Front_line_title = sges_retrieve_profile_title()
+	end --default for when called via macro
 
     local file = io.open(folder_path .. file_path, "r")
 
@@ -212,7 +220,7 @@ end
 
 function load_Front_Line()
 	local count_all_gaps = 0
-	local gap_threshold = 0.1
+	local gap_threshold = 0.15
 	local battles_with_sounds = 0
 	math.randomseed(os.time())
 	for i = 1, #FLx_densified do
@@ -224,7 +232,11 @@ function load_Front_Line()
 		if (i == 1 or i == #FLx_densified or randomBattleGap > gap_threshold) and FrontLine_instance[i] == nil then -- always draw at least one battle
 			local object = Prefilled_FireAndSmokeObject -- X-Plane 11
 			if IsXPlane12 then
-				if (i == 1 or i == #FLx_densified) or (i % 5 == 0) then
+				if i == #FLx_densified - 1 then -- this one will be used for FLAK !
+					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_AAA.obj"
+				elseif randomBattleGap > 0.97 then
+					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12.obj"
+				elseif (i == 1 or i == #FLx_densified) or (i % 10 == 0) then
 					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_battle.obj"
 					battles_with_sounds = battles_with_sounds + 1
 				else
@@ -238,11 +250,6 @@ function load_Front_Line()
 					FrontLineRef[i] = inObject
 					end,
 					inRefcon )
-			if i == 1 then
-				print("[Front Line] (Always drawing first battle of the line).")
-			elseif i == #FLx_densified then
-				print("[Front Line] (Always drawing last battle of the line).")
-			end
 		elseif randomBattleGap <= gap_threshold and FrontLine_instance[i] == nil then
 			count_all_gaps = count_all_gaps + 1
 			--~ print("[Front Line] Creating a small gap in the front line.")
@@ -251,40 +258,6 @@ function load_Front_Line()
 	if count_all_gaps > 0 then print("[Front Line] Creating " .. count_all_gaps .. " more peacefull gaps in the front line for realism.") end
 	if battles_with_sounds > 0 then print("[Front Line] Creating only " .. battles_with_sounds .. " battles with embedded sounds to reduce the load on the FMOD system.") end
 end
-
-
--- Queue pour tous les objets à charger
---~ FrontLine_load_queue = {}
---~ FrontLine_loading = false -- indique si un objet est en train d'être chargé
-
---~ function enqueue_frontline_object(obj_path, index)
-    --~ table.insert(FrontLine_load_queue, {path=obj_path, idx=index})
---~ end
-
---~ -- Callback unique pour charger les objets progressivement
---~ function process_frontline_load_queue()
-	--~ if FrontLine_loading then return end -- on attend que l'objet courant soit fini
-    --~ if #FrontLine_load_queue == 0 then return end
-
-    --~ local max_per_frame = 100 -- nombre max d'objets à créer par frame pour ne pas bloquer
-    --~ for i=1, math.min(max_per_frame, #FrontLine_load_queue) do
-        --~ local item = table.remove(FrontLine_load_queue, 1)
-		--~ FrontLine_loading = true
-
-        --~ XPLM.XPLMLoadObjectAsync(item.path,
-            --~ function(inObject, inRefcon)
-                --~ FrontLine_instance[item.idx] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
-                --~ FrontLineRef[item.idx] = inObject
-				--~ FrontLine_loading = false -- objet chargé, on peut passer au suivant
-            --~ end,
-            --~ inRefcon
-        --~ )
-		--~ print("[Front Line] Inserting Front Line progressively to avoid the too many callback error ..." .. item.idx)
-    --~ end
-	--~ print("[Front Line] Inserted the Front Line progressively to avoid the too many callback error ...")
---~ end
--- Dans do_often, on traite la queue progressivement
---~ do_often("if SGES_XPlaneIsPaused == 0 and show_Front_Line then process_frontline_load_queue() end")
 
 
 function unload_Front_Line_Objects()
@@ -304,7 +277,7 @@ function unload_Front_Line_Objects()
 	FLx_densified = {}
 	FLz_densified = {}
 	FrontLineRef = {}
-	Front_Line_chg = false
+	--~ Front_Line_chg = false
 	Front_Line_object_spacing = Front_Line_object_spacing_init
 	--~ Front_line_title  = nil
 	total_number_of_battles = nil
@@ -315,35 +288,13 @@ end
 
 function draw_Front_Line()
 	local heading_modifier = 90
+	--~ print("[Front Line] Preparing to set " .. #FLx_densified .. " battles on their calculated positions.")
 	for i = 1, #FLx_densified do
+
 		if FrontLine_instance[i] ~= nil then
-
-		-- Calcul de distance à l'avion
-			local dx = FLx_densified[i] - sges_gs_plane_x[0]
-			local dz = FLz_densified[i] - sges_gs_plane_z[0]
-			local dist2 = dx * dx + dz * dz
-
-			if sges_gs_ias_spd[0] >= 200 then -- when the aircraft is fast, preload more
-				draw_distance_max = 22000
-			elseif sges_gs_ias_spd[0] < 1 then -- when the aircraft is stopped
-				draw_distance_max = 9000
-			else
-				draw_distance_max = 15000 -- ortherwise keep FPS high
-			end
-
-			-- dessiner uniquement les objets proches de l’avion
-			-- Pour éviter de faire un math.sqrt() à chaque point (plus lent), on compare le carré de la distance directement :
-			if dist2 <= draw_distance_max * draw_distance_max then
-				objpos_value[0].x = FLx_densified[i]
-				objpos_value[0].z = FLz_densified[i]
-				objpos_value[0].y, _ = probe_y(objpos_value[0].x, 0, objpos_value[0].z)
-			else
-				--~ print("[Front Line] Hiding battle point " .. i .. " away (because more than " .. math.floor(draw_distance_max/1000) .. " km away from your plane).")
-				-- hide away to unload the GPU
-				objpos_value[0].x = 0
-				objpos_value[0].z = 0
-				objpos_value[0].y = -5000  -- sous le sol
-			end
+			objpos_value[0].x = FLx_densified[i]
+			objpos_value[0].z = FLz_densified[i]
+			objpos_value[0].y, _ = probe_y(objpos_value[0].x, 0, objpos_value[0].z)
 			-- Orientation perpendiculaire à la ligne (entre i et i+1)
 			if i < #FLx_densified then
 				local sx = FLx_densified[i+1] - FLx_densified[i]
@@ -361,11 +312,75 @@ function draw_Front_Line()
 			float_addr = float_value
 			objpos_addr = objpos_value
 			XPLM.XPLMInstanceSetPosition(FrontLine_instance[i], objpos_addr, float_addr)
-
 		end
 	end
-	Front_Line_chg = false
 end
+
+function draw_AAA()
+	local heading_modifier = 90
+	local global_dist2_from_Front_Line = 4000000
+	-- Calcul de distance à l'avion
+	for i = 1, #FLx_densified do
+		local dx = FLx_densified[i] - sges_gs_plane_x[0]
+		local dz = FLz_densified[i] - sges_gs_plane_z[0]
+		local dist2 = dx * dx + dz * dz
+		if dist2 < global_dist2_from_Front_Line then
+			global_dist2_from_Front_Line = dist2
+		end -- the distance found to any points of the Front LIne
+	end
+	if FrontLine_instance[#FLx_densified - 1] ~= nil then
+		-- Pour éviter de faire un math.sqrt() à chaque point (plus lent), on compare le carré de la distance directement :
+
+		if sges_gs_ias_spd[0] >= 60 and sges_gs_ias_spd[0] < 600 and global_dist2_from_Front_Line < 3000000 then -- the FLAK object
+			objpos_value[0].x = sges_gs_plane_x[0]
+			objpos_value[0].z = sges_gs_plane_z[0]
+			objpos_value[0].y = sges_gs_plane_y[0] + 10 -- merge AAA explostion with the suspect aircraft when above the Front Line
+			--~ print("[Front Line] #" .. #FLx_densified - 1 .. " : AAA explosions. " ..math.floor(global_dist2_from_Front_Line))
+			if global_dist2_from_Front_Line < 1000000 then
+				local randomFailure = math.random()
+				if sges_gs_ias_spd[0] < 400 and randomFailure > 0.75 then
+					-- a failure
+					set("sim/flightmodel/failures/smoking",6)
+					set("sim/operation/failures/rel_engfla0",6)
+					set("sim/operation/failures/rel_brown_out",6)
+					set("sim/operation/failures/rel_bird_strike",6)
+					--~ set("sim/flightmodel/forces/fside_plug_acf",1000)
+					set("sim/operation/failures/rel_wing4R",6)
+					set("sim/operation/failures/rel_vstb1",6)
+					set("sim/operation/failures/rel_wind_shear",6)
+					set("sim/operation/failures/rel_fcon_elev_1_lft_cntr",6)
+					command_once("sim/operation/fail_system")
+					print("[Front Line] A failure due to AAA !")
+
+					--~ 0 = always working
+					--~ 1 = mean time until failure
+					--~ 2 = exact time until failure
+					--~ 3 = fail at exact speed KIAS
+					--~ 4 = fail at exact altitude AGL
+					--~ 5 = fail if CTRL f or JOY
+					--~ 6 = inoperative
+				end
+			end
+		elseif sges_gs_ias_spd[0] >= 60 and sges_gs_ias_spd[0] < 600 then
+			objpos_value[0].x = FLx_densified[#FLx_densified - 1]
+			objpos_value[0].z = FLz_densified[#FLx_densified - 1]
+			objpos_value[0].y, _ = probe_y(objpos_value[0].x, 0, objpos_value[0].z)
+		--~ print("[Front Line] Done setting #" .. #FLx_densified - 1 .. " battle on its calculated position on the ground.")
+		end
+	-- Orientation perpendiculaire à la ligne (entre i et i+1)
+		local sx = FLx_densified[#FLx_densified] - FLx_densified[#FLx_densified - 1]
+		local sz = FLz_densified[#FLx_densified] - FLz_densified[#FLx_densified - 1]
+		local angle = math.atan2(sz, sx)
+		local heading = angle + math.pi / 2  -- perpendiculaire
+		objpos_value[0].heading = math.deg(heading) + heading_modifier
+
+		objpos_value[0].pitch = 0
+		float_addr = float_value
+		objpos_addr = objpos_value
+		XPLM.XPLMInstanceSetPosition(FrontLine_instance[#FLx_densified - 1], objpos_addr, float_addr)
+	end
+end
+
 
 --~ Front_Line_density = false
 local Front_Line_object_spacing = 250
@@ -387,50 +402,24 @@ function Front_Line_object_physics()
 					end
 				end
 				print("[Front Line] In the end, spacing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
-				print("[Front Line] All battle points away from your plane will be hidden in X-Plane to ease the GPU workload.")
 				total_number_of_battles = tonumber(#FLx_densified)
 				load_Front_Line()
 				Front_Line_object_spacing = Front_Line_object_spacing_init -- reinit
 			end
+			--~ draw_Front_Line()
+			Front_Line_chg = false
+			--~ print("[Front Line] Done setting " .. #FLx_densified .. " battles on their calculated positions.")
 		else
 			unload_Front_Line_Objects()
-		end
-		if FrontLine_instance[1] ~= nil  then
-			draw_Front_Line()
+			Front_Line_chg = false -- Ceinture et bretelles
 		end
 	end
-
-	if show_Front_Line and FrontLine_instance[1] ~= nil then
-		-- Mise à jour continue pendant le vol
-		draw_Front_Line()
-	end
-end
-
-function Front_Line_object_physics_OFF()
 
 	if show_Front_Line then
-		if Front_Line_chg and FrontLine_instance[1] == nil then
-			sges_Load_locations()
-			densify_Front_Line(Front_Line_object_spacing)
-
-			if #FLx_densified > frontline_points then
-				while (#FLx_densified > max_objects) do
-					Front_Line_object_spacing = Front_Line_object_spacing * 1.25
-					densify_Front_Line(Front_Line_object_spacing)
-					print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
-				end
-			end
-			print("[Front Line] In the end, spacing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
-			load_Front_Line()
-			Front_Line_object_spacing = Front_Line_object_spacing_init
-			Front_Line_chg = false
-		end
-
-		if FrontLine_instance[1] ~= nil then
-			draw_Front_Line()
-		end
-	elseif Front_Line_chg and not show_Front_Line then
-		unload_Front_Line_Objects()
+		draw_Front_Line()
+		draw_AAA() -- We make a second pass to recapture the final-1 object as FLAK and change it dynamically
+		-- on the ground if user is away
+		-- directed on the user if near
 	end
 end
 

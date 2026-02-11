@@ -236,7 +236,7 @@ Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/firetruc
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/firetruck_effects.pss|5581
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/firetruck_effects.pss~|5581
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/fire_and_smoke.pss_autosave|19693
-Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/fire_of_battle.pss_autosave|35146
+Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/fire_of_battle.pss_autosave|42177
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/fire_of_battle.pss~|42173
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/particles/fire_and_smoke.pss~|19693
 Scripts/Simple_Ground_Equipment_and_Services/MisterX_Lib/Fire/GUIDs.txt|1189

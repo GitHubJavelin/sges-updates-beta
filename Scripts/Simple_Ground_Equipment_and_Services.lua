@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "78.92"
+version_text_SGES = "79"
 --------------------------------------------------------------------------------
 --[[
 
@@ -16970,7 +16970,7 @@ function SGES_script()
 					imgui.PushStyleVar(imgui.constant.StyleVar.FrameRounding, 8)
 					if  imgui.Button("WT",20,20)  then
 						-- actualize the curr position
-						 local weather_x,weather_z,_ =local_to_latlon(sges_gs_plane_x[0],0,sges_gs_plane_z[0])
+						local weather_x,weather_z,_ = local_to_latlon(sges_gs_plane_x[0],0,sges_gs_plane_z[0])
 						open_that_sges_url("https://earth.nullschool.net/fr/#current/wind/isobaric/1000hPa/overlay=precip_3hr/equirectangular/loc=" .. weather_z .. "," .. weather_x)
 						--~ open_that_sges_url("https://aviationweather.gov/gfa/?tab=obs&center=" .. weather_x .. "," .. weather_z .. "&zoom=6&pop=yes&tab=obs")
 						--~ open_that_sges_url("http://skyvector.com/?ll=" .. weather_x .. "," .. weather_z .. "&chart=304&zoom=3")

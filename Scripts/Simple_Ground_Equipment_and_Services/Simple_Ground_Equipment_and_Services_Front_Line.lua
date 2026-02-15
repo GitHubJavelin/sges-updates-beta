@@ -50,7 +50,7 @@ local FrontLineRef = {}
 
 --~ local FrontLine_instance = ffi.new("XPLMInstanceRef[101]")
 FrontLine_instance = {} -- allow more than 101
-local max_objects = 400
+local max_objects = 350
 local draw_distance_max = 15000  -- en mètres 15km
 
 -- to store float values of the local coordinates
@@ -73,7 +73,7 @@ frontline_points = 0
 
 --------------- FIND ALL PROFILES
 --~ local profile_files = {"Arras-1917.txt","France-1917.txt","Clairmarais-1917.txt","Normandy-1944.txt","Custom-1.txt","Custom-2.txt","Custom-3.txt","Custom-4.txt"}
-local profile_files = {"Arras-1917.txt","Clairmarais-1917.txt","Normandy-1944.txt","AShau-1965.txt","Custom-1.txt","Custom-2.txt"}
+local profile_files = {"Arras-1917.txt","Clairmarais-1917.txt","Normandy-1944.txt","AShau-1965.txt","Custom-1.txt","Custom-2.txt","Custom-3.txt","Custom-4.txt"}
 
 local current_file_index = 1
 
@@ -132,7 +132,9 @@ function sges_Load_locations()
 				local lat = tonumber(lat_str)
 				local lon = tonumber(lon_str)
 				--~ print("[Front Line] Front Line point " .. lat .. " ; " .. lon)
-				FLx[index], _, FLz[index] = latlon_to_local(lat, lon, 0)
+				--~ FLx[index], _, FLz[index] = latlon_to_local(lat, lon, 0)
+				FLx[index] = lat
+				FLz[index] = lon
 				index = index + 1
 			--~ else
 				--~ print("[Front Line] Ignored : " .. line)
@@ -140,7 +142,7 @@ function sges_Load_locations()
 		elseif string.match(line, "^@") then
 			Front_line_title = string.sub(string.match(line, "^@(.+)"),1,30)
 			--~ Front_line_title = line
-			print("[Front Line] " .. line)
+			print("[Front Line] In use now : " .. line)
 		end
     end
 
@@ -192,10 +194,14 @@ function densify_Front_Line(step_distance_m)
 	end
 
 	for i = 1, #FLx - 1 do
-		local x1 = FLx[i]
-		local z1 = FLz[i]
-		local x2 = FLx[i+1]
-		local z2 = FLz[i+1]
+		-- calculer en local mais stocker en lat lon les vrais coordonées pour ne pas les rendre sensibles aux coordonnées DSF locales dans X-Plane
+		--~ local x1 = FLx[i]
+		--~ local z1 = FLz[i]
+		--~ local x2 = FLx[i+1]
+		--~ local z2 = FLz[i+1]
+
+		local x1, _, z1 = latlon_to_local(FLx[i],   FLz[i],   0)
+		local x2, _, z2 = latlon_to_local(FLx[i+1], FLz[i+1], 0)
 
 		local dx = x2 - x1
 		local dz = z2 - z1
@@ -209,8 +215,8 @@ function densify_Front_Line(step_distance_m)
 			local ratio = s / steps
 			local x = x1 + dx * ratio
 			local z = z1 + dz * ratio
-			FLx_densified[densified_index] = x
-			FLz_densified[densified_index] = z
+			FLx_densified[densified_index], FLz_densified[densified_index], _  = local_to_latlon(x, 0, z)
+
 			densified_index = densified_index + 1
 		end
 	end
@@ -220,7 +226,7 @@ end
 
 function load_Front_Line()
 	local count_all_gaps = 0
-	local gap_threshold = 0.15
+	local gap_threshold = 0.25
 	local battles_with_sounds = 0
 	math.randomseed(os.time())
 	for i = 1, #FLx_densified do
@@ -234,11 +240,11 @@ function load_Front_Line()
 			if IsXPlane12 then
 				if i == #FLx_densified - 1 then -- this one will be used for FLAK !
 					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_AAA.obj"
-				elseif randomBattleGap > 0.97 then
-					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12.obj"
 				elseif (i == 1 or i == #FLx_densified) or (i % 10 == 0) then
 					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_battle.obj"
 					battles_with_sounds = battles_with_sounds + 1
+				elseif randomBattleGap > 0.97 then
+					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12.obj"
 				else
 					object = SCRIPT_DIRECTORY   .. "Simple_Ground_Equipment_and_Services/Structures/FlameGround_XP12_battle_no_sound.obj"
 				end
@@ -255,8 +261,11 @@ function load_Front_Line()
 			--~ print("[Front Line] Creating a small gap in the front line.")
 		end
 	end
-	if count_all_gaps > 0 then print("[Front Line] Creating " .. count_all_gaps .. " more peacefull gaps in the front line for realism.") end
-	if battles_with_sounds > 0 then print("[Front Line] Creating only " .. battles_with_sounds .. " battles with embedded sounds to reduce the load on the FMOD system.") end
+	if count_all_gaps > 0 then print("[Front Line] Leaving room for " .. count_all_gaps .. " more peacefull gaps.") end
+	print("[Front Line] Loaded " .. math.floor(#FLx_densified)-count_all_gaps .. " battles in total.")
+	if battles_with_sounds > 0 then print("[Front Line] Only " .. battles_with_sounds .. " battles have sounds to reduce the load.") end
+
+	return 1
 end
 
 
@@ -288,17 +297,23 @@ end
 
 function draw_Front_Line()
 	local heading_modifier = 90
-	--~ print("[Front Line] Preparing to set " .. #FLx_densified .. " battles on their calculated positions.")
+	if FrontLine_instance[0] ~= nil then
+		print("[Front Line] Draw " .. #FLx_densified .. " battles on their calculated positions (pass " .. draw_front_line .. ").")
+	end
 	for i = 1, #FLx_densified do
 
 		if FrontLine_instance[i] ~= nil then
-			objpos_value[0].x = FLx_densified[i]
-			objpos_value[0].z = FLz_densified[i]
+			objpos_value[0].x, _, objpos_value[0].z = latlon_to_local(FLx_densified[i], FLz_densified[i], 0)
 			objpos_value[0].y, _ = probe_y(objpos_value[0].x, 0, objpos_value[0].z)
+			--~ if i == 1 then
+				--~ print("[Front Line] First battle : " .. FLx_densified[i] .. " ; " .. FLz_densified[i])
+				--~ print("[Front Line] First battle : " .. objpos_value[0].x .. " ; " .. objpos_value[0].z)
+			--~ end
 			-- Orientation perpendiculaire à la ligne (entre i et i+1)
 			if i < #FLx_densified then
-				local sx = FLx_densified[i+1] - FLx_densified[i]
-				local sz = FLz_densified[i+1] - FLz_densified[i]
+				local NextX, _, NextZ = latlon_to_local(FLx_densified[i+1], FLz_densified[i+1], 0)
+				local sx = NextX - objpos_value[0].x
+				local sz = NextZ - objpos_value[0].y
 				local angle = math.atan2(sz, sx)
 				local heading = angle + math.pi / 2  -- perpendiculaire
 				objpos_value[0].heading = math.deg(heading) + heading_modifier
@@ -314,6 +329,7 @@ function draw_Front_Line()
 			XPLM.XPLMInstanceSetPosition(FrontLine_instance[i], objpos_addr, float_addr)
 		end
 	end
+	return draw_front_line + 1
 end
 
 function draw_AAA()
@@ -321,8 +337,10 @@ function draw_AAA()
 	local global_dist2_from_Front_Line = 4000000
 	-- Calcul de distance à l'avion
 	for i = 1, #FLx_densified do
-		local dx = FLx_densified[i] - sges_gs_plane_x[0]
-		local dz = FLz_densified[i] - sges_gs_plane_z[0]
+		local HereX, _, HereZ = latlon_to_local(FLx_densified[i], FLz_densified[i], 0)
+
+		local dx = HereX - sges_gs_plane_x[0]
+		local dz = HereZ - sges_gs_plane_z[0]
 		local dist2 = dx * dx + dz * dz
 		if dist2 < global_dist2_from_Front_Line then
 			global_dist2_from_Front_Line = dist2
@@ -338,11 +356,11 @@ function draw_AAA()
 			--~ print("[Front Line] #" .. #FLx_densified - 1 .. " : AAA explosions. " ..math.floor(global_dist2_from_Front_Line))
 			if global_dist2_from_Front_Line < 1000000 then
 				local randomFailure = math.random()
-				if sges_gs_ias_spd[0] < 400 and randomFailure > 0.75 then
+				if sges_gs_ias_spd[0] < 400 and randomFailure > 0.95 then
 					-- a failure
 					set("sim/flightmodel/failures/smoking",6)
 					set("sim/operation/failures/rel_engfla0",6)
-					set("sim/operation/failures/rel_brown_out",6)
+					--~ set("sim/operation/failures/rel_brown_out",6)
 					set("sim/operation/failures/rel_bird_strike",6)
 					--~ set("sim/flightmodel/forces/fside_plug_acf",1000)
 					set("sim/operation/failures/rel_wing4R",6)
@@ -350,7 +368,7 @@ function draw_AAA()
 					set("sim/operation/failures/rel_wind_shear",6)
 					set("sim/operation/failures/rel_fcon_elev_1_lft_cntr",6)
 					command_once("sim/operation/fail_system")
-					print("[Front Line] A failure due to AAA !")
+					--~ print("[Front Line] A failure due to AAA !")
 
 					--~ 0 = always working
 					--~ 1 = mean time until failure
@@ -362,12 +380,16 @@ function draw_AAA()
 				end
 			end
 		elseif sges_gs_ias_spd[0] >= 60 and sges_gs_ias_spd[0] < 600 then
-			objpos_value[0].x = FLx_densified[#FLx_densified - 1]
-			objpos_value[0].z = FLz_densified[#FLx_densified - 1]
+
+			objpos_value[0].x, _, objpos_value[0].z = latlon_to_local(FLx_densified[#FLx_densified - 1], FLz_densified[#FLx_densified - 1], 0)
 			objpos_value[0].y, _ = probe_y(objpos_value[0].x, 0, objpos_value[0].z)
 		--~ print("[Front Line] Done setting #" .. #FLx_densified - 1 .. " battle on its calculated position on the ground.")
 		end
 	-- Orientation perpendiculaire à la ligne (entre i et i+1)
+		local NextX, _, NextZ = latlon_to_local(FLx_densified[#FLx_densified], FLz_densified[#FLx_densified], 0)
+		local sx = NextX - objpos_value[0].x
+		local sz = NextZ - objpos_value[0].y
+
 		local sx = FLx_densified[#FLx_densified] - FLx_densified[#FLx_densified - 1]
 		local sz = FLz_densified[#FLx_densified] - FLz_densified[#FLx_densified - 1]
 		local angle = math.atan2(sz, sx)
@@ -385,7 +407,9 @@ end
 --~ Front_Line_density = false
 local Front_Line_object_spacing = 250
 local Front_Line_object_spacing_init = 250
-
+draw_front_line = 0
+drawing_time = os.clock()
+local WitnessFLx_densified = -3.14159
 function Front_Line_object_physics()
 
 	if Front_Line_chg == true then
@@ -398,12 +422,13 @@ function Front_Line_object_physics()
 					do
 						Front_Line_object_spacing = Front_Line_object_spacing * 1.25
 						densify_Front_Line(Front_Line_object_spacing)
-						print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
+						--~ print("[Front Line] Trying " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
 					end
 				end
-				print("[Front Line] In the end, spacing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
 				total_number_of_battles = tonumber(#FLx_densified)
-				load_Front_Line()
+				print("[Front Line] Distributing " .. math.floor(#FLx_densified) .. " battles every " .. math.floor(Front_Line_object_spacing) .. " meters.")
+				draw_front_line = load_Front_Line()
+				WitnessFLx_densified = FLx_densified[#FLx_densified]
 				Front_Line_object_spacing = Front_Line_object_spacing_init -- reinit
 			end
 			--~ draw_Front_Line()
@@ -416,11 +441,21 @@ function Front_Line_object_physics()
 	end
 
 	if show_Front_Line then
-		draw_Front_Line()
+		--emprical results show this needs to be done not just once :
+		if draw_front_line >= 1 and draw_front_line <= 3 then -- a unique draw pass doesn't succeed, we need several passes, empirically.
+			draw_front_line = draw_Front_Line()
+			drawing_time = os.clock()
+		elseif draw_front_line > 3 and  os.clock() >= drawing_time + 240 then -- redraw periodically
+		-- When loading a new DSF the battles can disappear, we need to redrawn them in this case, from the original coordinates.
+			Front_Line_chg = true -- force a load, should include draw_front_line = true but ONLY if if FrontLine_instance[1] == nil
+			draw_front_line = 2 -- we need it
+			draw_front_line = draw_Front_Line()
+			drawing_time = os.clock()
+			-- we need to redraw eventualy, becaus elaoding a new DSF reset the openGL coordinates and make stuff disappear.
+		end
 		draw_AAA() -- We make a second pass to recapture the final-1 object as FLAK and change it dynamically
-		-- on the ground if user is away
-		-- directed on the user if near
 	end
 end
+
 
 do_often("if SGES_XPlaneIsPaused == 0 and (Front_Line_chg or show_Front_Line) then Front_Line_object_physics() end") --make that once by button pressure

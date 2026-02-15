@@ -1,0 +1,78 @@
+
+    == Caution ! The sole file skunkcrafts_updater.cfg should go into the root FlyWithLua folder ("X-Plane 12/Resources/plugins/FlyWithLua"), but all other SGES files go one folder below into "...FlyWithLua/Scripts/" as usual. ==
+
+Version 79, 16th of February, 2026
+	• Fixed the double night lighting of the passenger bus at night at Kai Tak airport
+	• Front line : re-coded the module, now resistant to long range flights and DSF loading thanks to
+the use of world coordinates and no more openGL coordinates. Also shoots at you when in
+close proximity of the Front Line. Enabled 4 custom profiles (instead of 2 previously). Added
+sounds to the battles. Added spaces or gaps between battles. Prevented a FlyWithLua memory
+error by limiting to the number of Front Lines placed per session.
+
+Version 78.9, 9th of February, 2026
+	Add to X-Plane settings a "Hook and Release" command for helicopters sling load operations (easy sling load ops with a single joystick button)
+	SGES option "Airstairs and cones cast lights" modified to kill/enable more lights at once
+	Added the Kai Tak Hong Kong passenger bus at Kai Tak
+	New aircraft support : added the VFW-614 parameters
+	Added some random wildlife for X-Plane 12 bush operations and the Deer manual PDF is added in the documentation folder
+	Renabled the battle front objects (bugfix)
+
+Version 78.8, 25th of December, 2025
+	Available on the rolling beta channel via SkunkCraft Updater (Beta enabled), as of 25th of December, 2025
+    Pushback module updated for X-Plane 12.4
+    Airbus A330-300 ground handling set (stairs positions) adjusted to Laminar Research A330-300.
+    In the options menu : a new checkbox to permanently save the option to not cast lights on the fuselage from the airstairs.
+    Felis 747-200 after landing procedure : 1) body gear steering switching waits for runway vacating (nosewheel deflection) and 2) now the copilot waits for spoiler to be put down by the Captain to proceed (by default and as a new option)
+
+Version 78.7, 10th of December, 2025
+	Housekeeping, restored normal 777v2 pushback truck.
+
+Version 78.6, 10th of December, 2025
+	Added FF/STS 777v2 777-200F tailored support
+	Housekeeping
+
+Version 78.5, 8th of December, 2025
+	Added a custom maintenance stair
+
+Version 78.4, 5th of December, 2025
+	Bug fix : If you decide to get your trusty Thranda C208 out of the hangar at loading the "pilots" won't flash on and off anymore.
+	Bug fix : correction of a critical bug introduced in 78.3 preventing objects to appear
+	Bug fix : prevent the marshaller stairs to move by themselves once the marshaller has already climbed on it.
+
+Version 78.3, 4th of December, 2025
+	The marshaller climbs on stairs for widebody airliners for a better visibility through the windshield.
+
+Version 78.2, 3rd of December, 2025
+	Copilot and Flight Engineer for the Felis B747-200 options made as rememberable permanent option
+	YAK-42 ground handling set added
+	For more clarity : new "save" button to save the options, this button from now on MUST be used.
+
+Version 78.1, 1st of December, 2025
+	Copilot and Flight Engineer actions for the Felis B747-200 (ie Speedy Copilot "light edition" for Felis B747-200) integrated. The before start procedure, before takeoff procedure, climb procedure, descent and approach procedure, after-landing procedure scripted flows are now available directly in SGES. An option allows to disable the feature.
+	Added direct access to Melbo's UH-60M setup panel, and UH-60M support
+
+Version 78, 30th of November, 2025
+    === For version 78 : Please make a full delete of previous versions before v78 and download again the full archive. ===
+    Structural rearrangement of the files and folders.
+    Enables incremental updates through the SkunkCrafts Updater. The updater is found at https://forums.x-plane.org/forums/forum/406-skunkcrafts-updater/
+    Caution ! The sole file skunkcrafts_updater.cfg should go into the root FlyWithLua folder ("X-Plane 12/Resources/plugins/FlyWithLua"), but all other SGES files go one folder below into "...FlyWithLua/Scripts/" as usual.
+
+Version 77.1, 24th of November, 2025
+	Enhanced support for the Boeing 747-200 was made in v77.0 with the Felis B742 freighter version, but the passenger version blocked FlyWithLua as an user reported. This is solved, now both B742P and B742F receive the same treatment.
+
+Version 77, 23th of November, 2025
+	Enhanced support for the geometry of the type Boeing 747-200
+	Added buttons for the Felis B747-200 : GPU / ACU / Chocks / EFB / Automatic before take off procedure / Automatic after landing procedure
+	New support specific of the Boeing 747-200F (cargo variant with nose loading)
+	Reworked the chocks and improved in particular the interaction with the Hot Start Challenger 650 chocks.
+
+Updates from May 2025 to November 2025 :
+	Enhanced or tailored, depending of the case, ground handling : BAe 146, MD-80SF series and B737SF, FlyJSim Boeing 727-200F, F33A Bonanza, FF/STS 757, Sopwith F1 CAMEL, Fokker DR1, BE2c, Nieuport XVIII, Spad XIII, F-35 Lightning II, Mi-24 Hind, Sokol W3A, Alouette III, AS365 Dauphin
+	Added an user option to force the use of containerized cargo in the A320 series holds instead of loose cargo for passengers variants.
+	Use of X-Plane 12.2 and above native chocks instead of SGES chocks is now possible.
+	Modifications to the pushback function, to ease backward movement with early engine start.
+	New industrial/wildfire effect which can be extinguished by X-Plane water bombers [Payload must be jettisoned with accuracy].
+	The SAM site is now a ground target and be destroyed part by part by X-Plane bombs [SAM site must be displayed via SGES].
+	RFFS : added the pelicandrome refill station for ground-based fire-fighting airplanes. (Tick "EMS" then "Pel.")
+
+Older versions : see the several SGES history manuals in the "expanded documentation" folder.

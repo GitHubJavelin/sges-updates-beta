@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "79"
+version_text_SGES = "79.1"
 --------------------------------------------------------------------------------
 --[[
 
@@ -167,6 +167,12 @@ function SGES_script()
 			xpversionobjects = "12.4.0"
 		else
 			IsXPlane1240 = false
+		end
+		if SGES_xplane_internal_version >= 124100 then
+			IsXPlane1241 = true
+			xpversionobjects = "12.4.1"
+		else
+			IsXPlane1241 = false
 		end
 		if xpversionobjects ~= 11 then
 			print("[Ground Equipment " .. version_text_SGES .. "] Utilizing 3D objects introduced in X-Plane " .. xpversionobjects)
@@ -395,6 +401,7 @@ function SGES_script()
 	local rampserviceref0 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref1 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref2 = ffi.new("XPLMObjectRef")            -- for the ground service
+	local rampserviceref2FK = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref3 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref4 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref4L = ffi.new("XPLMObjectRef")            -- for the ground service
@@ -404,6 +411,7 @@ function SGES_script()
 	local rampserviceref7L = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref8 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref8h = ffi.new("XPLMObjectRef")            -- for the ground service
+	local rampserviceref8E = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampservicerefPRM = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampservicerePRM2 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref9 = ffi.new("XPLMObjectRef")            -- for the ground service
@@ -489,7 +497,7 @@ function SGES_script()
 
 	local Cones_instance = ffi.new("XPLMInstanceRef[5]")
 	local GPU_instance = ffi.new("XPLMInstanceRef[1]")
-	local FUEL_instance = ffi.new("XPLMInstanceRef[1]")
+	local FUEL_instance = ffi.new("XPLMInstanceRef[2]")
 	local Cleaning_instance = ffi.new("XPLMInstanceRef[2]")
 	local BeltLoader_instance = ffi.new("XPLMInstanceRef[3]")   -- one more for the associated cart -- one more for rear Loader
 	local Stairs_instance = ffi.new("XPLMInstanceRef[1]")
@@ -497,7 +505,7 @@ function SGES_script()
 	local StairsXPJ2_instance = ffi.new("XPLMInstanceRef[2]")
 	local StairsXPJ3_instance = ffi.new("XPLMInstanceRef[2]")
 	local Bus_instance = ffi.new("XPLMInstanceRef[2]")
-	local Catering_instance = ffi.new("XPLMInstanceRef[2]")
+	local Catering_instance = ffi.new("XPLMInstanceRef[3]")
 	local PRM_instance = ffi.new("XPLMInstanceRef[2]")
 	local FM_instance = ffi.new("XPLMInstanceRef[1]")
 	local FireVehicle_instance = ffi.new("XPLMInstanceRef[4]")
@@ -2720,6 +2728,9 @@ function SGES_script()
 				end
 
 			else
+				if FUEL_instance[1] ~= nil then
+					_,FUEL_instance[1],rampserviceref2FK,_,_ = Common_draw_departing_vehicles(FuelFinalX,FuelFinalY,FUEL_instance[1],"FUELKIT",rampserviceref2FK,Fuel_heading_correcting_factor)
+				end
 				FUEL_chg,FUEL_instance[0],rampserviceref2,FuelFinalX,FuelFinalY = Common_draw_departing_vehicles(FuelFinalX,FuelFinalY,FUEL_instance[0],"FUEL",rampserviceref2,Fuel_heading_correcting_factor)
 			end
 
@@ -2727,7 +2738,11 @@ function SGES_script()
 			fuel_currentX = nil
 			fuel_currentY = nil
 		  else
-			FUEL_chg,FUEL_instance[0],rampserviceref2 = common_unload("FUEL",FUEL_instance[0],rampserviceref2)
+			if FUEL_instance[1] ~= nil then
+				_,FUEL_instance[1],rampserviceref2FK = common_unload("FUELKIT",FUEL_instance[1],rampserviceref2FK)
+			end
+			_,FUEL_instance[0],rampserviceref2 = common_unload("FUEL",FUEL_instance[0],rampserviceref2)
+			FUEL_chg = false
 			fuel_currentX = nil
 			fuel_currentY = nil
 		  end
@@ -3158,6 +3173,7 @@ function SGES_script()
 
 			Catering_chg,Catering_instance[0],rampserviceref8 = common_unload("Catering",Catering_instance[0],rampserviceref8)
 			Catering_chg,Catering_instance[1],rampserviceref8h = common_unload("CateringHighPart",Catering_instance[1],rampserviceref8h)
+			Catering_chg,Catering_instance[2],rampserviceref8hE = common_unload("CateringElevator",Catering_instance[2],rampserviceref8hE)
 			--unload_Catering()
 			CatObject = nil
 			if CateringHighPart_is_night_lighting ~= nil then CateringHighPart_is_night_lighting = nil end
@@ -3222,9 +3238,15 @@ function SGES_script()
 			if CatObject == Dayonly_truck_flatbed_01 then
 				object_hdg_correction = 90
 			end
+			local x_higher_part = x
+			local z_higher_part = z
 
+			-- When this is an X-Plane 12.4.1 object, allow more space with the fuselage
+			if string.find(CatObject,"Common_Elements/Vehicles") and User_Custom_Prefilled_CateringObject_1241 then
+				x = 1.267 * x
+				x_higher_part = x * 0.79
 			-- When this is an X-Plane 12.1.4 object, allow more room toward the fuselage
-			if string.find(CatObject,"Common_Elements/Vehicles") then
+			elseif string.find(CatObject,"Common_Elements/Vehicles") then
 				x = 1.25 * x
 			end
 
@@ -3233,7 +3255,11 @@ function SGES_script()
 			if CateringHighPart_is_night_lighting ~= nil and CateringHighPart_is_night_lighting then
 				Catering_chg = draw_static_object(x,z,object_hdg_correction,Catering_instance[1],"CateringLight") -- when it's the night lighting of X-Plane 12.1.4 van
 			else
-				Catering_chg = draw_static_object(x,z,object_hdg_correction,Catering_instance[1],"CateringHighPart") -- otherwise use CateringHighPart to affect the elevation
+				Catering_chg = draw_static_object(x_higher_part,z_higher_part,object_hdg_correction,Catering_instance[1],"CateringHighPart") -- otherwise use CateringHighPart to affect the elevation
+			end
+
+			if Catering_instance[2] ~= nil then
+				Catering_chg = draw_static_object(x,z,object_hdg_correction,Catering_instance[2],"CateringElevator") -- when it's the night lighting of X-Plane 12.1.4 van
 			end
 		  end
 	  end
@@ -5281,6 +5307,28 @@ function SGES_script()
 				-- watch your steps ! in service_object_physics_Fuel()
 			elseif PLANE_ICAO == "SR71" then -- special JP-7 fuel for the SR-71 means a special truck everywhere :-)
 				Prefilled_FuelObject = User_Custom_Prefilled_FuelObject_USA_2
+			elseif IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0  then
+				math.randomseed(os.time())
+				randomView = math.random()
+				XP1241_FuelKit = XP1241_FuelKit_EU
+				if randomView > 0.3 then
+					Prefilled_FuelObject = XP1241_EuropeanFuelTruck_white
+				else
+					Prefilled_FuelObject = XP1241_EuropeanFuelTruck_blue
+				end
+
+				-- but update that to the USA cistern truck as required :
+				if sges_airport_ID ~= nil and
+				( (string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1) or
+				(string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1) or
+				(string.find(sges_airport_ID,"C") ~= nil and string.find(sges_airport_ID,"C") == 1) )
+				and IsXPlane1214 and Dayonly_truck_tanker_01 ~= nil  -- limit the big fuel truck to big aircraft
+						then
+							-- Native X-Plane 12.1.4 day hours Common Equipment Vehicle (has no lights ! Use day only !)
+							Prefilled_FuelObject = Dayonly_truck_tanker_01
+							XP1241_FuelKit = XP1241_FuelKit_USA
+				end
+
 			else
 				math.randomseed(os.time())
 				randomView = math.random()
@@ -5331,6 +5379,19 @@ function SGES_script()
 						rampserviceref2 = inObject
 					end,
 					inRefcon )
+
+			if IsXPlane1241 and (Prefilled_FuelObject == XP1241_EuropeanFuelTruck_white or Prefilled_FuelObject == XP1241_EuropeanFuelTruck_blue or Prefilled_FuelObject == Dayonly_truck_tanker_01) then
+				XPLM.XPLMLoadObjectAsync(XP1241_FuelKit,
+						function(inObject, inRefcon)
+							FUEL_instance[1] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+							rampserviceref2FK = inObject
+						end,
+						inRefcon )
+			end
+
+
+
+
 			fuel_show_only_once = false
 		end
 	end
@@ -5821,9 +5882,22 @@ function SGES_script()
 					CateringHighPartObject =  Prefilled_LightObject				-- no second part
 				else
 					-- normal catering for airliners
+					if IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0  then
+						if ((sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1)		-- USA
+						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1)		-- Central America
+						--~ or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"W") ~= nil and string.find(sges_airport_ID,"W") == 1)		-- South America
+						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"C") ~= nil and string.find(sges_airport_ID,"C") == 1))	-- Canada
+						then
+							CatObject = Prefilled_CateringObject
+						else
+							CatObject = User_Custom_Prefilled_CateringObject_1241
+						end
+
+					else
+						CatObject = Prefilled_CateringObject						-- first  part of the normal catering object
+					end
 
 					-- comes in several flavors
-					CatObject = Prefilled_CateringObject						-- first  part of the normal catering object
 					CateringHighPartObject = Prefilled_CateringHighPartObject	-- second part of the normal catering object
 
 					if sges_airport_ID == nil then
@@ -5896,8 +5970,19 @@ function SGES_script()
 							end
 						end
 						--~ print("[Ground Equipment " .. version_text_SGES .. "] Small catering + X-Plane 12.1.4+ : changing the catering car for an X-Plane 12.1.4+ van.")
-				end
 				------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
+				------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.4.1 ----------------
+				elseif IsXPlane1241 -- make safety code verifications and version check
+					--~ and sges_sun_pitch[0] > 5 and UseXplane1214DefaultObject  -- restrict replacement by an X-Plane 12.1.4 vehicule to day
+					and UseXplane1214DefaultObject  -- less restricted replacement
+					and not SGES_BushMode -- restrict it to normal mode
+					and sges_military == 0 and sges_military_default == 0
+					then
+						CatObject = User_Custom_Prefilled_CateringObject_1241
+				end
+				------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.4.1 ----------------
+
+
 				if Clairmarais_Aerodrome_directory ~= nil then Clairmarais_Aerodrome_lib() end
 
 				--print("[Ground Equipment " .. version_text_SGES .. "] load Prefilled_Catering Object ")
@@ -5905,6 +5990,16 @@ function SGES_script()
 						function(inObject, inRefcon)
 							Catering_instance[0] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
 							rampserviceref8 = inObject
+						end,
+						inRefcon )
+		end
+
+
+		if Catering_instance[2] == nil and Catering_show_only_once and CatObject == User_Custom_Prefilled_CateringObject_1241 then -- then an instance is called to be drawn but is missing !
+			   XPLM.XPLMLoadObjectAsync(User_Custom_Prefilled_CateringObject_elevator,
+						function(inObject, inRefcon)
+							Catering_instance[2] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+							rampserviceref8hE = inObject
 						end,
 						inRefcon )
 		end
@@ -8074,6 +8169,15 @@ function SGES_script()
 			fuel_finalX = -20
 			fuel_finalY = 2
 		end
+
+		aiming_fuel_turn = 27 -- degrees
+		-- amend above definition for the very long fuel trucks after X-Plane 12.4.1
+		if IsXPlane1241 and (Prefilled_FuelObject == XP1241_EuropeanFuelTruck_white or Prefilled_FuelObject == XP1241_EuropeanFuelTruck_blue or Prefilled_FuelObject == Dayonly_truck_tanker_01) then
+			fuel_finalX = fuel_finalX - 1
+			fuel_finalY = fuel_finalY - 5
+			aiming_fuel_turn = 4
+		end
+
 		-- define initial positions
 		if fuel_currentX == nil or fuel_currentY == nil then
 			if Prefilled_FuelObject == XPlane12_ford_carrier_accessories_directory .. "SH60_Seahawk_animated.obj"	then
@@ -8105,6 +8209,7 @@ function SGES_script()
 					RearBeltLoader_chg,BeltLoader_instance[2],rampservicerefRBL =  common_unload("RearBeltLoader",BeltLoader_instance[2],rampservicerefRBL)
 					Catering_chg,Catering_instance[0],rampserviceref8 = common_unload("Catering",Catering_instance[0],rampserviceref8)
 					Catering_chg,Catering_instance[1],rampserviceref8h = common_unload("CateringHighPart",Catering_instance[1],rampserviceref8h)
+					Catering_chg,Catering_instance[2],rampserviceref8hE = common_unload("CateringElevator",Catering_instance[2],rampserviceref8hE)
 				end
 				if custom_fuel_pump_finalX < -2 and custom_fuel_pump_finalX > -15 then-- right hand side
 					Baggage_chg,Baggage_instance[2],rampservicerefBaggage3 = common_unload("Baggage2",Baggage_instance[2],rampservicerefBaggage2)
@@ -8171,12 +8276,12 @@ function SGES_script()
 					-- variation to object position at each frame
 					fuel_dX = -0.002
 					fuel_dY = 0.01
-					fuel_heading = fuel_heading + 0.2
+					fuel_heading = fuel_heading + 0.1
 				elseif fuel_currentY >= fuel_finalY - 3 and fuel_heading > sges_gs_plane_head[0] + 11 then -- SAFETY
 					-- variation to object position at each frame
 					fuel_dX = 0.0005
 					fuel_dY = 0.01
-					fuel_heading = fuel_heading - 0.2
+					fuel_heading = fuel_heading - 0.1
 				elseif fuel_currentY >= fuel_finalY - 3 then
 					fuel_dX = -0.001
 					fuel_dY = 0.005
@@ -8189,22 +8294,32 @@ function SGES_script()
 					groundPitch["Fuel"] =  groundPitch["Fuel"] - 0.1
 					if groundPitch["Fuel"] < 0.5  then print("[Ground Equipment " .. version_text_SGES .. "] Correcting fuel pitch to zero " .. math.floor(groundPitch["Fuel"])) end
 				end
-				if fuel_currentY >= fuel_finalY - 3 and fuel_heading > sges_gs_plane_head[0] - 27 then
+
+				if fuel_currentY >= fuel_finalY - 3 and fuel_heading > sges_gs_plane_head[0] - aiming_fuel_turn then
 					-- variation to object position at each frame
 					fuel_dX = 0.002
 					fuel_dY = 0.01
-					fuel_heading = fuel_heading - 0.2
+					if aiming_fuel_turn ~= 27 then
+						fuel_heading = fuel_heading - 0.1
+					else
+						fuel_heading = fuel_heading - 0.2
+					end
 				elseif fuel_currentY >= fuel_finalY - 3 and fuel_heading < sges_gs_plane_head[0] - 30 then -- SAFETY
 					-- variation to object position at each frame
 					fuel_dX = -0.0005
 					fuel_dY = 0.01
 					fuel_heading = fuel_heading + 0.2
 				elseif fuel_currentY >= fuel_finalY - 3 then
-					fuel_dX = 0.002
-					fuel_dY = 0.005
 					fuel_heading = fuel_heading
+					if aiming_fuel_turn ~= 27 then
+						fuel_dX = 0.0007
+						fuel_dY = 0.01
+					else
+						fuel_dX = 0.002
+						fuel_dY = 0.005
+					end
 				end
-				Fuel_heading_correcting_factor = -27
+				Fuel_heading_correcting_factor = -1 * aiming_fuel_turn
 			end
 			if FuelTruck_is_deer then -- a deer is far faster than a fuel truck
 				fuel_dY= fuel_dY + 0.15
@@ -8250,6 +8365,7 @@ function SGES_script()
 			objpos_addr = objpos_value
 			--print(objpos_value[0].pitch .. " <-------------- fuel pitch 2")
 			if wetness == 0 then XPLM.XPLMInstanceSetPosition(FUEL_instance[0], objpos_addr, float_addr) end   -- FUEL truck
+			if wetness == 0 and FUEL_instance[1] ~= nil then XPLM.XPLMInstanceSetPosition(FUEL_instance[1], objpos_addr, float_addr) end   -- FUEL truck
 		else
 			-- renable the other vehicles which were on the way :
 			if show_Pump and (custom_fuel_pump_finalX ~= nil and custom_fuel_pump_finalY ~= nil) then
@@ -8682,7 +8798,9 @@ function SGES_script()
 			current_X[object_name] = Initial_X
 			current_Z[object_name] = Initial_Z
 			object_name_t[object_name] = object_name
-			print("[Ground Equipment " .. version_text_SGES .. "]  " .. object_name .. " starting again from " .. current_X[object_name] .. " and " .. current_Z[object_name] .. " with a heading correction to the airplane nose of ".. heading_corr[object_name] .. "°.")
+			if object_name_t[object_name] ~= nil and heading_corr[object_name] ~= nil and current_X[object_name] ~= nil and current_Z[object_name] ~= nil then
+				print("[Ground Equipment " .. version_text_SGES .. "]  " .. object_name .. " starting again from " .. current_X[object_name] .. " and " .. current_Z[object_name] .. " with a heading correction to the airplane nose of ".. heading_corr[object_name] .. "°.")
+			end
 		end
 
 
@@ -8727,7 +8845,7 @@ function SGES_script()
 				elseif 	current_Z[object_name] > obj_finalZ - 0.5 then dZ_depart[object_name] = 0.004 end
 
 
-				if object_name_t[object_name] == "FUEL" then
+				if object_name_t[object_name] == "FUEL" or object_name_t[object_name] == "FUELKIT" then
 
 					if heading_corr[object_name] <= 0.2 then --starting is minus 27 (regular fuel truck)
 						heading_corr[object_name] = heading_corr[object_name] + 0.2 -- added 16-7-23
@@ -18517,7 +18635,7 @@ function SGES_script()
 					--~ end
 				imgui.TreePop()
 				elseif IsXPlane1220 then
-					l_changed, l_newval = imgui.Checkbox(" Prefer X-Plane 12 chocks\n (for this model only)", UseXplane1220Chocks_specific)
+					l_changed, l_newval = imgui.Checkbox(" Prefer X-Plane 12 chocks\n for this aircraft type", UseXplane1220Chocks_specific)
 					if l_changed then
 						show_Chocks = false
 						Chocks_chg = true
@@ -18659,7 +18777,7 @@ function SGES_script()
 				imgui.Spacing()
 				imgui.Separator()
 				if IsXPlane1214 then
-					l_changed, l_newval = imgui.Checkbox(" Use X-Plane 12.1.4 vehicles", UseXplane1214DefaultObject)
+					l_changed, l_newval = imgui.Checkbox(" Use X-Plane native vehicles", UseXplane1214DefaultObject)
 					if l_changed then
 						UseXplane1214DefaultObject = l_newval
 						if l_newval then UseXplaneDefaultObject = false end
@@ -18669,7 +18787,7 @@ function SGES_script()
 						imgui.BeginTooltip()
 						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
 						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-						imgui.TextUnformatted("X-Plane 12.1.4 brings new library objects : Snow and De-Icing Equipment, Ambulances, Trucks Airside and Airport Operations")
+						imgui.TextUnformatted("X-Plane 12.1.4 or above brings new objects like Snow and De-Icing Equipment, Ambulances, Trucks Airside and Airport Operations that we can use.")
 						imgui.PopStyleColor()
 						imgui.PopTextWrapPos()
 						imgui.EndTooltip()
@@ -19476,7 +19594,8 @@ function SGES_script()
 		Cones_chg,Cones_instance[3],rampservicerefBo = common_unload("Cones",Cones_instance[3],rampservicerefBo)
 		Cones_chg,Cones_instance[4],rampservicerefBo4 = common_unload("Cones",Cones_instance[4],rampservicerefBo4)
 		GPU_chg,GPU_instance[0],rampserviceref1 = common_unload("GPU",GPU_instance[0],rampserviceref1)
-		FUEL_chg,FUEL_instance[0],rampserviceref2 = common_unload("FUEL",FUEL_instance[0],rampserviceref2)
+		_,FUEL_instance[0],rampserviceref2 = common_unload("FUEL",FUEL_instance[0],rampserviceref2)
+		FUEL_chg,FUEL_instance[1],rampserviceref2FK = common_unload("FUELKIT",FUEL_instance[1],rampserviceref2FK)
 		Cleaning_chg,Cleaning_instance[0],rampserviceref4 = common_unload("Cleaning",Cleaning_instance[0],rampserviceref4)
 		_,Cleaning_instance[1],rampserviceref4L = common_unload("CleaningLight",Cleaning_instance[1],rampserviceref4L)
 		Stairs_chg,Stairs_instance[0],rampserviceref6 = common_unload("Stairs",Stairs_instance[0],rampserviceref6)
@@ -19484,6 +19603,7 @@ function SGES_script()
 		Bus_chg,Bus_instance[1],rampserviceref7L = common_unload("BusLight",Bus_instance[1],rampserviceref7L)
 		Catering_chg,Catering_instance[0],rampserviceref8 = common_unload("Catering",Catering_instance[0],rampserviceref8)
 		Catering_chg,Catering_instance[1],rampserviceref8h = common_unload("CateringHighPart",Catering_instance[1],rampserviceref8h)
+		Catering_chg,Catering_instance[2],rampserviceref8hE = common_unload("CateringElevator",Catering_instance[2],rampserviceref8hE)
 		PRM_chg,PRM_instance[0],rampservicerefPRM = common_unload("PRM",PRM_instance[0],rampservicerefPRM)
 		PRM_chg,PRM_instance[1],rampservicerefPRM2 = common_unload("CateringHighPart",PRM_instance[1],rampservicerefPRM2)
 		FM_chg,FM_instance[0],rampserviceref53 = common_unload("FM",FM_instance[0],rampserviceref53)

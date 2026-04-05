@@ -1,6 +1,10 @@
 
     == Caution ! The sole file skunkcrafts_updater.cfg should go into the root FlyWithLua folder ("X-Plane 12/Resources/plugins/FlyWithLua"), but all other SGES files go one folder below into "...FlyWithLua/Scripts/" as usual. ==
 
+Version 79.1, 5th of April, 2026
+	• Replaced the fuel truck by the new X-Plane 12.4.1 fuel truck with a custom refueling kit (US/EU)
+	• Replaced the catering truck by the new X-Plane 12.4.1 european flatbed lorry
+
 Version 79, 16th of February, 2026
 	• Fixed the double night lighting of the passenger bus at night at Kai Tak airport
 	• Front line : re-coded the module, now resistant to long range flights and DSF loading thanks to

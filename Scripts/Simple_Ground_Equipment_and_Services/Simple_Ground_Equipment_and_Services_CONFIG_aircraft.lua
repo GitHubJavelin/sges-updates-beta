@@ -66,6 +66,9 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif PLANE_ICAO == "A3ST" then BeltLoaderFwdPosition = 17		custom_fuel_pump_finalX = 13.50  custom_fuel_pump_finalY = -1
     elseif PLANE_ICAO == "IL96" then BeltLoaderFwdPosition = 14  	SecondStairsFwdPosition = -11.0
 
+    elseif PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" then BeltLoaderFwdPosition = 5.9 SecondStairsFwdPosition = -30 -- ERJ TEMPO values
+    elseif PLANE_ICAO == "E135" or PLANE_ICAO == "E35L" then BeltLoaderFwdPosition = 5.9 SecondStairsFwdPosition = -30 -- ERJ TEMPO values
+
     elseif PLANE_ICAO == "E170" then BeltLoaderFwdPosition = 6.1	BeltLoaderRearPosition = -5.7	SecondStairsFwdPosition = -7.80	custom_fuel_pump_finalX = -9  custom_fuel_pump_finalY = 0.5
     elseif PLANE_ICAO == "E175" then BeltLoaderFwdPosition = 6.1	BeltLoaderRearPosition = -6.5	SecondStairsFwdPosition = -8.7	custom_fuel_pump_finalX = -8.50  custom_fuel_pump_finalY = -0.5
     elseif PLANE_ICAO == "E190" then BeltLoaderFwdPosition = 9.1 	BeltLoaderRearPosition = -8.2  SecondStairsFwdPosition = -11.1	custom_fuel_pump_finalX = -8.50  custom_fuel_pump_finalY = -2

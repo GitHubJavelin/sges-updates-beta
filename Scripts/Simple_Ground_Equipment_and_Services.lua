@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "79.1"
+version_text_SGES = "79.2"
 --------------------------------------------------------------------------------
 --[[
 
@@ -1180,7 +1180,7 @@ function SGES_script()
 		Prefilled_CateringObject =      Prefilled_PRM_carObject
 		--~ FollowMe_passat_white
 		Prefilled_PRMHighPartObject 	= XPlane_objects_directory   .. "../apt_lights/slow/inset_edge_rwy_WW.obj"
-	elseif  UseXplaneDefaultObject == false and (PLANE_ICAO == "GLF650ER" or PLANE_ICAO == "DH8D" or string.match(PLANE_ICAO,"AT4") or (string.match(PLANE_ICAO,"AT7") or SGES_Author == "ATGCAB (Alfredo Torrado & Juan Alcon)")) then
+	elseif  UseXplaneDefaultObject == false and (PLANE_ICAO == "GLF650ER" or PLANE_ICAO == "DH8D" or PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" or PLANE_ICAO == "E135" or PLANE_ICAO == "E35L" or string.match(PLANE_ICAO,"AT4") or (string.match(PLANE_ICAO,"AT7") or SGES_Author == "ATGCAB (Alfredo Torrado & Juan Alcon)")) then
 		-- PRM ---------------------------------------------------------------------
 		Prefilled_CateringObject =      Prefilled_PRM_carObject
 		Prefilled_PRMHighPartObject 	= XPlane_objects_directory   .. "../apt_lights/slow/inset_edge_rwy_WW.obj"
@@ -1655,6 +1655,7 @@ function SGES_script()
 	or PLANE_ICAO == "E19L"
 	or PLANE_ICAO == "E19L"
 	or PLANE_ICAO == "VF14"
+	or PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" or PLANE_ICAO == "E135" or PLANE_ICAO == "E35L" -- ERJ Embraer
 	or string.match(PLANE_ICAO,"K35")
 	or string.match(PLANE_ICAO,"AT4")
 	or (string.match(PLANE_ICAO,"AT7") or SGES_Author == "ATGCAB (Alfredo Torrado & Juan Alcon)")
@@ -2559,9 +2560,16 @@ function SGES_script()
 				command_once("412/buttons/remove_before_flight_on")
 				command_once("412/buttons/PATIENT_off")
 			end
+			if (string.match(PLANE_ICAO,"E4") or string.match(PLANE_ICAO,"E14") or string.match(PLANE_ICAO,"E13") or string.match(PLANE_ICAO,"E3")) and string.match(SGES_Author,"Marko") then
+				set("XCrafts/other/ground_objects",1)
+			end
 		  else
 			if IsXPlane12 and SGES_IsHelicopter == 1 and AIRCRAFT_FILENAME == "Bell412.acf" and sges_gs_plane_y_agl[0] < 1 and sges_gs_gnd_spd[0] < 1 then
 				command_once("412/buttons/remove_before_flight_off")
+			end
+			if (string.match(PLANE_ICAO,"E4") or string.match(PLANE_ICAO,"E14") or string.match(PLANE_ICAO,"E13") or string.match(PLANE_ICAO,"E3")) and string.match(SGES_Author,"Marko") then
+				set("XCrafts/other/ground_objects",1)
+				set("XCrafts/other/remove_before_flight",1)
 			end
 			 -- unload_Cones()
 			 Cones_chg,Cones_instance[0],rampserviceref0 = common_unload("Cones",Cones_instance[0],rampserviceref0)
@@ -3160,6 +3168,23 @@ function SGES_script()
 				set("Colimata/F104_A_SW_GROUND_pins_i",1)
 			end
 			if Catering_instance[0] == nil and PLANE_ICAO == "DH8D" and AIRCRAFT_FILENAME == "Q4XP.acf" then				command_once("FJS/Q4XP/Animation/Toggle_Rear_Right_Cabin_Door")				end
+
+
+			if dataref_to_open_the_door ~= nil then
+				if dataref_to_open_the_door == "XCrafts/doors/front_main" and string.match(PLANE_ICAO,"E") then			-- Eùmbraer ERJ
+					if get("XCrafts/doors/front_service") == 0 then -- open the door if closed
+						command_once("XCrafts/ERJ/service_door")
+					end
+				elseif dataref_to_open_the_door == "AirbusFBW/PaxDoorModeArray" then -- toliss
+					if PLANE_ICAO == "A319" then set_array(dataref_to_open_the_door,3,target_to_open_the_door) end
+					if PLANE_ICAO == "A320" or PLANE_ICAO == "A20N" then set_array(dataref_to_open_the_door,3,target_to_open_the_door) end
+					if PLANE_ICAO == "A321" or PLANE_ICAO == "A21N" then set_array(dataref_to_open_the_door,7,target_to_open_the_door) end
+					if PLANE_ICAO == "A339" then set_array(dataref_to_open_the_door,7,target_to_open_the_door) end
+					if PLANE_ICAO == "A346" then set_array(dataref_to_open_the_door,7,target_to_open_the_door) end
+				end
+			end
+
+
 			load_Catering()
 		  else
 
@@ -3170,6 +3195,21 @@ function SGES_script()
 				set("Colimata/F104_A_SW_DOORS_electrics_i",0)
 			end
 			if Catering_instance[0] ~= nil and PLANE_ICAO == "DH8D" and AIRCRAFT_FILENAME == "Q4XP.acf" then				command_once("FJS/Q4XP/Animation/Toggle_Rear_Right_Cabin_Door")				end
+
+
+			if dataref_to_open_the_door ~= nil then
+				if dataref_to_open_the_door == "XCrafts/doors/front_main" and string.match(PLANE_ICAO,"E") then			-- Eùmbraer ERJ
+					if get("XCrafts/doors/front_service") == 1 then -- close the door if open
+						command_once("XCrafts/ERJ/service_door")
+					end
+				elseif dataref_to_open_the_door == "AirbusFBW/PaxDoorModeArray" then -- toliss
+					if PLANE_ICAO == "A319" then set_array(dataref_to_open_the_door,3,target_to_open_the_door-1) end
+					if PLANE_ICAO == "A320" or PLANE_ICAO == "A20N" then set_array(dataref_to_open_the_door,3,target_to_open_the_door-1) end
+					if PLANE_ICAO == "A321" or PLANE_ICAO == "A21N" then set_array(dataref_to_open_the_door,7,target_to_open_the_door-1) end
+					if PLANE_ICAO == "A339" then set_array(dataref_to_open_the_door,7,target_to_open_the_door-1) end
+					if PLANE_ICAO == "A346" then set_array(dataref_to_open_the_door,7,target_to_open_the_door-1) end
+				end
+			end
 
 			Catering_chg,Catering_instance[0],rampserviceref8 = common_unload("Catering",Catering_instance[0],rampserviceref8)
 			Catering_chg,Catering_instance[1],rampserviceref8h = common_unload("CateringHighPart",Catering_instance[1],rampserviceref8h)
@@ -3202,9 +3242,13 @@ function SGES_script()
 			elseif string.match(PLANE_ICAO,"CRJ") then
 				x = -targetDoorX-8
 				z = 2*math.abs(BeltLoaderFwdPosition)
-			elseif (string.match(PLANE_ICAO,"E14") or string.match(PLANE_ICAO,"E13")) and string.match(SGES_Author,"Marko") then
-				x = -targetDoorX-8
-				z = 2*math.abs(BeltLoaderFwdPosition)
+			elseif (string.match(PLANE_ICAO,"E4") or string.match(PLANE_ICAO,"E14") or string.match(PLANE_ICAO,"E13") or string.match(PLANE_ICAO,"E3")) and string.match(SGES_Author,"Marko") then
+				x = -targetDoorX-3.75
+				if targetDoorZ ~= nil then
+					z = -targetDoorZ - 1.30
+				else
+					z = 2*math.abs(BeltLoaderFwdPosition)
+				end
 			elseif PLANE_ICAO == "MD88" then
 				x = 2
 				z = - (BeltLoaderFwdPosition + 5.5)
@@ -3234,7 +3278,9 @@ function SGES_script()
 				x = 7*x
 				object_hdg_correction = 150
 			end
-
+			if (string.match(PLANE_ICAO,"E4") or string.match(PLANE_ICAO,"E14") or string.match(PLANE_ICAO,"E13") or string.match(PLANE_ICAO,"E3")) and string.match(SGES_Author,"Marko") then
+				object_hdg_correction = 90
+			end
 			if CatObject == Dayonly_truck_flatbed_01 then
 				object_hdg_correction = 90
 			end
@@ -3279,9 +3325,18 @@ function SGES_script()
 			--unload_PRM()
 			if ServiceDoor1R ~= nil and ServiceDoor1R == target_to_open_the_door then
 				ServiceDoor1R = target_to_open_the_door-1
+
+			end
+			if dataref_to_open_the_door ~= nil then
+				if dataref_to_open_the_door == "XCrafts/doors/front_main" and string.match(PLANE_ICAO,"E") then			-- Eùmbraer ERJ
+					if get("XCrafts/doors/front_service") == 1 then -- close the door if open
+						command_once("XCrafts/ERJ/service_door")
+					end
+				end
 			end
 			if PRMHighPart_is_night_lighting ~= nil then PRMHighPart_is_night_lighting = nil end
 		  end
+
 		  if PRM_instance[0] ~= nil then
 			local x = -targetDoorX-deltaDoorX-1.3-targetDoorX_alternate
 			local z = -targetDoorZ+targetDoorZ_alternate
@@ -3331,6 +3386,8 @@ function SGES_script()
 				if dataref_to_open_the_door ~= nil and index_to_open_the_service_door ~= nil then
 					if dataref_to_open_the_door == "laminar/B738/door/fwd_L_toggle" and string.match(PLANE_ICAO,"B73") then			-- ZIBO / LevelUp
 						command_once("laminar/B738/door/fwd_R_toggle")
+					elseif dataref_to_open_the_door == "XCrafts/doors/front_main" and string.match(PLANE_ICAO,"E") then			-- Eùmbraer ERJ
+						command_once("XCrafts/ERJ/service_door")
 					elseif PLANE_ICAO ~= "MD88" and PLANE_ICAO ~= "MD11" then -- those ones have commands, not datarefs
 						if ServiceDoor1R == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
 							dataref("ServiceDoor1R",dataref_to_open_the_door,"writable",index_to_open_the_service_door)
@@ -5273,13 +5330,13 @@ function SGES_script()
 			if AIRCRAFT_FILENAME == "Bell412.acf" then command_once("412/buttons/GPU_on")  command_once("412/buttons/remove_before_flight_off") end
 			if AIRCRAFT_FILENAME == "CH47.acf" then set("ch47/other/GPU",1) set("ch47/weapons/remove_before_flight",0) end
 			if AIRCRAFT_FILENAME == "AW109SP.acf" then set("sim/cockpit/electrical/gpu_on",1) end
-			if (PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175") and string.match(SGES_Author,"Marko") and XPLMFindDataRef("XCrafts/other/GPU") ~= nil then set("XCrafts/other/GPU",0) end -- zero, for ON
+			if (PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175" or PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" or PLANE_ICAO == "E135" or PLANE_ICAO == "E35L") and string.match(SGES_Author,"Marko") and XPLMFindDataRef("XCrafts/other/GPU") ~= nil then set("XCrafts/other/GPU",0) end -- zero, for ON
 			if (PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175") and string.match(SGES_Author,"Marko") then
 				set("XCrafts/other/remove_before_flight",1) -- on for OFF
 			end
 			--------------------- aircraft specifics ------------------------
 
-			if not ((PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175") and string.match(SGES_Author,"Marko")) then
+			if not ((PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175" or PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" or PLANE_ICAO == "E135" or PLANE_ICAO == "E35L") and string.match(SGES_Author,"Marko")) then
 			-- load the GPU 3D unit, except for E-Jets which already have a 3D object and we don't want two objects
 			   XPLM.XPLMLoadObjectAsync(GPUObject,
 						function(inObject, inRefcon)
@@ -5307,7 +5364,7 @@ function SGES_script()
 				-- watch your steps ! in service_object_physics_Fuel()
 			elseif PLANE_ICAO == "SR71" then -- special JP-7 fuel for the SR-71 means a special truck everywhere :-)
 				Prefilled_FuelObject = User_Custom_Prefilled_FuelObject_USA_2
-			elseif IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0  then
+			elseif IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0 and Clairmarais_Aerodrome_directory == nil then
 				math.randomseed(os.time())
 				randomView = math.random()
 				XP1241_FuelKit = XP1241_FuelKit_EU
@@ -5868,7 +5925,7 @@ function SGES_script()
 				elseif IsXPlane1214 and UseXplane1214DefaultObject and Dayonly_truck_flatbed_01 ~= nil and PLANE_ICAO == "DH8D" and not SGES_Embraer_catering_is_small then
 					CatObject = Dayonly_truck_flatbed_01
 					CateringHighPartObject =  Prefilled_LightObject				-- no second part
-				elseif string.match(PLANE_ICAO,"BN2") or PLANE_ICAO == "MD88" or string.match(PLANE_ICAO,"B46") or PLANE_ICAO == "RJ70" or PLANE_ICAO == "RJ85" or PLANE_ICAO == "RJ1H" or string.match(PLANE_ICAO,"DH8A") or PLANE_ICAO == "DH8C" or PLANE_ICAO == "DH8D" or string.match(PLANE_ICAO,"AT4") or (string.match(PLANE_ICAO,"AT7") or SGES_Author == "ATGCAB (Alfredo Torrado & Juan Alcon)") then
+				elseif string.match(PLANE_ICAO,"BN2") or PLANE_ICAO == "MD88" or string.match(PLANE_ICAO,"B46") or PLANE_ICAO == "RJ70" or PLANE_ICAO == "RJ85" or PLANE_ICAO == "RJ1H" or string.match(PLANE_ICAO,"DH8A") or PLANE_ICAO == "DH8C" or PLANE_ICAO == "DH8D" or string.match(PLANE_ICAO,"AT4") or (string.match(PLANE_ICAO,"AT7") or SGES_Author == "ATGCAB (Alfredo Torrado & Juan Alcon)") or PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" or PLANE_ICAO == "E135" or PLANE_ICAO == "E35L" then
 					CatObject = Prefilled_AlternativeCateringObject
 					CateringHighPartObject =  Prefilled_LightObject				-- no second part
 				elseif SGES_BushMode and IsXPlane12 then
@@ -5882,7 +5939,7 @@ function SGES_script()
 					CateringHighPartObject =  Prefilled_LightObject				-- no second part
 				else
 					-- normal catering for airliners
-					if IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0  then
+					if IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0 and  Clairmarais_Aerodrome_directory == nil  then
 						if ((sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1)		-- USA
 						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1)		-- Central America
 						--~ or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"W") ~= nil and string.find(sges_airport_ID,"W") == 1)		-- South America
@@ -5977,6 +6034,7 @@ function SGES_script()
 					and UseXplane1214DefaultObject  -- less restricted replacement
 					and not SGES_BushMode -- restrict it to normal mode
 					and sges_military == 0 and sges_military_default == 0
+					and Clairmarais_Aerodrome_directory == nil
 					then
 						CatObject = User_Custom_Prefilled_CateringObject_1241
 				end
@@ -10724,7 +10782,7 @@ function SGES_script()
 
 				if string.match(name,"GPU")  and AIRCRAFT_FILENAME == "AW109SP.acf" then set("sim/cockpit/electrical/gpu_on",0) end
 
-				if string.match(name,"GPU")  and  (PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175") and string.match(SGES_Author,"Marko")   and XPLMFindDataRef("XCrafts/other/GPU") ~= nil then set("XCrafts/other/GPU",1) end -- one, for OFF
+				if string.match(name,"GPU")  and  (PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175" or PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" or PLANE_ICAO == "E135" or PLANE_ICAO == "E35L") and string.match(SGES_Author,"Marko")   and XPLMFindDataRef("XCrafts/other/GPU") ~= nil then set("XCrafts/other/GPU",1) end -- one, for OFF
 
 			   return SGES_switch,Instance,reference
 	end
@@ -13537,7 +13595,7 @@ function SGES_script()
 		l_changed, l_newval = imgui.Checkbox(" GPU", show_GPU)
 	  elseif (string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) then
 		l_changed, l_newval = imgui.Checkbox(" BAe-146 GPU", show_GPU)
-	  elseif (PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175") and string.match(SGES_Author,"Marko") then
+	  elseif (PLANE_ICAO == "E190" or PLANE_ICAO == "E19L" or PLANE_ICAO == "E195" or PLANE_ICAO == "E170" or PLANE_ICAO == "E175" or PLANE_ICAO == "E145" or PLANE_ICAO == "E45X" or PLANE_ICAO == "E135" or PLANE_ICAO == "E35L") and string.match(SGES_Author,"Marko") then
 		l_changed, l_newval = imgui.Checkbox(" X-Crafts GPU", show_GPU)
 	  elseif (PLANE_ICAO == "F104" and PLANE_AUTHOR == "COLIMATA") then
 		l_changed, l_newval = imgui.Checkbox(" EPU / ASU", show_GPU)
@@ -16751,8 +16809,8 @@ function SGES_script()
 
 			imgui.PopStyleColor()
 			imgui.Separator()
-			if FrontCount > 2 and not show_Front_Line then
-				imgui.TextUnformatted(" Front Line (now limited)")
+			if FrontCount > 20 and not show_Front_Line then
+				imgui.TextUnformatted(" Front Line (now disabled)")
 				imgui.Button(preselected_Front_line_title,200,18)
 			elseif not Front_Line_chg then
 
@@ -16784,14 +16842,30 @@ function SGES_script()
 				end
 
 			else
-				imgui.TextUnformatted("     Front Line...")
+				--~ imgui.TextUnformatted("     Front Line...")
+				l_changed, _ = imgui.Checkbox(" Front Line...", show_Front_Line)
+					if l_changed then
+						show_Front_Line = false
+						Front_Line_chg = true
+					end
 			end
 			if show_Front_Line and not Front_Line_chg and Front_line_title ~= nil then
 				imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
 				imgui.TextUnformatted("Active : " .. string.sub(Front_line_title,1,21))
 				imgui.PopStyleColor()
-			else
-				imgui.TextUnformatted("Max 2 displays by session.")
+			--~ else
+				--~ imgui.TextUnformatted("Max 2 displays by session.")
+			end
+			if (show_Front_Line or modern_assets) and not Front_Line_chg then
+				l_changed, modern_assets = imgui.Checkbox(" With modern assets", modern_assets)
+				if l_changed then
+					unload_Front_Line_Objects()
+					Front_Line_chg = true
+					Front_Line_object_physics()
+					show_Front_Line = false
+					Front_Line_chg = true
+					Front_Line_object_physics() -- patch
+				end
 			end
 			imgui.TreePop()
 		end

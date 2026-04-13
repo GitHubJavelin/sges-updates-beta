@@ -1,6 +1,11 @@
 
     == Caution ! The sole file skunkcrafts_updater.cfg should go into the root FlyWithLua folder ("X-Plane 12/Resources/plugins/FlyWithLua"), but all other SGES files go one folder below into "...FlyWithLua/Scripts/" as usual. ==
 
+Version 79.2, 13rd of April, 2026
+	• Minor adjustement in X-Plane 12.4.1 to restore the ability to display alternative fuels trucks
+	• Changed the Front Line module : better memory management, added ground objects, allowed optional assets to be downloaded from the Org and installed in SGES folders (FlyWithLua/Scripts/Simple_Ground_Equipment_and_Services/Front_Lines_optional_objects/readme.txt)
+	• Tailored ground kit for the Embraer ERJ 145 v2 by X-Craft
+
 Version 79.1, 5th of April, 2026
 	• Replaced the fuel truck by the new X-Plane 12.4.1 fuel truck with a custom refueling kit (US/EU)
 	• Replaced the catering truck by the new X-Plane 12.4.1 european flatbed lorry

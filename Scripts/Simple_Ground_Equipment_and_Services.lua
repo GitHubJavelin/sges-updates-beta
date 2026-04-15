@@ -1296,6 +1296,7 @@ function SGES_script()
 				Prefilled_PRMHighPartObject	=		Prefilled_LightObject
 			end
 			--~ Prefilled_BusObject_option2 = 		SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/bus.obj"
+			Prefilled_FuelObject_option1 = 		SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/fuelL.obj"
 			Prefilled_FuelObject_option2 = 		SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/fuelL.obj"
 			Prefilled_BollardObject = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/workers/cone.obj"
 			Prefilled_PeopleObject1 = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/workers/worker2.obj"
@@ -5364,7 +5365,7 @@ function SGES_script()
 				-- watch your steps ! in service_object_physics_Fuel()
 			elseif PLANE_ICAO == "SR71" then -- special JP-7 fuel for the SR-71 means a special truck everywhere :-)
 				Prefilled_FuelObject = User_Custom_Prefilled_FuelObject_USA_2
-			elseif IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0 and Clairmarais_Aerodrome_directory == nil then
+			elseif IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0 and Clairmarais_Aerodrome_directory == nil and not string.find(Prefilled_FuelObject_option2,"/objects/service/fuelL.obj") then -- FF777v2 then
 				math.randomseed(os.time())
 				randomView = math.random()
 				XP1241_FuelKit = XP1241_FuelKit_EU
@@ -5989,6 +5990,7 @@ function SGES_script()
 					and UseXplane1214DefaultObject  -- less restricted replacement
 					and not SGES_BushMode -- restrict it to normal mode
 					and (string.find(CatObject,"Van_White") or string.find(CatObject,"Van_Catering")  or string.find(CatObject,"airsideops")) -- this check restricts the replacement only when using this original library object, like in normal, passenger, civilian SGES in-game configuration
+					and not string.find(Prefilled_CateringObject,"/objects/service/cater.obj") -- FF777v2
 					then
 						-- Native X-Plane 12.1.4 day hours Common Equipment Vehicle (has no lights ! Use day only !)
 						CatObject = Dayonly_airsideops_van_yellow
@@ -6034,6 +6036,7 @@ function SGES_script()
 					and UseXplane1214DefaultObject  -- less restricted replacement
 					and not SGES_BushMode -- restrict it to normal mode
 					and sges_military == 0 and sges_military_default == 0
+					and not string.find(Prefilled_CateringObject,"/objects/service/cater.obj") -- FF777v2
 					and Clairmarais_Aerodrome_directory == nil
 					then
 						CatObject = User_Custom_Prefilled_CateringObject_1241

@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "79.2"
+version_text_SGES = "79.3"
 --------------------------------------------------------------------------------
 --[[
 
@@ -1213,7 +1213,7 @@ function SGES_script()
 		XP1203_Cone_3_installed = file_exists(XPlane12_Common_Equipment_directory    .. "traffic_cone_3.obj")
 		if BeltLoaderFwdPosition < 2 then  --  8th march 2024
 			Prefilled_BollardObject = XPlane12_Common_Equipment_directory    .. "traffic_cone_1.obj" -- prefered the more visble Lübeck conus when avail.
-		elseif BeltLoaderFwdPosition >= 8 and XP1203_Cone_3_installed then  --  8th march 2024
+		elseif BeltLoaderFwdPosition >= 6 and XP1203_Cone_3_installed then  --  8th march 2024
 			Prefilled_BollardObject = XPlane12_Common_Equipment_directory    .. "traffic_cone_3.obj" -- prefered the more visble Lübeck conus when avail.
 		else -- before 8 march 2024 only that
 			Prefilled_BollardObject = XPlane12_Common_Equipment_directory   .. "traffic_pole_1.obj"
@@ -1288,7 +1288,7 @@ function SGES_script()
 			print("[Ground Equipment " .. version_text_SGES .. "] Loading STS/FF objects found in the Boeing 777-200ER folder.")
 			if BeltLoaderFwdPosition >= 7 then
 				Prefilled_CateringObject = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cater.obj"
-				if (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/caterigtrucklift",1) end
+				if (PLANE_ICAO ~= "B77L" or PLANE_ICAO ~= "B772" or PLANE_ICAO ~= "B773" or PLANE_ICAO ~= "B77W") and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/caterigtrucklift",1) end
 				Prefilled_CateringHighPartObject = 	Prefilled_LightObject
 				Prefilled_CateringHighPart_GG_Object = Prefilled_LightObject
 				Prefilled_CateringHighPart_NR_Object = Prefilled_LightObject
@@ -1304,8 +1304,8 @@ function SGES_script()
 			Prefilled_PeopleObject3 = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/workers/worker3.obj"
 			Prefilled_PeopleObject4 = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/workers/worker2.obj"
 			Prefilled_CleaningTruckObject = 	SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/lsu.obj"
-			if (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/lavatoryservicelift",0.9) end Original_CleaningTruckObject = Prefilled_CleaningTruckObject
-			if (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
+			if (PLANE_ICAO ~= "B77L" or PLANE_ICAO ~= "B772" or PLANE_ICAO ~= "B773" or PLANE_ICAO ~= "B77W") and string.find(SGES_Author,"FlightFactor") then set("1-sim/anim/service/lavatoryservicelift",0.9) end Original_CleaningTruckObject = Prefilled_CleaningTruckObject
+			if (PLANE_ICAO ~= "B77L" or PLANE_ICAO ~= "B772" or PLANE_ICAO ~= "B773" or PLANE_ICAO ~= "B77W") and string.find(SGES_Author,"FlightFactor") then
 				Prefilled_PushBack1Object = 		Prefilled_LightObject
 				Prefilled_PushBackObject = 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/Tug2.obj"
 			end
@@ -2117,6 +2117,9 @@ function SGES_script()
 			if XTrident_NaveCavour_Directory ~= nil then XTrident_NaveCavour_Object =  SCRIPT_DIRECTORY .. XTrident_NaveCavour_Directory .. "/extra/Nave Cavour/Nimitz.obj" end
 			if FFSTS_777v2_Directory == nil then
 				FFSTS_777v2_Directory= scan_for_external_asset("Boeing777-200ER","Boeing777-200ER",0)
+				if FFSTS_777v2_Directory == nil then
+					FFSTS_777v2_Directory= scan_for_external_asset("Boeing777-300ER","Boeing777-300ER",0)
+				end
 			else
 				print("[Ground Equipment " .. version_text_SGES .. "] FlightFactor/StepToSky Boeing777-200 path is already referenced in the local user settings (no new scan done).")
 			end
@@ -2127,7 +2130,7 @@ function SGES_script()
 			end
 		end
 		-- When the Boeing 777 from Flight Factor and STS, load their own objects instead.
-		if FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
+		if FFSTS_777v2_Directory ~= nil and (PLANE_ICAO ~= "B77L" or PLANE_ICAO ~= "B772" or PLANE_ICAO ~= "B773" or PLANE_ICAO ~= "B77W"   ) and string.find(SGES_Author,"FlightFactor") then
 		 	load_special_B777v2_objects(FFSTS_777v2_Directory)
 		 end
 		-- When the Felis 742 Freighter, then use the FF/STS 777F Cargo loader also :
@@ -3289,11 +3292,11 @@ function SGES_script()
 			local z_higher_part = z
 
 			-- When this is an X-Plane 12.4.1 object, allow more space with the fuselage
-			if string.find(CatObject,"Common_Elements/Vehicles") and User_Custom_Prefilled_CateringObject_1241 then
+			if CatObject ~= nil and string.find(CatObject,"Common_Elements/Vehicles") and User_Custom_Prefilled_CateringObject_1241 then
 				x = 1.267 * x
 				x_higher_part = x * 0.79
 			-- When this is an X-Plane 12.1.4 object, allow more room toward the fuselage
-			elseif string.find(CatObject,"Common_Elements/Vehicles") then
+			elseif CatObject ~= nil and string.find(CatObject,"Common_Elements/Vehicles") then
 				x = 1.25 * x
 			end
 
@@ -3579,6 +3582,7 @@ function SGES_script()
 			elseif PLANE_ICAO == "B744" then ULDLoaderFwdPositionFactor = -0.7
 			elseif PLANE_ICAO == "B763" then ULDLoaderFwdPositionFactor = 0.9
 			elseif PLANE_ICAO == "B772" then ULDLoaderFwdPositionFactor = 1
+			elseif PLANE_ICAO == "B773" then ULDLoaderFwdPositionFactor = 1
 			elseif PLANE_ICAO == "B77L" then ULDLoaderFwdPositionFactor = -0.66
 			elseif PLANE_ICAO == "B752" then ULDLoaderFwdPositionFactor = 1.15
 			elseif PLANE_ICAO == "SF34" then ULDLoaderFwdPositionFactor = -1.1
@@ -5404,7 +5408,7 @@ function SGES_script()
 							then
 								-- Native X-Plane 12.1.4 day hours Common Equipment Vehicle (has no lights ! Use day only !)
 								Prefilled_FuelObject = Dayonly_truck_tanker_01
-								print("[Ground Equipment " .. version_text_SGES .. "] Large aircraft + In the USA + X-Plane 12.1.4+ : changing the EXXON fuel truck for an X-Plane 12.1.4+ truck tank.")
+								print("[Ground Equipment " .. version_text_SGES .. "] Large aircraft + In the USA + X-Plane 12.1.4+ : selecting an X-Plane 12.1.4+ truck tank.")
 						end
 						------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
 					end
@@ -5940,11 +5944,14 @@ function SGES_script()
 					CateringHighPartObject =  Prefilled_LightObject				-- no second part
 				else
 					-- normal catering for airliners
-					if IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0 and  Clairmarais_Aerodrome_directory == nil  then
+					if IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0 and  Clairmarais_Aerodrome_directory == nil
+					and Prefilled_CateringObject ~= SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cater.obj"
+					then
 						if ((sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1)		-- USA
 						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1)		-- Central America
 						--~ or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"W") ~= nil and string.find(sges_airport_ID,"W") == 1)		-- South America
 						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"C") ~= nil and string.find(sges_airport_ID,"C") == 1))	-- Canada
+						or string.find(PLANE_ICAO,"B73")
 						then
 							CatObject = Prefilled_CateringObject
 						else
@@ -5962,24 +5969,26 @@ function SGES_script()
 						sges_big_airport,sges_airport_ID = sges_nearest_airport_type(sges_big_airport,sges_current_time,sges_airport_ID)
 					end
 
-					if ((sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1)		-- USA
-					or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1)		-- Central America
-					or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"S") ~= nil and string.find(sges_airport_ID,"S") == 1)		-- South America
-					or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"C") ~= nil and string.find(sges_airport_ID,"C") == 1))	-- Canada
-					 then
-						-- US Airports : LSG skychef
-						CateringHighPartObject = Prefilled_CateringHighPartObject
-					elseif sges_big_airport ~= nil and sges_big_airport and sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") == nil then
-						-- big airports outside the USA : newrest or Gate Gourmet
-						math.randomseed(os.time())
-						randomView = math.random()
-						if randomView > 0.6 then
-							CateringHighPartObject = Prefilled_CateringHighPart_NR_Object -- Newrest
-						else
-							CateringHighPartObject = Prefilled_CateringHighPart_GG_Object -- Gate Gourmet
+					if Prefilled_CateringObject ~= 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cater.obj" then
+						if ((sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1)		-- USA
+						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1)		-- Central America
+						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"S") ~= nil and string.find(sges_airport_ID,"S") == 1)		-- South America
+						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"C") ~= nil and string.find(sges_airport_ID,"C") == 1))	-- Canada
+						 then
+							-- US Airports : LSG skychef
+							CateringHighPartObject = Prefilled_CateringHighPartObject
+						elseif sges_big_airport ~= nil and sges_big_airport and sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") == nil then
+							-- big airports outside the USA : newrest or Gate Gourmet
+							math.randomseed(os.time())
+							randomView = math.random()
+							if randomView > 0.6 then
+								CateringHighPartObject = Prefilled_CateringHighPart_NR_Object -- Newrest
+							else
+								CateringHighPartObject = Prefilled_CateringHighPart_GG_Object -- Gate Gourmet
+							end
+						elseif string.find(AircraftPath,"minoan") or string.find(AircraftPath,"Minoan") then
+							CateringHighPartObject = Prefilled_CateringHighPart_MI_Object -- MINOAN gourmet
 						end
-					elseif string.find(AircraftPath,"minoan") or string.find(AircraftPath,"Minoan") then
-						CateringHighPartObject = Prefilled_CateringHighPart_MI_Object -- MINOAN gourmet
 					end
 				end
 
@@ -6031,15 +6040,15 @@ function SGES_script()
 						--~ print("[Ground Equipment " .. version_text_SGES .. "] Small catering + X-Plane 12.1.4+ : changing the catering car for an X-Plane 12.1.4+ van.")
 				------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.1.4 ----------------
 				------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.4.1 ----------------
-				elseif IsXPlane1241 -- make safety code verifications and version check
-					--~ and sges_sun_pitch[0] > 5 and UseXplane1214DefaultObject  -- restrict replacement by an X-Plane 12.1.4 vehicule to day
-					and UseXplane1214DefaultObject  -- less restricted replacement
-					and not SGES_BushMode -- restrict it to normal mode
-					and sges_military == 0 and sges_military_default == 0
-					and not string.find(Prefilled_CateringObject,"/objects/service/cater.obj") -- FF777v2
-					and Clairmarais_Aerodrome_directory == nil
-					then
-						CatObject = User_Custom_Prefilled_CateringObject_1241
+				--~ elseif IsXPlane1241 -- make safety code verifications and version check -- ERRONEOUS CODE
+					--~ and sges_sun_pitch[0] > 5 and UseXplane1214DefaultObject  -- restrict replacement by an X-Plane 12.1.4 vehicule to day -- ERRONEOUS CODE
+					--~ and UseXplane1214DefaultObject  -- less restricted replacement -- ERRONEOUS CODE
+					--~ and not SGES_BushMode -- restrict it to normal mode -- ERRONEOUS CODE
+					--~ and sges_military == 0 and sges_military_default == 0 -- ERRONEOUS CODE
+					--~ and not string.find(Prefilled_CateringObject,"/objects/service/cater.obj") -- FF777v2 -- ERRONEOUS CODE
+					--~ and Clairmarais_Aerodrome_directory == nil -- ERRONEOUS CODE
+					--~ then -- ERRONEOUS CODE
+						--~ CatObject = User_Custom_Prefilled_CateringObject_1241 -- ERRONEOUS CODE
 				end
 				------------------ VEHICLE REPLACEMENT AFTER X-PLANE 12.4.1 ----------------
 
@@ -6329,7 +6338,7 @@ function SGES_script()
 				else
 					CargoDeck_ULDLoaderObject = "high_variant" --normal
 				end
-			elseif CargoDeck_ULDLoaderObject == "highly_high_variant" and PLANE_ICAO ~= "B77L" and PLANE_ICAO ~= "B772" and PLANE_ICAO ~= "B773" and XPLMFindDataRef("1-sim/anim/service/mdlmainliftcargo") ~= nil and XPLMFindDataRef("1-sim/anim/service/mdlfrontliftcargo") ~= nil then
+			elseif CargoDeck_ULDLoaderObject == "highly_high_variant" and PLANE_ICAO ~= "B77L" and PLANE_ICAO ~= "B772" and PLANE_ICAO ~= "B773" and PLANE_ICAO ~= "B77W"   and XPLMFindDataRef("1-sim/anim/service/mdlmainliftcargo") ~= nil and XPLMFindDataRef("1-sim/anim/service/mdlfrontliftcargo") ~= nil then
 				if PLANE_ICAO == "B742" then
 					set("1-sim/anim/service/mdlmainliftcargo",0.92) -- Felis cargo deck 742F
 					set("1-sim/anim/service/mdlfrontliftcargo",0.90)
@@ -6470,7 +6479,7 @@ function SGES_script()
 					end
 
 				elseif show_StairsXPJ2 then
-					if index_to_open_the_second_door ~= nil and PaxDoorRearLeft == nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") then
+					if index_to_open_the_second_door ~= nil and PaxDoorRearLeft == nil and (PLANE_ICAO ~= "B77L" or PLANE_ICAO ~= "B772" or PLANE_ICAO ~= "B773" or PLANE_ICAO ~= "B77W"   ) and string.find(SGES_Author,"FlightFactor") then
 						dataref("PaxDoorRearLeft","1-sim/anim/doorL5","writable",index_to_open_the_second_door)
 					elseif index_to_open_the_second_door ~= nil and  PaxDoorRearLeft == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
 						dataref("PaxDoorRearLeft",dataref_to_open_the_door,"writable",index_to_open_the_second_door)
@@ -7528,7 +7537,7 @@ function SGES_script()
 				objpos_value[0].y = objpos_value[0].y - 0.3
 			end
 
-			if (FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
+			if (FFSTS_777v2_Directory ~= nil and (PLANE_ICAO ~= "B77L" or PLANE_ICAO ~= "B772" or PLANE_ICAO ~= "B773" or PLANE_ICAO ~= "B77W"   ) and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
 
 				groundPitch[flag] = 0
 				objpos_value[0].y = ground
@@ -8983,7 +8992,7 @@ function SGES_script()
 						groundPitch[object_name] = 8
 					end
 
-					if (FFSTS_777v2_Directory ~= nil and (PLANE_ICAO == "B772" or PLANE_ICAO == "B773" or PLANE_ICAO == "B77L") and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
+					if (FFSTS_777v2_Directory ~= nil and (PLANE_ICAO ~= "B77L" or PLANE_ICAO ~= "B772" or PLANE_ICAO ~= "B773" or PLANE_ICAO ~= "B77W") and string.find(SGES_Author,"FlightFactor") or Prefilled_PushBackObject == SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/MisterX_Lib/Pushback/Supertug.obj") then
 						groundPitch[object_name] = 0
 						if ground ~= nil then groundAlt[object_name] = ground end
 					end
@@ -15166,7 +15175,7 @@ function SGES_script()
 			if wetness == 1 then
 			  l_changed, l_newval = imgui.Checkbox(" Dock lines", show_Chocks)
 			elseif IsXPlane1220 and UseXplane1220Chocks then
-			  l_changed, l_newval = imgui.Checkbox(" X-chocks", show_Chocks)
+			  l_changed, l_newval = imgui.Checkbox(" XP chocks", show_Chocks)
 				if imgui.IsItemActive() then
 					-- Click & hold tooltip
 					imgui.BeginTooltip()
@@ -17571,6 +17580,12 @@ function SGES_script()
 				if  imgui.Button("NWS",40,20)  then -- FlyJSim command menu
 					command_once("FJS/Q4XP/Switches/steering")
 				end
+
+				imgui.PopStyleColor()
+				imgui.SameLine()
+				imgui.TextUnformatted("gpws:CB1A")
+
+				imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFCAFFCC)
 				if  imgui.Button("MFD1",35,20)  then -- FlyJSim command menu
 					command_once("FJS/Q4XP/popout/MFD1")
 				end
@@ -18996,7 +19011,7 @@ function SGES_script()
 				if math.abs(BeltLoaderFwdPosition) > 5 then
 					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
 					l_changed, l_newval = imgui.Checkbox(" Use a pushback tug with bar*\n Currently : " .. current_PB_mention, Prefilled_PushBackObject == 		PushBackBar)
-					if  l_changed and math.abs(BeltLoaderFwdPosition) > 5 and PLANE_ICAO ~= "B772" and PLANE_ICAO ~= "B773" and PLANE_ICAO ~= "B77L" then -- the STS FF B772 will always use a TBL tug  then
+					if  l_changed and math.abs(BeltLoaderFwdPosition) > 5 and PLANE_ICAO ~= "B772" and PLANE_ICAO ~= "B773" and PLANE_ICAO ~= "B77L"  and PLANE_ICAO ~= "B77W" then -- the STS FF B772 will always use a TBL tug  then
 						if Prefilled_PushBack1Object == Prefilled_LightObject and Prefilled_PushBackObject_civ ~= nil and Prefilled_PushBack1Object_civ ~= nil then
 							--~ Prefilled_PushBackObject = 	Prefilled_PushBackObject_civ
 							Prefilled_PushBackObject = 		PushBackBar
@@ -19289,11 +19304,16 @@ function SGES_script()
 						open_that_sges_url("https://forums.x-plane.org/index.php?/files/file/27907-cdb-library")
 					end
 				end
+
+
+				imgui.Separator()
+
 				if FFSTS_777v2_Directory ~= nil and BeltLoaderFwdPosition > 6.10 and SGES_Author ~= nil
 					and (string.find(SGES_Author,"Gliding") or string.find(SGES_Author,"FlightFactor")  or string.find(SGES_Author,"FlyJSim")  or string.find(SGES_Author,"COLIMATA"))
 					then -- limit that when 777 is installed and for airliners
 					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
 					l_changed, l_newval = imgui.Checkbox(" Force B777 v2 services once.\n Used only for this session.", string.match(Prefilled_CleaningTruckObject,"lsu"))
+					--~ _, _ = imgui.Checkbox(" Force B777v2 services (disabled)", false)
 					if l_changed then
 						if FFSTS_777v2_Directory ~= nil then -- this is not a saved option, because not our objects, so even if the user has paid for the 777v2, we still don't want to hijack their objects
 							-- it is therefore more aimed at a demonstration

@@ -5945,7 +5945,7 @@ function SGES_script()
 				else
 					-- normal catering for airliners
 					if IsXPlane1241 and UseXplane1214DefaultObject and not SGES_BushMode and sges_military == 0 and sges_military_default == 0 and  Clairmarais_Aerodrome_directory == nil
-					and Prefilled_CateringObject ~= SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cater.obj"
+					and not string.find(Prefilled_CateringObject,"cater.obj")
 					then
 						if ((sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1)		-- USA
 						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1)		-- Central America
@@ -5969,7 +5969,7 @@ function SGES_script()
 						sges_big_airport,sges_airport_ID = sges_nearest_airport_type(sges_big_airport,sges_current_time,sges_airport_ID)
 					end
 
-					if Prefilled_CateringObject ~= 			SCRIPT_DIRECTORY .. FFSTS_777v2_Directory .. "/objects/service/cater.obj" then
+					if not string.find(Prefilled_CateringObject,"cater.obj") then
 						if ((sges_airport_ID ~= nil and string.find(sges_airport_ID,"K") ~= nil and string.find(sges_airport_ID,"K") == 1)		-- USA
 						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"M") ~= nil and string.find(sges_airport_ID,"M") == 1)		-- Central America
 						or   (sges_airport_ID ~= nil and string.find(sges_airport_ID,"S") ~= nil and string.find(sges_airport_ID,"S") == 1)		-- South America

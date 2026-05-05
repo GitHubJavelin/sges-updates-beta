@@ -184,6 +184,8 @@ function SGES_script()
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 
+
+
 	IsSimcoders = false
 	if XPLMFindDataRef("simcoders/rep/landinggear/tires/show_chocks_2") ~= nil then
 		IsSimcoders = true
@@ -3190,8 +3192,10 @@ function SGES_script()
 
 			if dataref_to_open_the_door ~= nil then
 				if dataref_to_open_the_door == "XCrafts/doors/front_main" and string.match(PLANE_ICAO,"E") then			-- Eùmbraer ERJ
-					if get("XCrafts/doors/front_service") == 0 then -- open the door if closed
-						command_once("XCrafts/ERJ/service_door")
+					if XPLMFindDataRef("XCrafts/doors/front_service") ~= nil then
+						if get("XCrafts/doors/front_service") == 0 then -- open the door if closed
+							command_once("XCrafts/ERJ/service_door")
+						end
 					end
 				elseif dataref_to_open_the_door == "AirbusFBW/PaxDoorModeArray" then -- toliss
 					if PLANE_ICAO == "A319" then set_array(dataref_to_open_the_door,3,target_to_open_the_door) end
@@ -3217,8 +3221,10 @@ function SGES_script()
 
 			if dataref_to_open_the_door ~= nil then
 				if dataref_to_open_the_door == "XCrafts/doors/front_main" and string.match(PLANE_ICAO,"E") then			-- Eùmbraer ERJ
-					if get("XCrafts/doors/front_service") == 1 then -- close the door if open
-						command_once("XCrafts/ERJ/service_door")
+					if XPLMFindDataRef("XCrafts/doors/front_service") ~= nil then
+						if get("XCrafts/doors/front_service") == 1 then -- close the door if open
+							command_once("XCrafts/ERJ/service_door")
+						end
 					end
 				elseif dataref_to_open_the_door == "AirbusFBW/PaxDoorModeArray" then -- toliss
 					if PLANE_ICAO == "A319" then set_array(dataref_to_open_the_door,3,target_to_open_the_door-1) end
@@ -3347,8 +3353,10 @@ function SGES_script()
 			end
 			if dataref_to_open_the_door ~= nil then
 				if dataref_to_open_the_door == "XCrafts/doors/front_main" and string.match(PLANE_ICAO,"E") then			-- Eùmbraer ERJ
-					if get("XCrafts/doors/front_service") == 1 then -- close the door if open
-						command_once("XCrafts/ERJ/service_door")
+					if XPLMFindDataRef("XCrafts/doors/front_service") ~= nil then
+						if get("XCrafts/doors/front_service") == 1 then -- close the door if open
+							command_once("XCrafts/ERJ/service_door")
+						end
 					end
 				end
 			end
@@ -18989,6 +18997,18 @@ function SGES_script()
 						end
 						Buttonstring = "Save the changes"
 					end
+
+					--~ if sges_gs_gnd_spd[0] < 1 and sges_EngineState[0] > 95 then
+						--~ if imgui.SmallButton("Release stuck brakes !?!") then
+							--~ set("sim/operation/override/override_toe_brakes",0)
+							--~ set("sim/operation/override/override_gearbrake",0)
+							--~ set("sim/operation/override/override_engine_forces",0)
+							--~ set("sim/operation/override/override_wing_forces",0)
+							--~ set("sim/cockpit2/switches/auto_brake_level",1) -- off
+							--~ set("sim/cockpit2/controls/parking_brake_ratio",1)
+							--~ set_array("sim/flightmodel/controls/parkbrake",0,0)
+						--~ end
+					--~ end
 				end
 
 				l_changed, l_newval = imgui.Checkbox(" Use automatic stairs at 1L", show_auto_stairs)

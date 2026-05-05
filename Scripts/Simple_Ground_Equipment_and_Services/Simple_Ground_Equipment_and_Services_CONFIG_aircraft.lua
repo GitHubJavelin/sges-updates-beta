@@ -463,6 +463,16 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     else dataref_to_open_the_door = nil index_to_open_the_door = nil target_to_open_the_door = 1 index_to_open_the_second_door = nil
     end
 
+	--SAFETY NET & Check, sometimes a model has a free version that doesnt carry the dataref the payware has, so we sanitize :
+	if dataref_to_open_the_door ~= nil then
+		if XPLMFindDataRef(dataref_to_open_the_door) == nil then
+			print("[Ground Equipment " .. version_text_SGES .. "] The dataref " .. dataref_to_open_the_door .. " was not found in this model, sanitizing that now.")
+			dataref_to_open_the_door = nil index_to_open_the_door = nil target_to_open_the_door = 1 index_to_open_the_second_door = nil
+		else
+			print("[Ground Equipment " .. version_text_SGES .. "] The dataref " .. dataref_to_open_the_door .. " can be used to control the doors.")
+		end
+	end
+
     return BeltLoaderFwdPosition
 end
 -- -----------------------------------------------------------------------------

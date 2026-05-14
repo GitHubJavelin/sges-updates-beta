@@ -15923,7 +15923,7 @@ function SGES_script()
 				if IsPassengerPlane == 1  and string.find(AIRCRAFT_FILENAME,"Felis")  then
 					show_StairsXPJ3 = l_newval
 					StairsXPJ3_chg = true
-				elseif IsPassengerPlane == 1 then
+				elseif IsPassengerPlane == 1 and PLANE_ICAO ~= "B732" then
 					show_StairsXPJ2 = l_newval
 					StairsXPJ2_chg = true
 				end

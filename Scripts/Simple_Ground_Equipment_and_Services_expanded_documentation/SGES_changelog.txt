@@ -4,6 +4,7 @@
 Version 79.6, 14th of May, 2026
     Prevents a crash with the FREE E-Jets by X-Craft X-Plane model
     Updates cargo set for the B757SF/F, B767RF/F, BAe-146QT, A320P2F, A321P2F under certain conditions
+    Boeing 737-200 enhanced support
 
 Version 79.5, 3rd of May, 2026
     Disabled by default the Felis Boeing 747-200 scripted and automated crew

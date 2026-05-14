@@ -19,7 +19,7 @@ function AircraftParameters() -- don't remove the function
     if     PLANE_ICAO == "K35A" then BeltLoaderFwdPosition = 10.1
     elseif PLANE_ICAO == "B703" then BeltLoaderFwdPosition = 10.1	SecondStairsFwdPosition = -14.2	custom_fuel_pump_finalX = 15.50  custom_fuel_pump_finalY = 1
     elseif PLANE_ICAO == "B720" then BeltLoaderFwdPosition = 10.1	SecondStairsFwdPosition = -11.2 custom_fuel_pump_finalX = 15.50  custom_fuel_pump_finalY = 1
-    elseif PLANE_ICAO == "B732" then BeltLoaderFwdPosition = 6.1
+    elseif PLANE_ICAO == "B732" then BeltLoaderFwdPosition = 6.1	SecondStairsFwdPosition = -9.3
     elseif PLANE_ICAO == "B733" then BeltLoaderFwdPosition = 6.9	SecondStairsFwdPosition = -11.1		BeltLoaderRearPosition = -8.5
     elseif PLANE_ICAO == "B736" then BeltLoaderFwdPosition = 6.5 BeltLoaderRearPosition = -6.1 airstart_unit_factor = 16.4 SecondStairsFwdPosition = -9.5
     elseif PLANE_ICAO == "B737" then BeltLoaderFwdPosition = 6.7 BeltLoaderRearPosition = -7.2 airstart_unit_factor = 16.4 SecondStairsFwdPosition = -10.5 custom_fuel_finalX = -20 custom_fuel_finalY = -5 custom_fuel_pump_finalX = 13 custom_fuel_pump_finalY = -4.5

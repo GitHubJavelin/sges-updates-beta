@@ -19,7 +19,7 @@ function AircraftParameters() -- don't remove the function
     if     PLANE_ICAO == "K35A" then BeltLoaderFwdPosition = 10.1
     elseif PLANE_ICAO == "B703" then BeltLoaderFwdPosition = 10.1	SecondStairsFwdPosition = -14.2	custom_fuel_pump_finalX = 15.50  custom_fuel_pump_finalY = 1
     elseif PLANE_ICAO == "B720" then BeltLoaderFwdPosition = 10.1	SecondStairsFwdPosition = -11.2 custom_fuel_pump_finalX = 15.50  custom_fuel_pump_finalY = 1
-    elseif PLANE_ICAO == "B732" then BeltLoaderFwdPosition = 6.1	SecondStairsFwdPosition = -8.7 custom_fuel_finalX = -15 custom_fuel_finalY = 0 custom_fuel_pump_finalX = 13 custom_fuel_pump_finalY = -4
+    elseif PLANE_ICAO == "B732" then BeltLoaderFwdPosition = 6.1	SecondStairsFwdPosition = -9.9 custom_fuel_finalX = -15 custom_fuel_finalY = 0 custom_fuel_pump_finalX = 13 custom_fuel_pump_finalY = -4 -- SecondStairsFwdPosition = -8.7
     elseif PLANE_ICAO == "B733" then BeltLoaderFwdPosition = 6.9	SecondStairsFwdPosition = -11.1		BeltLoaderRearPosition = -8.5
     elseif PLANE_ICAO == "B736" then BeltLoaderFwdPosition = 6.5 BeltLoaderRearPosition = -6.1 airstart_unit_factor = 16.4 SecondStairsFwdPosition = -9.5
     elseif PLANE_ICAO == "B737" then BeltLoaderFwdPosition = 6.7 BeltLoaderRearPosition = -7.2 airstart_unit_factor = 16.4 SecondStairsFwdPosition = -10.5 custom_fuel_finalX = -20 custom_fuel_finalY = -5 custom_fuel_pump_finalX = 13 custom_fuel_pump_finalY = -4.5
@@ -350,7 +350,8 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif PLANE_ICAO == "B720" then vertical_door_position2 = -2.6 deltaDoorX2 = 7.7 sges_gs_plane_head_correction2 = -1
     elseif PLANE_ICAO == "B721" then vertical_door_position2 = -3.8 deltaDoorX2 = 6.7
     elseif PLANE_ICAO == "B722" then vertical_door_position2 = -3.8 deltaDoorX2 = 6.6
-    elseif PLANE_ICAO == "B732" then vertical_door_position2 = -2.8 deltaDoorX2 = 7.5 sges_gs_plane_head_correction2 = -6.8
+    elseif PLANE_ICAO == "B732" then vertical_door_position2 = -2.8 deltaDoorX2 = 6.95 sges_gs_plane_head_correction2 = -182.5 -- in use (1R door)
+    elseif PLANE_ICAO == "B732" then vertical_door_position2 = -2.8 deltaDoorX2 = 7.5 sges_gs_plane_head_correction2 = -6.5 -- not in use (rear door)
     elseif PLANE_ICAO == "B733" then vertical_door_position2 = -2.2 deltaDoorX2 = 7.2 sges_gs_plane_head_correction2 = -0.2
     elseif PLANE_ICAO == "B736" then vertical_door_position2 = -2.5 deltaDoorX2 = 6.65 sges_gs_plane_head_correction2 = -0.5
     elseif PLANE_ICAO == "B737" then vertical_door_position2 = -2.5 deltaDoorX2 = 6.7 sges_gs_plane_head_correction2 = -2.3

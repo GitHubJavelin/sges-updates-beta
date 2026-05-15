@@ -140,6 +140,8 @@ function WriteToDisk_SGES_USER_CONFIG()
 	if XTrident_NaveCavour_Directory ~= nil then 	file:write("\nXTrident_NaveCavour_Directory = \"" .. XTrident_NaveCavour_Directory .. "\"") end
 	if FFSTS_777v2_Directory ~= nil then 	file:write("\nFFSTS_777v2_Directory = \"" .. FFSTS_777v2_Directory .. "\"") end
 	if Cami_de_Bellis_Directory ~= nil then 	file:write("\nCami_de_Bellis_Directory = \"" .. Cami_de_Bellis_Directory .. "\"") end
+	if TolissWB_Directory ~= nil then 	file:write("\nTolissWB_Directory = \"" .. TolissWB_Directory .. "\"") end
+	if TolissSA_Directory ~= nil then 	file:write("\nTolissSA_Directory = \"" .. TolissSA_Directory .. "\"") end
 
 	if Airstairs_with_lights ~= nil and Airstairs_with_lights~= true then file:write("\nAirstairs_with_lights = false") end
 
@@ -167,6 +169,8 @@ function Wipe_SGES_USER_CONFIG()
 	XTrident_NaveCavour_Directory = nil
 	FFSTS_777v2_Directory = nil
 	Cami_de_Bellis_Directory = nil
+	TolissWB_Directory = nil
+	TolissSA_Directory = nil
 	Airstairs_with_lights = nil
 	LuaJITForFelis = nil
 	SpeedyCopilotForFelis_wait4spoilers = nil

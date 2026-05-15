@@ -225,27 +225,26 @@ function execute_DYNAMIC_service_objects()
 							dataref("SGES_override_engine_forces","sim/operation/override/override_engine_forces","writable")
 					end
 					if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 0 then
+
 						SGES_override_engine_forces = 1
 						set("sim/operation/override/override_wing_forces",1)
 						print("[Ground Equipment " .. version_text_SGES .. "] Activating the SGES chocks. SGES_override_engine_forces = " .. SGES_override_engine_forces)
 					end
 
-					set("sim/flightmodel/position/local_vz",0) -- beforehand action, generic
-					set("sim/flightmodel/position/local_vy",0)
-					set("sim/flightmodel/position/local_vx",0)
 					--~ if (PLANE_ICAO == "F104" and PLANE_AUTHOR == "COLIMATA") or PLANE_ICAO == "CAML" then
 					if (PLANE_ICAO == "F104" and PLANE_AUTHOR == "COLIMATA") then
 						set("sim/flightmodel/position/local_vy",-0.02) -- retain the aircraft firmly
 					end
-					if sges_position_static_psi == nil   then sges_position_static_psi   = get("sim/flightmodel/position/psi")   end
-					--~ if sges_position_static_z == nil then sges_position_static_z = get("sim/flightmodel/position/local_z") end
-					--~ if sges_position_static_x == nil   then sges_position_static_x   = get("sim/flightmodel/position/local_x")   end
-					--~ if sges_position_static_y == nil   then sges_position_static_y   = get("sim/flightmodel/position/local_y")   end
+					set("sim/flightmodel/position/local_vz",0) -- beforehand action, generic
+					set("sim/flightmodel/position/local_vy",0)
+					set("sim/flightmodel/position/local_vx",0)
+
+					-- REMOVED FOR SIM LOAD MANAGER --
+					--~ if sges_position_static_psi == nil   then sges_position_static_psi   = get("sim/flightmodel/position/psi")   end
+					--~ set("sim/flightmodel/position/psi",sges_position_static_psi)
+					-- REMOVED FOR SIM LOAD MANAGER --
+
 					set("sim/flightmodel/position/R",0)	-- The yaw rotation rates (relative to the flight)
-					--~ set("sim/flightmodel/position/local_z",sges_position_static_z) -- not mandatory
-					--~ set("sim/flightmodel/position/local_x",sges_position_static_x) -- not mandatory
-					--~ set("sim/flightmodel/position/local_y",sges_position_static_y) -- not mandatory
-					set("sim/flightmodel/position/psi",sges_position_static_psi)
 				end
 				if show_Chocks and show_GPU and PLANE_ICAO == "F104" and PLANE_AUTHOR == "COLIMATA" then -- toggle F104 chocks
 					set("Colimata/F104_A_SW_GROUND_gpu_i",1) -- force the GPU because GPU disconnections occurs with COLIMATA F104

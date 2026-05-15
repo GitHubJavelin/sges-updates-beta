@@ -1350,6 +1350,20 @@ function SGES_script()
 			CargoDeck_ULDLoaderObject = "highly_high_variant"
 			reuse_lateral_factor = 1.7
 
+		elseif FFSTS_777v2_Directory == nil and TolissWB_Directory ~= nil and file_exists(SCRIPT_DIRECTORY .. TolissWB_Directory .. "/objects/GroundServices/ContainerLoader.obj") then
+			-- change the SGES main deck cargo loader for a ToLiss cargo loader which can reach the 747F deck !
+			Prefilled_CargoDeck_ULDLoaderObject = SCRIPT_DIRECTORY .. TolissWB_Directory .. "/objects/GroundServices/ContainerLoader.obj"
+			if option == nil then -- the input parameter can be used to prevent the change of the forklift into a nose loader (for B747 only)
+				Prefilled_ForkliftObject = Prefilled_CargoDeck_ULDLoaderObject
+			end
+			if XPLMFindDataRef("toliss/anim/container/rearLift") == nil then define_shared_DataRef("toliss/anim/container/rearLift", "Float") end
+			print("[Ground Equipment " .. version_text_SGES .. "] I created the dataref toliss/anim/container/rearLift on the fly.")
+			set("toliss/anim/container/rearLift",0.92)
+			if XPLMFindDataRef("toliss/anim/container/forwardLift") == nil then define_shared_DataRef("toliss/anim/container/forwardLift", "Float") end
+			set("toliss/anim/container/forwardLift",0.90)
+			CargoDeck_ULDLoaderObject = "highly_high_variant_toliss"
+			reuse_lateral_factor = 7.2
+
 		end
 	end
 	----------------------------------------------------------------------------
@@ -3653,7 +3667,7 @@ function SGES_script()
 					x = x + 3
 				end
 
-				if string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") then --77F FF/STS
+				if string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") or string.find(Prefilled_CargoDeck_ULDLoaderObject,"ContainerLoader.obj") then --77F FF/STS
 					if reuse_lateral_factor == nil then reuse_lateral_factor = 1.7 end
 					x = x + reuse_lateral_factor
 					print("[Ground Equipment " .. version_text_SGES .. "] Adjusting the location of the special animated cargo loader : " .. reuse_lateral_factor .. " for the " .. PLANE_ICAO ..".")
@@ -3673,11 +3687,13 @@ function SGES_script()
 			x = x + lateral_factor_ULDLoader
 			z = z + longitudinal_factor3_ULDLoader
 			uld_x = x
-			uld_x_stored = x
 			if CargoDeck_ULDLoaderObject == "highly_high_variant" and string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") then --77F FF/STS
 				uld_x = x + 4.5
-				uld_x_stored = uld_x_stored + 4.5
+			elseif CargoDeck_ULDLoaderObject == "highly_high_variant_toliss" and string.find(Prefilled_CargoDeck_ULDLoaderObject,"ContainerLoader.obj") then -- Toliss cargo loader
+				uld_x = x + 1
+				h = h + 180
 			end
+			uld_x_stored = uld_x
 			uld_z = z
 			ULDLoader_chg = draw_static_object(x,z,h,ULDLoader_instance[0],"ULD Loader")
 		  end
@@ -5134,8 +5150,10 @@ function SGES_script()
 			if Prefilled_ForkliftObject == 	Prefilled_ULDLoaderObject or
 			Prefilled_ForkliftObject == Prefilled_CargoDeck_ULDLoaderObject then
 				if PLANE_ICAO == "B742" then
-					if string.find(Prefilled_ForkliftObject,"cLoader.obj") then -- when using the FF/STS 777F nose loader, reduce the distance
+					if string.find(Prefilled_ForkliftObject,"cLoader.obj")  then -- when using the FF/STS 777F nose loader, reduce the distance
 						Forklift_chg = draw_static_object(0,1.38 * gear1Z,181,Forklift_instance[0],"Forklift")
+					elseif string.find(Prefilled_ForkliftObject,"ContainerLoader.obj") then
+						Forklift_chg = draw_static_object(0,1.5975 * gear1Z,1,Forklift_instance[0],"Forklift")
 					else -- when using SGES nose loader :
 						Forklift_chg = draw_static_object(0,1.56 * gear1Z,181,Forklift_instance[0],"Forklift")
 					end
@@ -6362,7 +6380,7 @@ function SGES_script()
 
 	function load_ULDLoader()
 		if ULDLoader_instance[0] == nil and ULDLoader_show_only_once then
-			if CargoDeck_ULDLoaderObject ~= "highly_high_variant" then --- 777F height !
+			if CargoDeck_ULDLoaderObject ~= "highly_high_variant" and CargoDeck_ULDLoaderObject ~= "highly_high_variant_toliss"  then --- 777F height !
 			   if PLANE_ICAO == "A346" then Prefilled_CargoDeck_ULDLoaderObject = XPlane_Ramp_Equipment_directory   .. "Belt_Loader.obj" end
 				if (string.match(PLANE_AUTHOR,"Thranda") and string.match(AIRCRAFT_PATH,"146")) or string.match(PLANE_ICAO,"B73") or string.match(PLANE_ICAO,"B72") or string.match(PLANE_ICAO,"MD8") or string.match(PLANE_ICAO,"MD9") or string.match(PLANE_ICAO,"E19") or string.match(PLANE_ICAO,"E17") then
 					-- The ULD Loader from Laminar Research is too high for the BAe-146 QT Main cargo door.
@@ -6412,6 +6430,41 @@ function SGES_script()
 					if height_value_cargo_uld_display ~= nil then height_value_cargo_uld_display = nil end
 					set("1-sim/anim/service/mdlmainliftcargo",0.90) -- Room for future expansions
 					set("1-sim/anim/service/mdlfrontliftcargo",0.88)
+				end
+			elseif CargoDeck_ULDLoaderObject == "highly_high_variant_toliss"  and XPLMFindDataRef("toliss/anim/container/rearLift") ~= nil and XPLMFindDataRef("toliss/anim/container/forwardLift") ~= nil then
+				if PLANE_ICAO == "B742" then
+					height_value_cargo_uld_display = 0.92
+					set("toliss/anim/container/rearLift",height_value_cargo_uld_display) -- Felis cargo deck 742F
+					set("toliss/anim/container/forwardLift",0.875)
+				elseif PLANE_ICAO == "A321" or PLANE_ICAO == "A320" or PLANE_ICAO == "A20N" or PLANE_ICAO == "A21N" then
+					reuse_lateral_factor = 3.7
+					height_value_cargo_uld_display = 0.539
+					set("toliss/anim/container/rearLift",height_value_cargo_uld_display)
+					set("toliss/anim/container/forwardLift",0.276) --0.357
+				elseif PLANE_ICAO == "B461" or PLANE_ICAO == "B462" or PLANE_ICAO == "B463" then
+					reuse_lateral_factor = 4.4
+					height_value_cargo_uld_display = 0.295
+					set("toliss/anim/container/rearLift",height_value_cargo_uld_display)
+					set("toliss/anim/container/forwardLift",-0.1)
+				elseif (PLANE_ICAO == "B752" or PLANE_ICAO == "B753") then
+					reuse_lateral_factor = 4.05
+					height_value_cargo_uld_display = 0.666
+					set("toliss/anim/container/rearLift",height_value_cargo_uld_display)
+					set("toliss/anim/container/forwardLift",0.47)
+				elseif PLANE_ICAO == "B762" then
+					reuse_lateral_factor = 4.95
+					height_value_cargo_uld_display = 0.729
+					set("toliss/anim/container/rearLift",height_value_cargo_uld_display)
+					set("toliss/anim/container/forwardLift",0.628)
+				elseif (PLANE_ICAO == "B763" or PLANE_ICAO == "B764") then
+					reuse_lateral_factor = 6.8
+					height_value_cargo_uld_display = 0.729
+					set("toliss/anim/container/rearLift",height_value_cargo_uld_display)
+					set("toliss/anim/container/forwardLift",0.628)
+				else
+					if height_value_cargo_uld_display ~= nil then height_value_cargo_uld_display = nil end
+					set("toliss/anim/container/rearLift",0.90) -- Room for future expansions
+					set("toliss/anim/container/forwardLift",0.88)
 				end
 			end
 		   XPLM.XPLMLoadObjectAsync(Prefilled_CargoDeck_ULDLoaderObject,
@@ -7843,6 +7896,8 @@ function SGES_script()
 				elseif string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") and PLANE_ICAO == "B77L" then
 					objpos_target_value_y = ground + 5.54
 				elseif string.find(Prefilled_CargoDeck_ULDLoaderObject,"cLoader.obj") and height_value_cargo_uld_display ~= nil then
+					objpos_target_value_y = ground + (5.7 * height_value_cargo_uld_display)
+				elseif string.find(Prefilled_CargoDeck_ULDLoaderObject,"ContainerLoader.obj") and height_value_cargo_uld_display ~= nil then
 					objpos_target_value_y = ground + (5.7 * height_value_cargo_uld_display)
 				end
 				objpos_value[0].y = objpos_target_value_y
@@ -14289,6 +14344,17 @@ function SGES_script()
 				if changed then
 					set("1-sim/anim/service/mdlfrontliftcargo",newVal1)
 				end
+			elseif string.find(Prefilled_CargoDeck_ULDLoaderObject,"ContainerLoader.obj") then --ToLiss loader
+				height_value_cargo_uld_display = get("toliss/anim/container/rearLift")
+				local changed, height_value_cargo_uld_display = imgui.SliderFloat("H MAIN", height_value_cargo_uld_display, 0, 1, "Main part " .. math.floor(height_value_cargo_uld_display*1000)/1000)
+				if changed then
+					set("toliss/anim/container/rearLift",height_value_cargo_uld_display)
+				end
+				local newVal3 = get("toliss/anim/container/forwardLift")
+				local changed, newVal1 = imgui.SliderFloat("H FRT", newVal3, 0, 1, "Front part " .. math.floor(newVal3*1000)/1000)
+				if changed then
+					set("toliss/anim/container/forwardLift",newVal1)
+				end
 			end
 
 			imgui.PopStyleColor()
@@ -14704,41 +14770,52 @@ function SGES_script()
 
 
 		if SecondStairsFwdPosition ~= -30 and SGES_stairs_type ~= "Boarding_without_stairs" then
-		  --imgui.SameLine()
-		  l_changed, l_newval = imgui.Checkbox(" Stairs Mk IV", show_StairsXPJ2)
-		  if l_changed then
-			show_StairsXPJ2 = l_newval
-			StairsXPJ2_chg = true
-			if show_StairsXPJ2 and show_StairsXPJ then
-				DualBoard = true
+			if PLANE_ICAO == "B732" then
+
+				l_changed, l_newval = imgui.Checkbox(" Stairs 1R (service)", show_StairsXPJ2)
+				if l_changed then
+					show_StairsXPJ2 = l_newval
+					StairsXPJ2_chg = true
+				end
+				-- THE B732 has the stairs at the 1R door ! we can't board passengers to it due to the geometry.
 			else
-				DualBoard = false
-				if PaxDoorRearLeft~= nil then PaxDoorRearLeft = target_to_open_the_door-1 end
-			end
-		  end
-			if show_StairsXPJ2 == false and show_StairsXPJ == true then
-				BoardStairsXPJ2 = false
-				BoardStairsXPJ = true
-				StairFinalY = StairFinalY_stairIII
-				StairFinalH = StairFinalH_stairIII
-				StairFinalX = StairFinalX_stairIII
-				StairHigherPartX = StairHigherPartX_stairIII
-				InitialPaxHeight = InitialPaxHeight_stairIII
-			end
-			if show_StairsXPJ == false and show_StairsXPJ2 == true then
-				BoardStairsXPJ2 = true
-				BoardStairsXPJ = false
-				StairFinalY = StairFinalY_stairIV
-				StairFinalH = StairFinalH_stairIV
-				StairFinalX = StairFinalX_stairIV
-				StairHigherPartX = StairHigherPartX_stairIV
-				InitialPaxHeight = InitialPaxHeight_stairIV
-			end
-			--also stops or remove the passengers if there is no stairs :
-			if show_StairsXPJ == false and show_StairsXPJ2 == false and show_Pax then
-				show_Pax = l_newval
-				Pax_chg = true
-				if show_Pax then 	initial_pax_start = true		 end
+
+			  --imgui.SameLine()
+			  l_changed, l_newval = imgui.Checkbox(" Stairs Mk IV", show_StairsXPJ2)
+			  if l_changed then
+				show_StairsXPJ2 = l_newval
+				StairsXPJ2_chg = true
+				if show_StairsXPJ2 and show_StairsXPJ then
+					DualBoard = true
+				else
+					DualBoard = false
+					if PaxDoorRearLeft~= nil then PaxDoorRearLeft = target_to_open_the_door-1 end
+				end
+			  end
+				if show_StairsXPJ2 == false and show_StairsXPJ == true then
+					BoardStairsXPJ2 = false
+					BoardStairsXPJ = true
+					StairFinalY = StairFinalY_stairIII
+					StairFinalH = StairFinalH_stairIII
+					StairFinalX = StairFinalX_stairIII
+					StairHigherPartX = StairHigherPartX_stairIII
+					InitialPaxHeight = InitialPaxHeight_stairIII
+				end
+				if show_StairsXPJ == false and show_StairsXPJ2 == true then
+					BoardStairsXPJ2 = true
+					BoardStairsXPJ = false
+					StairFinalY = StairFinalY_stairIV
+					StairFinalH = StairFinalH_stairIV
+					StairFinalX = StairFinalX_stairIV
+					StairHigherPartX = StairHigherPartX_stairIV
+					InitialPaxHeight = InitialPaxHeight_stairIV
+				end
+				--also stops or remove the passengers if there is no stairs :
+				if show_StairsXPJ == false and show_StairsXPJ2 == false and show_Pax then
+					show_Pax = l_newval
+					Pax_chg = true
+					if show_Pax then 	initial_pax_start = true		 end
+				end
 			end
 
 
@@ -17122,6 +17199,36 @@ function SGES_script()
 						-- save when closing the options :
 						if not config_options then WriteToDisk_SGES_USER_CONFIG() end
 					end
+					if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") and SpeedyCopilotForFelis ~= nil and not show_ArrestorSystem and sges_EngineState[0] < 3  then
+					imgui.SameLine()
+					if FelisHatches == nil then FelisHatches = false end
+					l_changed, FelisHatches = imgui.Checkbox(" Hatches", FelisHatches)
+					if l_changed then
+						if FelisHatches then
+							if string.find(AIRCRAFT_FILENAME,"Cargo") then
+								command_once("B742/command/open_side_cargo_door")
+								command_once("B742/command/open_nose_cargo_door")
+							end
+							command_once("B742/command/open_pax_door_1L")
+							command_once("B742/command/open_pax_door_5L")
+							command_once("B742/command/open_cargo_1")
+							command_once("B742/command/open_cargo_2")
+							command_once("B742/command/open_cargo_3")
+						else
+							if string.find(AIRCRAFT_FILENAME,"Cargo") then
+								command_once("B742/command/close_side_cargo_door")
+								command_once("B742/command/close_nose_cargo_door")
+							end
+							command_once("B742/command/close_pax_door_1L")
+							command_once("B742/command/close_pax_door_5L")
+							command_once("B742/command/close_cargo_1")
+							command_once("B742/command/close_cargo_2")
+							command_once("B742/command/close_cargo_3")
+						end
+					end
+			end
+
+
 				end
 			end --IAS24
 
@@ -17529,28 +17636,28 @@ function SGES_script()
 					imgui.PopTextWrapPos()
 					imgui.EndTooltip()
 				end
-				if (SGES_parkbrake > 0.8 or show_Chocks) and sges_EngineState[0] < 5 then
-					imgui.SameLine()
-					if  imgui.Button("Jit",12,20)  then -- Felis 742 command menu
-						if get("B742/anim/jit_off") == 0 then
-							set("B742/anim/jit_off",1)
-						else
-							set("B742/anim/jit_off",0)
-						end
-					end
-					if imgui.IsItemActive() then
-						-- Click & hold tooltip
-						imgui.BeginTooltip()
-						-- This function configures the wrapping inside the toolbox and thereby its width
-						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
-						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-						imgui.TextUnformatted("Toggles Lua JIT ON and OFF in the Felis EFB. Toggling it off increases the FPS for some people.")
-						imgui.PopStyleColor()
-						-- Reset the wrapping, this must always be done if you used PushTextWrapPos
-						imgui.PopTextWrapPos()
-						imgui.EndTooltip()
-					end
-				end
+				--~ if (SGES_parkbrake > 0.8 or show_Chocks) and sges_EngineState[0] < 5 then
+					--~ imgui.SameLine()
+					--~ if  imgui.Button("Jit",12,20)  then -- Felis 742 command menu
+						--~ if get("B742/anim/jit_off") == 0 then
+							--~ set("B742/anim/jit_off",1)
+						--~ else
+							--~ set("B742/anim/jit_off",0)
+						--~ end
+					--~ end
+					--~ if imgui.IsItemActive() then
+						--~ -- Click & hold tooltip
+						--~ imgui.BeginTooltip()
+						--~ -- This function configures the wrapping inside the toolbox and thereby its width
+						--~ imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
+						--~ imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+						--~ imgui.TextUnformatted("Toggles Lua JIT ON and OFF in the Felis EFB. Toggling it off increases the FPS for some people.")
+						--~ imgui.PopStyleColor()
+						--~ -- Reset the wrapping, this must always be done if you used PushTextWrapPos
+						--~ imgui.PopTextWrapPos()
+						--~ imgui.EndTooltip()
+					--~ end
+				--~ end
 			end
 			if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") and SpeedyCopilotForFelis ~= nil and SpeedyCopilotForFelis and not show_ArrestorSystem then
 				--~ 0xAABBGGRR
@@ -19232,27 +19339,7 @@ function SGES_script()
 
 
 
-				if IsXPlane12 and outsideAirTemp < temperature_below_which_we_display_the_active_deicing_service + 7 then
-					imgui.Spacing()
-					imgui.TextUnformatted("Deicing service : aircraft is\nprotected from ice for " .. math.abs(Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand/60) .. " min.")
-					if  imgui.SmallButton("Deice +")  then
-						Buttonstring = "Save the changes"
-						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand + 300
-						if Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand >= 3600 then Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 3600 end
-					end
-					imgui.SameLine()
-					if  imgui.SmallButton("Deice -")  then
-						Buttonstring = "Save the changes"
-						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand - 300
-						if Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand < 900 then Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 900 end
-					end
-					imgui.SameLine()
-					if  imgui.SmallButton("Deice 45")  then
-						Buttonstring = "Save the changes"
-						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 2700
-					end
-					imgui.Spacing()
-				end
+
 
 				l_changed, l_newval = imgui.Checkbox(" Ring softly when SGES ready", play_sound_SGES_is_available)
 				if l_changed then
@@ -19348,7 +19435,7 @@ function SGES_script()
 				l_changed, l_newval = imgui.Checkbox(" Autodetect 3rd-party assets", scan_third_party_initially)
 				if l_changed then
 					scan_third_party_initially = l_newval
-					Buttonstring = "Save the changes"
+					Buttonstring = "Save the autodetection"
 				end
 				if imgui.IsItemActive() then
 					imgui.BeginTooltip()
@@ -19361,16 +19448,25 @@ function SGES_script()
 				end
 
 				if not scan_third_party_initially then
-					l_changed, l_newval = imgui.Checkbox(" X-Trident Chinook installed\n Used for the Army set.", XTrident_Chinook_Directory)
+					imgui.Separator()
+					imgui.TextUnformatted("Are this options installed ?")
+					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFCAFFCC)
+					imgui.TextUnformatted("Please save the changes once done,\nthen reload all FlyWithLua scripts")
+					imgui.PopStyleColor()
+					l_changed, l_newval = imgui.Checkbox(" X-Trident Chinook", XTrident_Chinook_Directory)
 					if l_changed then
-						XTrident_Chinook_Directory = scan_for_external_asset("CH47 v2.0","CH47-D Chinook v1.0",1) -- 1 is verbose
-						Buttonstring = "Save the changes"
+						if XTrident_Chinook_Directory then
+							XTrident_Chinook_Directory = nil
+						else
+							XTrident_Chinook_Directory = scan_for_external_asset("CH47 v2.0","CH47-D Chinook v1.0",1) -- 1 is verbose
+						end
+						Buttonstring = "Save the Chinook path"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
 						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
 						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-						imgui.TextUnformatted("Scan Aircraft directory for third-party items now.")
+						imgui.TextUnformatted("This item is used for military people and asset around the aircraft when you select the ARMY handling set. Scan Aircraft directory for third-party items now.")
 						imgui.PopStyleColor()
 						imgui.PopTextWrapPos()
 						imgui.EndTooltip()
@@ -19380,21 +19476,26 @@ function SGES_script()
 						imgui.TextUnformatted("ERROR in the CH47 path !\nConsider writting it manually \nto SGES_USER_CONFIG.lua.")
 						imgui.PopStyleColor()
 					end
-					imgui.TextUnformatted("   ") imgui.SameLine()
-					if  imgui.Button("Open CH47-D Chinook URL",190,18)  then
+					imgui.SameLine()
+					if  imgui.Button("Link - Open CH47-D Chinook URL",30,18)  then
 						open_that_sges_url("https://store.x-plane.org/CH47-D-Chinook_p_1428.html")
 					end
-					l_changed, l_newval = imgui.Checkbox(" X-Trident AV8-B installed\n Used for aircraft carrier.", XTrident_NaveCavour_Directory)
+					l_changed, l_newval = imgui.Checkbox(" X-Trident AV8-B", XTrident_NaveCavour_Directory)
 					if l_changed then
-						XTrident_NaveCavour_Directory= scan_for_external_asset("AV-8B v2","AV-8B v3",1) -- 1 is verbose
-						if XTrident_NaveCavour_Directory ~= nil then XTrident_NaveCavour_Object =  SCRIPT_DIRECTORY .. XTrident_NaveCavour_Directory .. "/extra/Nave Cavour/Nimitz.obj" end
-						Buttonstring = "Save the changes"
+
+						if XTrident_NaveCavour_Directory then
+							XTrident_NaveCavour_Directory = nil
+						else
+							XTrident_NaveCavour_Directory= scan_for_external_asset("AV-8B v2","AV-8B v3",1) -- 1 is verbose
+							if XTrident_NaveCavour_Directory ~= nil then XTrident_NaveCavour_Object =  SCRIPT_DIRECTORY .. XTrident_NaveCavour_Directory .. "/extra/Nave Cavour/Nimitz.obj" end
+						end
+						Buttonstring = "Save the AV8B path"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
 						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
 						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-						imgui.TextUnformatted("Scan Aircraft directory for third-party assets now.")
+						imgui.TextUnformatted("This item is used for plotting an aircraft STOL carrier.  Scan Aircraft directory for third-party assets now.")
 						imgui.PopStyleColor()
 						imgui.PopTextWrapPos()
 						imgui.EndTooltip()
@@ -19404,21 +19505,26 @@ function SGES_script()
 						imgui.TextUnformatted("ERROR in the AV-8B path !\nConsider writting it manually \nto SGES_USER_CONFIG.lua.")
 						imgui.PopStyleColor()
 					end
-					imgui.TextUnformatted("   ") imgui.SameLine()
-					if  imgui.Button("Open Harrier AV-8B URL",190,18)  then
+					imgui.SameLine()
+					if  imgui.Button("Link - Open Harrier AV-8B URL",30,18)  then
 						open_that_sges_url("https://store.x-plane.org/Harrier-AV-8B-XP11_p_919.html")
 					end
 
-					l_changed, l_newval = imgui.Checkbox(" FF/STS B777 v2 installed\n Used for the Boeing 777.", FFSTS_777v2_Directory)
+					l_changed, l_newval = imgui.Checkbox(" FF/STS B777 v2", FFSTS_777v2_Directory)
 					if l_changed then
-						FFSTS_777v2_Directory= scan_for_external_asset("Boeing777-200ER","Boeing777-200ER",1) -- 1 is verbose
-						Buttonstring = "Save the changes"
+
+						if FFSTS_777v2_Directory then
+							FFSTS_777v2_Directory = nil
+						else
+							FFSTS_777v2_Directory= scan_for_external_asset("Boeing777-200ER","Boeing777-300ER",1) -- 1 is verbose
+						end
+						Buttonstring = "Save the FF 777 path"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
 						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
 						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-						imgui.TextUnformatted("Scan Aircraft directory for third-party assets now.")
+						imgui.TextUnformatted("This item is used for container loaders and other services around the aircraft.  Scan Aircraft directory for third-party assets now.")
 						imgui.PopStyleColor()
 						imgui.PopTextWrapPos()
 						imgui.EndTooltip()
@@ -19428,20 +19534,24 @@ function SGES_script()
 						imgui.TextUnformatted("ERROR in the 777v2 path !\nConsider writting it manually \nto SGES_USER_CONFIG.lua.")
 						imgui.PopStyleColor()
 					end
-					imgui.TextUnformatted("   ") imgui.SameLine()
-					if  imgui.Button("Open FF/STS 777v2 URL",190,18)  then
+					imgui.SameLine()
+					if  imgui.Button("Link - Open FF/STS 777v2 URL",30,18)  then
 						open_that_sges_url("https://store.x-plane.org/FlightFactor-777-200ER-v2-Ultimate_p_1883.html")
 					end
-					l_changed, l_newval = imgui.Checkbox(" Activate the CDB-Library\n Used for people.", Cami_de_Bellis_Directory)
+					l_changed, l_newval = imgui.Checkbox(" CDB-Library", Cami_de_Bellis_Directory)
 					if l_changed then
-						Cami_de_Bellis_Directory= scan_for_external_asset("is in custom scenery folder","CDB-Library",1) -- 1 is verbose
-						Buttonstring = "Save the changes"
+						if Cami_de_Bellis_Directory then
+							Cami_de_Bellis_Directory = nil
+						else
+							Cami_de_Bellis_Directory= scan_for_external_asset("is in custom scenery folder","CDB-Library",1) -- 1 is verbose
+						end
+						Buttonstring = "Save the library change"
 					end
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
 						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
 						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-						imgui.TextUnformatted("Scan X-Plane for third-party assets now.")
+						imgui.TextUnformatted("This item is used for people around the aircraft. Scan X-Plane for third-party assets now.")
 						imgui.PopStyleColor()
 						imgui.PopTextWrapPos()
 						imgui.EndTooltip()
@@ -19452,10 +19562,69 @@ function SGES_script()
 						imgui.PopStyleColor()
 						Cami_de_Bellis_authorized = false
 					end
-					imgui.TextUnformatted("   ") imgui.SameLine()
-					if  imgui.Button("Open CDB-Library URL",190,18)  then
+					imgui.SameLine()
+					if  imgui.Button("Link - Open CDB-Library URL",30,18)  then
 						open_that_sges_url("https://forums.x-plane.org/index.php?/files/file/27907-cdb-library")
 					end
+					---------------------------
+					l_changed, l_newval = imgui.Checkbox(" ToLiss wide-body", TolissWB_Directory)
+					if l_changed then
+						if TolissWB_Directory then
+							TolissWB_Directory = nil
+						else
+							TolissWB_Directory= scan_for_external_asset("ToLissA34","ToLissA33",1) -- 1 is verbose
+							if TolissWB_Directory ~= nil then TolissWB_Directory_Object =  SCRIPT_DIRECTORY .. TolissWB_Directory .. "/objects/GroundServices/ContainerLoader.obj" end
+						end
+						Buttonstring = "Save the Toliss path"
+					end
+					if imgui.IsItemActive() then
+						imgui.BeginTooltip()
+						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
+						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+						imgui.TextUnformatted("This item is used for container loaders around the aircraft. Scan Aircraft directory for third-party assets now.")
+						imgui.PopStyleColor()
+						imgui.PopTextWrapPos()
+						imgui.EndTooltip()
+					end
+					if TolissWB_Directory and not file_exists(SCRIPT_DIRECTORY .. TolissWB_Directory .. "/objects/GroundServices/ContainerLoader.obj") then
+						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+						imgui.TextUnformatted("ERROR in the Toliss wide body path !\nConsider writting it manually \nto SGES_USER_CONFIG.lua.")
+						imgui.PopStyleColor()
+					end
+					imgui.SameLine()
+					if  imgui.Button("Link - Open Toliss A340 URL",30,18)  then
+						open_that_sges_url("https://store.x-plane.org/Airbus-A340-600-by-Toliss_p_1459.html")
+					end
+					--~ l_changed, l_newval = imgui.Checkbox(" ToLiss single-aisle", TolissSA_Directory)
+					--~ if l_changed then
+							--~ if TolissSA_Directory then
+								--~ TolissSA_Directory = nil
+							--~ else
+								--~ TolissSA_Directory= scan_for_external_asset("ToLissA319","ToLissA32",1) -- 1 is verbose
+								--~ if TolissSA_Directory == nil then scan_for_external_asset("ToLissA319","ToLissA33",1)  end
+								--~ if TolissSA_Directory ~= nil then TolissSA_Directory_Object =  SCRIPT_DIRECTORY .. TolissSA_Directory .. "/objects/GroundServices/BaggageLoader.obj" end
+							--~ end
+						--~ Buttonstring = "Save the Toliss A32X path"
+					--~ end
+					--~ if imgui.IsItemActive() then
+						--~ imgui.BeginTooltip()
+						--~ imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
+						--~ imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+						--~ imgui.TextUnformatted("This item is used for belt loaders (loose cargo) around the aircraft. Scan Aircraft directory for third-party assets now.")
+						--~ imgui.PopStyleColor()
+						--~ imgui.PopTextWrapPos()
+						--~ imgui.EndTooltip()
+					--~ end
+					--~ if TolissSA_Directory and not file_exists(SCRIPT_DIRECTORY .. TolissSA_Directory .. "/objects/GroundServices/BaggageLoader.obj") then
+						--~ imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+						--~ imgui.TextUnformatted("ERROR in the Toliss single-aisle path !\nConsider writting it manually \nto SGES_USER_CONFIG.lua.")
+						--~ imgui.PopStyleColor()
+					--~ end
+					--~ imgui.SameLine()
+					--~ if  imgui.Button("Link - Open Toliss A321 URL",30,18)  then
+						--~ open_that_sges_url("https://store.x-plane.org/Airbus-A321-XP12-by-Toliss_p_1632.html")
+					--~ end
+					--~ imgui.TextUnformatted("See the X-Plane console for more.")
 				end
 
 
@@ -19535,27 +19704,65 @@ function SGES_script()
 					Buttonstring = "Save the changes"
 				end
 
-				if stairs_authorized then
-					imgui.TextUnformatted("Currently : loading the stairs,\nexcept with an OpenSAM jetway,\nduring the loading sequence.")
-				else
-					imgui.TextUnformatted("Currently : never load the stairs\nduring the SGES sequence.")
-				end
+				--~ if stairs_authorized then
+					--~ imgui.TextUnformatted("Currently : loading the stairs,\nexcept with an OpenSAM jetway,\nduring the loading sequence.")
+				--~ else
+					--~ imgui.TextUnformatted("Currently : never load the stairs\nduring the SGES sequence.")
+				--~ end
 				if option_StairsXPJ_override then
 					imgui.TextUnformatted("= Manual override is active. =")
 				end
+
+				if IsXPlane12 and outsideAirTemp < temperature_below_which_we_display_the_active_deicing_service + 7 then
+					imgui.Spacing()
+					imgui.TextUnformatted("Deicing service : aircraft is\nprotected from ice for " .. math.abs(Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand/60) .. " min.")
+					if  imgui.SmallButton("Deice +")  then
+						Buttonstring = "Save the changes"
+						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand + 300
+						if Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand >= 3600 then Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 3600 end
+					end
+					imgui.SameLine()
+					if  imgui.SmallButton("Deice -")  then
+						Buttonstring = "Save the changes"
+						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand - 300
+						if Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand < 900 then Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 900 end
+					end
+					imgui.SameLine()
+					if  imgui.SmallButton("Deice 45")  then
+						Buttonstring = "Save the changes"
+						Antiice_application_elapsed_time_ie_duration_of_the_active_protection_gained_from_the_deice_stand = 2700
+					end
+					imgui.Spacing()
+				end
+
 				imgui.Separator()
-				if  imgui.Button("Revert options to SGES defaults.",230,40)  then
+
+				imgui.PushStyleColor(imgui.constant.Col.Button,  0xFF505090)
+				if imgui.Button(Buttonstring .. ".",230,30)  then
+					WriteToDisk_SGES_USER_CONFIG()
+					if SGES_local_time_in_simulator_hours[0] ~= nil then
+						Buttonstring = "Saved (" .. string.format("%02d",SGES_local_time_in_simulator_hours[0]) .. "h" .. string.format("%02d",SGES_local_time_in_simulator_mins[0]) .. ")"
+					else
+						Buttonstring = "Saved"
+					end
+				end
+				imgui.PopStyleColor()
+				if  imgui.Button("Revert options to SGES defaults.",230,30)  then
 					Wipe_SGES_USER_CONFIG()
 				end
 
 				imgui.Separator()
 				imgui.TextUnformatted("Marshaller and arresting system:")
-				if  imgui.Button("Rebuild the runways databank",230,55)  then
+				if  imgui.Button("Rebuild the runways databank\n\n(It looks frozen but it is\nin progress. Please wait).",230,65)  then
 					includeCustomParkingPositions = true create_parking_position_cache()
 				elseif  imgui.SmallButton("Rebuild without custom sceneries",200,16)  then
 					includeCustomParkingPositions = false create_parking_position_cache()
 				end
-				imgui.TextUnformatted("(It looks frozen as it progresses\nbut it's not. Please wait.)")
+
+
+
+
+
 			end
 
 

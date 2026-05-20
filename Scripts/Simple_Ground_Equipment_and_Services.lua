@@ -19170,7 +19170,7 @@ function SGES_script()
 					l_changed, l_newval = imgui.Checkbox(" Activate the copilot and\n flight engineer (Felis 742)", SpeedyCopilotForFelis)
 					if l_changed then
 						SpeedyCopilotForFelis = l_newval
-						Buttonstring = "Save the changes (Felis)"
+						--~ Buttonstring = "Save the changes (Felis)"
 					end
 					imgui.PopStyleColor()
 					if imgui.IsItemActive() then

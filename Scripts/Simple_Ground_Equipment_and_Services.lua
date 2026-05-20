@@ -638,7 +638,6 @@ function SGES_script()
 	UseXplane1220Chocks = false
 	UseXplane1220Chocks_specific = UseXplane1220Chocks
 	LoadXplane1220Chocks_specific = false
-	LuaJITForFelis = true
 	-- if they want some custom objects instead, as this master setting is amended later from the config file
 
 	debugging_passengers = false -- accelerate testing conditions
@@ -19134,19 +19133,20 @@ function SGES_script()
 					end
 				end
 				if IsXPlane1220 then
-					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
+					--~ imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
 					if UseXplane1220Chocks_specific ~= nil and UseXplane1220Chocks_specific then
 						l_changed, l_newval = imgui.Checkbox(" Prefer X-Plane 12 chocks\n (enforced with this model)*", UseXplane1220Chocks)
 					else
-						l_changed, l_newval = imgui.Checkbox(" Prefer X-Plane 12 chocks\n (a global setting only\n for this session)*", UseXplane1220Chocks)
+						l_changed, l_newval = imgui.Checkbox(" Always prefer X-Plane chocks\n for all aircraft", UseXplane1220Chocks)
 					end
 					if l_changed then
 						show_Chocks = false
 						Chocks_chg = true
 						command_once("sim/flight_controls/remove_chocks")
 						UseXplane1220Chocks = l_newval
+						Buttonstring = "Save the changes (chocks)"
 					end
-					imgui.PopStyleColor()
+					--~ imgui.PopStyleColor()
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
 						imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
@@ -19164,12 +19164,15 @@ function SGES_script()
 
 				-- Speedy Copilot for Felis
 				if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
+
+					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
 					if SpeedyCopilotForFelis == nil then SpeedyCopilotForFelis = true end
 					l_changed, l_newval = imgui.Checkbox(" Activate the copilot and\n flight engineer (Felis 742)", SpeedyCopilotForFelis)
 					if l_changed then
 						SpeedyCopilotForFelis = l_newval
-						Buttonstring = "Save the changes"
+						Buttonstring = "Save the changes (Felis)"
 					end
+					imgui.PopStyleColor()
 					if imgui.IsItemActive() then
 						imgui.BeginTooltip()
 						imgui.PushTextWrapPos(imgui.GetFontSize() * 17)
@@ -19180,33 +19183,15 @@ function SGES_script()
 						imgui.EndTooltip()
 					end
 					if SpeedyCopilotForFelis then
-					if SpeedyCopilotForFelis_wait4spoilers == nil then SpeedyCopilotForFelis_wait4spoilers = true end
+						imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
+						if SpeedyCopilotForFelis_wait4spoilers == nil then SpeedyCopilotForFelis_wait4spoilers = true end
 						l_changed, l_newval = imgui.Checkbox(" The 742 copilot waits for\n spoiler down to start\n the after landing procedure.", SpeedyCopilotForFelis_wait4spoilers)
 						if l_changed then
 							SpeedyCopilotForFelis_wait4spoilers = l_newval
 							Buttonstring = "Save the changes"
 						end
+						imgui.PopStyleColor()
 					end
-					l_changed, l_newval = imgui.Checkbox(" Disable Lua JIT at startup\n (Felis 742F fails to do it)", LuaJITForFelis)
-					if l_changed then
-						LuaJITForFelis = l_newval
-						if LuaJITForFelis then
-							set("B742/anim/jit_off",1)
-						end
-						Buttonstring = "Save the changes"
-					end
-
-					--~ if sges_gs_gnd_spd[0] < 1 and sges_EngineState[0] > 95 then
-						--~ if imgui.SmallButton("Release stuck brakes !?!") then
-							--~ set("sim/operation/override/override_toe_brakes",0)
-							--~ set("sim/operation/override/override_gearbrake",0)
-							--~ set("sim/operation/override/override_engine_forces",0)
-							--~ set("sim/operation/override/override_wing_forces",0)
-							--~ set("sim/cockpit2/switches/auto_brake_level",1) -- off
-							--~ set("sim/cockpit2/controls/parking_brake_ratio",1)
-							--~ set_array("sim/flightmodel/controls/parkbrake",0,0)
-						--~ end
-					--~ end
 				end
 
 				l_changed, l_newval = imgui.Checkbox(" Use automatic stairs at 1L", show_auto_stairs)

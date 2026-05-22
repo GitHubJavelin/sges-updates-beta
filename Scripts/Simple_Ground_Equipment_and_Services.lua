@@ -2722,7 +2722,12 @@ function SGES_script()
 
 	  if GPU_chg == true then
 		  if show_GPU then
+			if string.match(PLANE_AUTHOR,"Thranda") and XPLMFindDataRef("thranda/electrical/ExtPwrGPUAvailable") ~= nil then
+				print("[Ground Equipment " .. version_text_SGES .. "] Displaying only the Thranda external power unit, not SGES GPU.")
+				GPU_chg = false
+			else-- load the visual GPU only when not already the Thranda planes GPU (XPLMFindDataRef("thranda/electrical/ExtPwrGPUAvailable") ~= nil)
 			  load_GPU()
+			 end
 		  else
 			  GPU_chg,GPU_instance[0],rampserviceref1 = common_unload("GPU",GPU_instance[0],rampserviceref1)
 			  --unload_GPU()
@@ -5248,6 +5253,16 @@ function SGES_script()
 
 	--print("[Ground Equipment " .. version_text_SGES .. "] Preparing GROUNDSERVICE")
 	function load_Cones()
+
+		-- Having busmode enabled but still cones activated as cones, and not barrels, is an indication that the barel is not ready, so we patch
+		-- this to enforce barrels instead of traffic cones
+		-- This is only triggered when Cones are preloaded while Barrels are requested :
+		if SGES_BushMode and (sges_military == 1 or sges_military_default == 1) and string.find(Prefilled_ConeObject,"traffic") then
+			BushObjectsToggle(1)
+		elseif SGES_BushMode and string.find(Prefilled_ConeObject,"traffic") then
+			BushObjectsToggle(0)
+		end
+
 		if Cones_instance[0] == nil then
 		-- note that when there is only one instance, the instance array index must be 0, NOT 1.
 		-- otherwise, xplane will crash --> hey that looks pretty normal since 0 is the first case. GF
@@ -13754,8 +13769,10 @@ function SGES_script()
 			set("B742/INT_PA/connect_gpu",0)
 		end
 		imgui.PopStyleColor(2)
+	  elseif string.match(PLANE_AUTHOR,"Thranda") and XPLMFindDataRef("thranda/electrical/ExtPwrGPUAvailable") ~= nil then
+			l_changed, l_newval = imgui.Checkbox(" GPU (Thranda)", show_GPU)
 	  else
-		l_changed, l_newval = imgui.Checkbox(" GPU (visual)", show_GPU)
+			l_changed, l_newval = imgui.Checkbox(" GPU (visual)", show_GPU)
 	  end
 	  if l_changed then
 		if PLANE_ICAO == string.match(PLANE_ICAO,"CRJ") then command_once("crj700/tablet/menu/settings/hot_external_power_command")
@@ -13805,9 +13822,11 @@ function SGES_script()
 			ASU_chg = true
 		end
 
-			if XPLMFindDataRef("thranda/electrical/ExtPwrGPUAvailable") ~= nil and show_GPU then -- toggle Thranda GPU
+			if (string.match(PLANE_AUTHOR,"Thranda") or string.match(PLANE_AUTHOR,"JustFlight")) and XPLMFindDataRef("thranda/electrical/ExtPwrGPUAvailable") ~= nil and show_GPU then -- toggle Thranda GPU
 				set("thranda/electrical/ExtPwrGPUAvailable",1)
-			elseif XPLMFindDataRef("thranda/electrical/ExtPwrGPUAvailable") ~= nil  then
+				set("sim/cockpit/electrical/gpu_on",1)
+			elseif (string.match(PLANE_AUTHOR,"Thranda") or string.match(PLANE_AUTHOR,"JustFlight")) and  XPLMFindDataRef("thranda/electrical/ExtPwrGPUAvailable") ~= nil  then
+				set("sim/cockpit/electrical/gpu_on",0)
 				set("thranda/electrical/ExtPwrGPUAvailable",0)
 			end
 
@@ -18269,6 +18288,24 @@ function SGES_script()
 				end
 				imgui.PopStyleColor()
 				imgui.TextUnformatted("")
+				if debugging_passengers then
+					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
+					imgui.Separator()
+					imgui.TextUnformatted("DATAREF REPORTING")
+					imgui.TextUnformatted("left_brake_ratio \t"  .. math.floor(get("sim/cockpit2/controls/left_brake_ratio")*10000)/10000)
+					imgui.TextUnformatted("right_brake_ratio \t" .. math.floor(get("sim/cockpit2/controls/right_brake_ratio")*10000)/10000)
+					imgui.TextUnformatted("parking_brake_ratio \t"  .. math.floor(get("sim/cockpit2/controls/parking_brake_ratio")*10000)/10000)
+					if  imgui.Button("Diff brake to zero",125,18)  then
+						set("sim/cockpit2/controls/right_brake_ratio",0)
+						set("sim/cockpit2/controls/left_brake_ratio",0)
+					end
+					imgui.TextUnformatted("override_engine_forces \t"  .. get("sim/operation/override/override_engine_forces"))
+					imgui.TextUnformatted("override_wing_forces \t"  .. get("sim/operation/override/override_wing_forces"))
+					imgui.Separator()
+					imgui.TextUnformatted("")
+					imgui.PopStyleColor()
+				end
+
 				if AIRCRAFT_FILENAME ~= nil then imgui.TextUnformatted(AIRCRAFT_FILENAME) end
 				if PLANE_ICAO ~= nil then imgui.TextUnformatted(PLANE_ICAO) imgui.SameLine() if sges_airport_ID ~= nil then imgui.TextUnformatted("at " .. sges_airport_ID) end end
 				if IsToLiSs then imgui.TextUnformatted("Is a ToLiSs model.") end

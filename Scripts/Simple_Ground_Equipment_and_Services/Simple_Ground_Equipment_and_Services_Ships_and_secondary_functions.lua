@@ -215,6 +215,7 @@ function execute_DYNAMIC_service_objects()
 					--Caution, SGES_Throttle is PROP WASH for an HELICOPTER !
 					if SGES_override_engine_forces == 1 then
 						SGES_override_engine_forces = 0
+						set("sim/operation/override/override_engine_forces",0)
 						set("sim/operation/override/override_wing_forces",0)
 						print("[Ground Equipment " .. version_text_SGES .. "] Because an helicopter, chocks cannot retain you now !")
 						show_Chocks = false
@@ -222,11 +223,13 @@ function execute_DYNAMIC_service_objects()
 					end
 				else
 					if XPLMFindDataRef("sim/operation/override/override_engine_forces") ~= nil and SGES_override_engine_forces == nil then
-							dataref("SGES_override_engine_forces","sim/operation/override/override_engine_forces","writable")
+							--~ dataref("SGES_override_engine_forces","sim/operation/override/override_engine_forces","writable") -- remove that writable dataref !  20th of May 2026
+							SGES_override_engine_forces = 0
 					end
 					if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 0 then
 
 						SGES_override_engine_forces = 1
+						set("sim/operation/override/override_engine_forces",1)
 						set("sim/operation/override/override_wing_forces",1)
 						print("[Ground Equipment " .. version_text_SGES .. "] Activating the SGES chocks. SGES_override_engine_forces = " .. SGES_override_engine_forces)
 					end
@@ -252,10 +255,12 @@ function execute_DYNAMIC_service_objects()
 			end
 		elseif SGES_override_engine_forces ~= nil and not show_Chocks and not show_PB and  SGES_override_engine_forces == 1 and PLANE_ICAO ~= "CL60"  then -- regular
 			SGES_override_engine_forces = 0
+			set("sim/operation/override/override_engine_forces",0)
 			set("sim/operation/override/override_wing_forces",0)
 			print("[Ground Equipment " .. version_text_SGES .. "] Removing tire chocks action. SGES_override_engine_forces = " .. SGES_override_engine_forces)
 		elseif SGES_override_engine_forces ~= nil and not show_Chocks and not show_PB and  SGES_override_engine_forces == 1 and Chocks_chg and PLANE_ICAO == "CL60" and string.find(PLANE_AUTHOR,"Hot") then -- Hot Start CL650 Challenger
 			SGES_override_engine_forces = 0
+			set("sim/operation/override/override_engine_forces",0)
 			set("sim/operation/override/override_wing_forces",0)
 			print("[Ground Equipment " .. version_text_SGES .. "] Removing SGES chocks action once for the Hot Start Challenger, then the plane will hopefully handle the rest later.")
 		end

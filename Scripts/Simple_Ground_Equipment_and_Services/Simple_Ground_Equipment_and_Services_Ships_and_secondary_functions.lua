@@ -930,6 +930,87 @@ end
 create_command("Simple_Ground_Equipment_and_Services/Ejection_seat/eject", "Eject (press three times to confirm ejection)", "eject_confirm()", "", "")
 
 
+--########################################
+--# HOPPIE IVAO ATIS FUNCTIONS           #
+--########################################
+
+function set_hoppie_atis_sges()
+	if hop_icao == nil then
+		print("[Ground Equipment " .. version_text_SGES .. "] HOPPIE ACARS initial setup")
+		hop_icao = "LFMN"
+		if NearestAirport ~= nil then
+			hop_icao = NearestAirport
+		else
+			_, _, _, _, _, _, hop_icao, _ = XPLMGetNavAidInfo(XPLMFindNavAid( nil, nil, LATITUDE, LONGITUDE, nil, xplm_Nav_Airport))
+		end
+		hop_pos_index = 0
+		hop_positions = {"TWR", "APP", "DEP","DEL", "GND", "CTR", "N_CTR", "S_CTR", "E_CTR", "W_CTR", "NE_CTR", "NW_CTR", "SE_CTR", "SW_CTR"}
+		hop_netw_index = 0
+		hop_networks = {"ivaoatis", "vatatis", "peatis"}
+		if SGES_hoppie_logon ~= nil then
+			hoppie_logon = SGES_hoppie_logon -- Hoppie logon code
+		--~ elseif TL_hoppie_logon ~= nil and TL_hoppie_logon ~= "" then
+			--~ hoppie_logon = TL_hoppie_logon -- Hoppie logon code from Speedy Copilot for ToLiss for initial setup! We can transfer it if we already ave it somewhere !
+			--~ SGES_hoppie_logon = hoppie_logon
+		end
+		hop_atis_result = "" -- Hoppie ATIS INIT
+	end
+end
+set_hoppie_atis_sges()
+
+function get_hoppie_atis_sges(hoppie_logon, netwrk, hop_icao, position)
+	if SGES_hoppie_logon == nil or (SGES_hoppie_logon ~= nil and hoppie_logon ~= SGES_hoppie_logon) then
+		SGES_hoppie_logon = hoppie_logon -- store that code to disk
+		WriteToDisk_SGES_USER_CONFIG()
+		print("[Ground Equipment " .. version_text_SGES .. "] HOPPIE ACARS LOGON CODE updated")
+	end
+
+	local zulud = os.date("!%H%MZ")
+	local cmd = string.format(
+		"curl -s 'https://www.hoppie.nl/acars/system/connect.html?logon=%s&from=SPEEDY%s&to=SERVER&type=inforeq&packet=%s%%20%s'",
+		hoppie_logon, zulud, netwrk, hop_icao
+	)
+	local cmdB = string.format(
+		"curl -s 'https://www.hoppie.nl/acars/system/connect.html?logon=%s&from=SPEEDY%s&to=SERVER&type=inforeq&packet=%s%%20%s-%s'",
+		hoppie_logon, zulud, netwrk, hop_icao, position
+	)
+	if netwrk ~= nil and netwrk == "ivaoatis" then
+		cmd = cmdB
+	end
+	--~ print("[Ground Equipment " .. version_text_SGES .. "]  curl -s 'https://www.hoppie.nl/acars/ (...) " .. string.sub(cmd, -30))
+	local handle = io.popen(cmd)
+	local result = string.sub(string.sub(handle:read("*a"), 17),1, -3)
+	handle:close()
+	--~ print("[Ground Equipment " .. version_text_SGES .. "]  " .. result)
+	return result
+end
+
+taf_line = ""
+function get_last_taf_line(hop_icao)
+    local url = string.format(
+        "https://api.met.no/weatherapi/tafmetar/1.0/tafmetar.txt?icao=%s",
+        hop_icao
+    )
+
+    local cmd = string.format("curl -s '%s'", url)
+    local handle = io.popen(cmd)
+    if not handle then return "ERR: no curl" end
+
+    local data = handle:read("*a")
+    handle:close()
+
+    -- extraire la dernière ligne non vide
+    local last = nil
+    for line in data:gmatch("[^\r\n]+") do
+        if line:match("%S") then
+            last = line
+        end
+    end
+
+    return last or "No data"
+end
+
+
 
 --------------------------------------------------------------------------------
 

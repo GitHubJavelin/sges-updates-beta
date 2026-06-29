@@ -404,10 +404,18 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
 	-- we also work the dataref regarding the X-Plane aircraft model author
     if SGES_Author == nil then dataref("SGES_Author","sim/aircraft/view/acf_author","readonly") end --[[important]]
 
+	--~ Door indexes across the fleet
+	--~ AirbusFBW/PaxDoorModeArray	A321 	A346	A339	A319/A320
+	--~ PaxDoorRearLeft				6		2		6		2
+	--~ ServiceDoor2R				7		7		7		3
     if PLANE_ICAO == "A321"     and SGES_Author == "Gliding Kiwi" then 			dataref_to_open_the_door = "AirbusFBW/PaxDoorModeArray" 				index_to_open_the_door = 0 	target_to_open_the_door = 2 index_to_open_the_second_door = 6 -- TOLISS -- possible confrontation with Speedy Copilot for ToLiSs plugin which loads first the door reference
     elseif PLANE_ICAO == "A21N"     and SGES_Author == "Gliding Kiwi" then 			dataref_to_open_the_door = "AirbusFBW/PaxDoorModeArray" 				index_to_open_the_door = 0 	target_to_open_the_door = 2 index_to_open_the_second_door = 6 -- TOLISS -- possible confrontation with Speedy Copilot for ToLiSs plugin which loads first the door reference
     elseif (PLANE_ICAO == "A320" or PLANE_ICAO == "A20N") and SGES_Author == "Gliding Kiwi" then 			dataref_to_open_the_door = "AirbusFBW/PaxDoorModeArray" 				index_to_open_the_door = 0	target_to_open_the_door = 2 index_to_open_the_second_door = 2 -- TOLISS -- possible confrontation with Speedy Copilot for ToLiSs plugin which loads first the door reference
-    elseif PLANE_ICAO == "A319" and SGES_Author == "Gliding Kiwi" then 			dataref_to_open_the_door = "AirbusFBW/PaxDoorModeArray" 				index_to_open_the_door = 0	target_to_open_the_door = 2 index_to_open_the_second_door = 2 -- TOLISS -- possible confrontation with Speedy Copilot for ToLiSs plugin which loads first the door reference
+    elseif PLANE_ICAO == "A319" and SGES_Author == "Gliding Kiwi" then
+   		dataref_to_open_the_door = "AirbusFBW/PaxDoorModeArray"
+   		index_to_open_the_door = 0
+   		target_to_open_the_door = 2
+   		index_to_open_the_second_door = 2 -- TOLISS -- possible confrontation with Speedy Copilot for ToLiSs plugin which loads first the door reference
     elseif PLANE_ICAO == "A339" and SGES_Author == "GlidingKiwi" then
 		dataref_to_open_the_door = "AirbusFBW/PaxDoorModeArray"
 		index_to_open_the_door = 0

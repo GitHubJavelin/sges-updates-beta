@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "80"
+version_text_SGES = "80.1"
 --------------------------------------------------------------------------------
 --[[
 
@@ -2087,8 +2087,8 @@ function SGES_script()
 
 			-- also open the aircraft door when defined in the aircraft set
 			if show_DoorOpen and dataref_to_open_the_door ~= nil and target_to_open_the_door ~= nil then
-				if PaxDoor1L == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil and PLANE_ICAO ~= "MD88"  and PLANE_ICAO ~= "MD11" and not string.find(PLANE_ICAO,"B73") then
-					dataref("PaxDoor1L",dataref_to_open_the_door,"writable",index_to_open_the_door)
+				if PaxDoor1Left == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil and PLANE_ICAO ~= "MD88"  and PLANE_ICAO ~= "MD11" and not string.find(PLANE_ICAO,"B73") then
+					dataref("PaxDoor1Left",dataref_to_open_the_door,"writable",index_to_open_the_door)
 				end
 				if index_to_open_the_second_door ~= nil and PaxDoorRearLeft == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
 					dataref("PaxDoorRearLeft",dataref_to_open_the_door,"writable",index_to_open_the_second_door)
@@ -2097,11 +2097,10 @@ function SGES_script()
 					dataref("PaxDoorRearLeft",dataref_to_open_the_second_door,"writable",index_to_open_the_door)
 					print("[Ground Equipment " .. version_text_SGES .. "]  PaxDoorRearLeft dataref is loaded from Simple Ground Equipment, via a second dataref.")
 				end
-				if show_DoorOpen and PaxDoor1L ~= nil and PaxDoor1L ~= target_to_open_the_door then
-					PaxDoor1L = target_to_open_the_door
+				if show_DoorOpen and PaxDoor1Left ~= nil and PaxDoor1Left ~= target_to_open_the_door then
+					PaxDoor1Left = target_to_open_the_door
 				end
 			end
-
 		end
 
 		if sges_airport_ID == nil then sges_airport_ID = "ZZZZ" end
@@ -3815,7 +3814,7 @@ function SGES_script()
 			-- delay door closing after airstairs is folded
 			if PLANE_ICAO == "E19L"
 			and PaxLineageStairs_time ~= nil and SGES_total_flight_time_sec > PaxLineageStairs_time + 16
-			and PaxDoor1L ~= nil and PaxDoor1L ~= target_to_open_the_door-1
+			and PaxDoor1Left ~= nil and PaxDoor1Left ~= target_to_open_the_door-1
 			and PaxLineageStairs ~= nil and PaxLineageStairs ~= target_to_open_the_door then
 				-- insist on closing the Embraer Lineage jet door : waiting for stairs
 				Pax_chg = true
@@ -3851,8 +3850,8 @@ function SGES_script()
 				end
 				--------------
 
-				if PaxDoor1L ~= nil and PaxDoor1L == target_to_open_the_door then
-					PaxDoor1L = target_to_open_the_door-1 -- we will try with -1 if that's Ok for the airplane, otherwise the user will hopefully correct that manually in game
+				if PaxDoor1Left ~= nil and PaxDoor1Left == target_to_open_the_door then
+					PaxDoor1Left = target_to_open_the_door-1 -- we will try with -1 if that's Ok for the airplane, otherwise the user will hopefully correct that manually in game
 				end
 				if PaxDoorRearLeft ~= nil and PaxDoorRearLeft == target_to_open_the_door then
 					PaxDoorRearLeft = target_to_open_the_door-1 -- we will try with -1 if that's Ok for the airplane, otherwise the user will hopefully correct that manually in game
@@ -6561,31 +6560,31 @@ function SGES_script()
 
 
 				if dataref_to_open_the_door == "laminar/B738/door/fwd_L_toggle" and string.match(PLANE_ICAO,"B73") then			-- ZIBO / LevelUp
-					if PaxDoor1L == nil and XPLMFindDataRef("laminar/B738/doors/status") ~= nil then								-- ZIBO / LevelUp
-							dataref("PaxDoor1L","laminar/B738/doors/status","readonly",index_to_open_the_door)						-- ZIBO / LevelUp
+					if PaxDoor1Left == nil and XPLMFindDataRef("laminar/B738/doors/status") ~= nil then								-- ZIBO / LevelUp
+							dataref("PaxDoor1Left","laminar/B738/doors/status","readonly",index_to_open_the_door)						-- ZIBO / LevelUp
 					end																												-- ZIBO / LevelUp
-					if show_Pax and PaxDoor1L ~= nil and PaxDoor1L == 2 then														-- ZIBO / LevelUp
+					if show_Pax and PaxDoor1Left ~= nil and PaxDoor1Left == 2 then														-- ZIBO / LevelUp
 						command_once("laminar/B738/door/fwd_L_toggle")
 						--print("[Ground Equipment " .. version_text_SGES .. "] open the laminar/B738 door via toggle command.")
 					end
 				elseif string.find(dataref_to_open_the_door,"md80") then			-- Rotate MD80
 
-					if PaxDoor1L == nil and XPLMFindDataRef("Rotate/md80/doors/main_cabin_door_ratio") ~= nil then
+					if PaxDoor1Left == nil and XPLMFindDataRef("Rotate/md80/doors/main_cabin_door_ratio") ~= nil then
 						print("[Ground Equipment " .. version_text_SGES .. "] The door has the command " .. dataref_to_open_the_door)
-						dataref("PaxDoor1L","Rotate/md80/doors/main_cabin_door_ratio","readonly",index_to_open_the_door)
+						dataref("PaxDoor1Left","Rotate/md80/doors/main_cabin_door_ratio","readonly",index_to_open_the_door)
 					end
-					if show_Pax and PaxDoor1L ~= nil and PaxDoor1L == 0 then
+					if show_Pax and PaxDoor1Left ~= nil and PaxDoor1Left == 0 then
 						command_once("Rotate/md80/doors/main_cabin_door_open")
 						print("[Ground Equipment " .. version_text_SGES .. "] Opening the Rotate MD-88 door via command.")
-						PaxDoor1L = nil
+						PaxDoor1Left = nil
 					end
 				elseif show_StairsXPJ then
-					if PaxDoor1L == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
+					if PaxDoor1Left == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
 						print("[Ground Equipment " .. version_text_SGES .. "] The door has the dataref " .. dataref_to_open_the_door .. ":" .. index_to_open_the_door)
-						dataref("PaxDoor1L",dataref_to_open_the_door,"writable",index_to_open_the_door)
+						dataref("PaxDoor1Left",dataref_to_open_the_door,"writable",index_to_open_the_door)
 					end
-					if show_Pax and PaxDoor1L ~= nil and PaxDoor1L ~= target_to_open_the_door then
-						PaxDoor1L = target_to_open_the_door
+					if show_Pax and PaxDoor1Left ~= nil and PaxDoor1Left ~= target_to_open_the_door then
+						PaxDoor1Left = target_to_open_the_door
 						--print("[Ground Equipment " .. version_text_SGES .. "] open the door with dataref " .. dataref_to_open_the_door .. ":" .. index_to_open_the_door)
 					end
 					-- Peculiar case of Embraer Lineage stairs :
@@ -6601,13 +6600,13 @@ function SGES_script()
 			--~ elseif dataref_table_to_open_the_door ~= nil and index_to_open_the_door ~= nil then -- second case when the dataref is a table !
 
 				--~ if BoardStairsXPJ then -- open the door only when it's the front door at which we board. As a simplificaiton, the human will take care of opening the rear door.
-					--~ if PaxDoor1L == nil and XPLMFindDataRef(dataref_table_to_open_the_door) ~= nil then
+					--~ if PaxDoor1Left == nil and XPLMFindDataRef(dataref_table_to_open_the_door) ~= nil then
 						--~ PaxDoors = dataref_table(dataref_table_to_open_the_door)
-						--~ PaxDoor1L = PaxDoors[target_to_open_the_door]
+						--~ PaxDoor1Left = PaxDoors[target_to_open_the_door]
 						--~ print("[Ground Equipment " .. version_text_SGES .. "]  arm the door with dataref table " .. dataref_table_to_open_the_door .. ":" .. index_to_open_the_door)
 					--~ end
-					--~ if show_Pax and PaxDoor1L ~= nil and PaxDoor1L < target_to_open_the_door then
-						--~ PaxDoor1L = target_to_open_the_door
+					--~ if show_Pax and PaxDoor1Left ~= nil and PaxDoor1Left < target_to_open_the_door then
+						--~ PaxDoor1Left = target_to_open_the_door
 						--~ print("[Ground Equipment " .. version_text_SGES .. "] open the door with dataref table " .. dataref_table_to_open_the_door .. ":" .. index_to_open_the_door)
 					--~ end
 				--~ end
@@ -9270,11 +9269,11 @@ function SGES_script()
 		if dataref_to_open_the_door ~= nil and index_to_open_the_door ~= nil and not string.match(PLANE_ICAO, "B73") then -- don't go more forward if stairs already in place
 
 			-- find the dataref
-			if PaxDoor1L == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
-					dataref("PaxDoor1L",dataref_to_open_the_door,"writable",index_to_open_the_door)
+			if PaxDoor1Left == nil and XPLMFindDataRef(dataref_to_open_the_door) ~= nil then
+					dataref("PaxDoor1Left",dataref_to_open_the_door,"writable",index_to_open_the_door)
 			end
 
-			if PaxDoor1L ~= nil and PaxDoor1L == target_to_open_the_door  and show_StairsXPJ == false then
+			if PaxDoor1Left ~= nil and PaxDoor1Left == target_to_open_the_door  and show_StairsXPJ == false then
 				-- then show the forward stairs (and apply consequent actions)
 				show_StairsXPJ = true
 				StairsXPJ_chg = true
@@ -9300,7 +9299,7 @@ function SGES_script()
 				show_Cones = true
 				Cones_chg = true
 				-- if the door is closed by the user, remove the stairs
-			elseif PaxDoor1L ~= nil and PaxDoor1L ~= target_to_open_the_door and show_StairsXPJ then
+			elseif PaxDoor1Left ~= nil and PaxDoor1Left ~= target_to_open_the_door and show_StairsXPJ then
 				show_StairsXPJ2 = false
 				StairsXPJ2_chg = true
 				show_StairsXPJ = false
@@ -14536,7 +14535,7 @@ function SGES_script()
 						if protect_StairsXPJ == false then
 							protect_StairsXPJ = true
 							-- and close the door as required in ZSAR :
-							if PaxDoor1L ~= nil 		and PaxDoor1L == target_to_open_the_door 		then PaxDoor1L = target_to_open_the_door-1				end
+							if PaxDoor1Left ~= nil 		and PaxDoor1Left == target_to_open_the_door 		then PaxDoor1Left = target_to_open_the_door-1				end
 							if PaxDoorRearLeft ~= nil 	and PaxDoorRearLeft == target_to_open_the_door 	then	PaxDoorRearLeft = target_to_open_the_door-1 	end
 							show_Pax = false
 							show_Bus = false
@@ -14605,7 +14604,7 @@ function SGES_script()
 					DualBoard = true
 				else
 					DualBoard = false
-					if PaxDoor1L~= nil then PaxDoor1L = target_to_open_the_door-1 end
+					if PaxDoor1Left~= nil then PaxDoor1Left = target_to_open_the_door-1 end
 				end
 				--also stops or remove the passengers if there is no stairs :
 				if show_StairsXPJ == false and show_StairsXPJ2 == false and show_Pax then
@@ -17445,7 +17444,7 @@ function SGES_script()
 
 				if XPLMFindDataRef("bp/connected") ~= nil then -- when the plugin is here, offer a button to it.
 				--~ imgui.SameLine()
-				if  imgui.Button("BPB",38,20)  then
+				if  imgui.Button("BPB",35,20)  then
 					command_once("BetterPushback/start")
 
 					show_Chocks = false
@@ -19827,7 +19826,16 @@ function SGES_script()
 						changed, hop_pos_index = imgui.Combo("Pos", hop_pos_index, table.concat(hop_positions, "\0"))
 						if changed then hop_pos_index_NEW = hop_pos_index + 1 end
 					end
-
+					-- special FF777v2 helper :
+					if string.find(PLANE_AUTHOR,"FlightFactor") and XPLMFindDataRef("1-sim/cduL/display/symbols") ~= nil and
+					FFcallsign ~= nil and FFcallsign ~= "" and not string.find(FFcallsign,"-----") then
+						imgui.Button(FFcallsign)
+						imgui.SameLine()
+						imgui.TextUnformatted("Check CDU FLT NO = EFB !")
+					elseif string.find(PLANE_AUTHOR,"FlightFactor") and XPLMFindDataRef("1-sim/cduL/display/symbols") ~= nil then
+						imgui.TextUnformatted("777 callsign: CDU-Left RTE FLT NO.")
+					end
+					---------------------------
 					if imgui.Button("Nearest") then
 						_, _, _, _, _, _, hop_icao, _ = XPLMGetNavAidInfo( XPLMFindNavAid( nil, nil, LATITUDE, LONGITUDE, nil, xplm_Nav_Airport) )
 					end
@@ -19839,11 +19847,19 @@ function SGES_script()
 						if hop_pos_index_NEW == nil then hop_pos_index_NEW = 1 end
 						local pos = hop_positions[hop_pos_index_NEW]
 						hop_atis_result = get_hoppie_atis_sges(hoppie_logon, inforeqnetwk, hop_icao, pos)
+						if string.find(PLANE_AUTHOR,"Gliding") or (string.find(PLANE_ICAO,"B77") and string.find(PLANE_AUTHOR,"FlightFactor")) then
+							sges_send_hoppie_acars(hop_icao,hop_atis_result)
+						end
 					end
 
 					imgui.SameLine()
 					if imgui.Button("METAR") then
 						taf_line = get_last_taf_line(hop_icao)
+						if string.find(PLANE_AUTHOR,"Gliding") or (string.find(PLANE_ICAO,"B77") and string.find(PLANE_AUTHOR,"FlightFactor")) then
+							if taf_line ~= "No data" then
+								sges_send_hoppie_acars(hop_icao,taf_line)
+							end
+						end
 					end
 
 					imgui.SameLine()

@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "81"
+version_text_SGES = "81.1"
 --------------------------------------------------------------------------------
 --[[
 
@@ -437,6 +437,7 @@ function SGES_script()
 	local rampserviceref710 = ffi.new("XPLMObjectRef")            -- for the ground service
 	 rampserviceref72 = ffi.new("XPLMObjectRef")            -- for the ground serviceULD
 	 rampserviceref722 = ffi.new("XPLMObjectRef")            -- for the ground serviceULD plate
+	 rampserviceref7222 = ffi.new("XPLMObjectRef")            -- for the ground serviceULD plate
 	local rampserviceref73 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref74 = ffi.new("XPLMObjectRef")            -- for the ground service
 	local rampserviceref75 = ffi.new("XPLMObjectRef")            -- for the ground service
@@ -473,6 +474,8 @@ function SGES_script()
 	rampservicerefBaggage3 = ffi.new("XPLMObjectRef")            -- for the ground service
 	rampservicerefBaggage4 = ffi.new("XPLMObjectRef")            -- for the ground service
 	rampservicerefBaggage5 = ffi.new("XPLMObjectRef")            -- for the ground service
+	rampservicerefBaggageRear = ffi.new("XPLMObjectRef")            -- for the ground service
+	rampservicerefBaggageRear1 = ffi.new("XPLMObjectRef")            -- for the ground service
 	rampservicerefArms = ffi.new("XPLMObjectRef")            -- for the ground service
 
 	if IsXPlane12 then
@@ -527,7 +530,7 @@ function SGES_script()
 	local FireVehicle_instance = ffi.new("XPLMInstanceRef[4]")
 	local ArrestorSystem_instance = ffi.new("XPLMInstanceRef[1]")
 	local FireSmoke_instance = ffi.new("XPLMInstanceRef[1]")
-	local ULDLoader_instance = ffi.new("XPLMInstanceRef[2]")
+	local ULDLoader_instance = ffi.new("XPLMInstanceRef[3]")
 	local People4_instance = ffi.new("XPLMInstanceRef[1]")
 	local People3_instance = ffi.new("XPLMInstanceRef[1]")
 	local People2_instance = ffi.new("XPLMInstanceRef[1]")
@@ -546,7 +549,7 @@ function SGES_script()
 	local Forklift_instance = ffi.new("XPLMInstanceRef[1]")
 	GenericDriver_instance = ffi.new("XPLMInstanceRef[1]")
 	local AAR_instance = ffi.new("XPLMInstanceRef[1]")
-	Baggage_instance = ffi.new("XPLMInstanceRef[6]") -- must not be loca, for subscript
+	Baggage_instance = ffi.new("XPLMInstanceRef[8]") -- must not be loca, for subscript
 
 	-- Generic
 	local Instance = ffi.new("XPLMInstanceRef[5]")
@@ -668,6 +671,7 @@ function SGES_script()
 
 	-- many variable are just temporary set, and should not be changed here, but changed in the configuration files instead !
 	User_prefers_containerized_freight = false
+	sges_use_bagage_at_rear = true
 	reduce_even_more_the_number_of_passengers = false
 	SpeedyCopilotForFelis = false
 	SpeedyCopilotForFelis_wait4spoilers = true
@@ -1562,6 +1566,7 @@ function SGES_script()
 		sges_landing_lights_on		= dataref_table("sim/cockpit/electrical/landing_lights_on")
 	end
 
+
 	--~ SGES_scenery_load 			= dataref_table("sim/graphics/scenery/async_scenery_load_in_progress")
 	if XPLMFindDataRef("sim/time/local_date_days") then
 		SGES_date_in_simulator = dataref_table("sim/time/local_date_days")
@@ -2331,6 +2336,8 @@ function SGES_script()
 	Ponev_show_only_once = true
 	baggage_show_only_once = true
 	baggage1_show_only_once = true
+	baggageRear_show_only_once = true
+	baggageRear1_show_only_once = true
 	baggage2_show_only_once = true
 	baggage3_show_only_once = true
 	baggage4_show_only_once = true
@@ -2968,8 +2975,13 @@ function SGES_script()
 								baggage_x_stored = baggage_x
 								baggage_vert = 0.52 -- moving_deck_altitude
 							end
-
 							baggage_vert_stored = baggage_vert
+							baggage_x6 = baggage_x + 0.5
+							--~ baggage_z6 = baggage_z
+							baggage_x6_stored = baggage_x6
+							--~ baggage_z6_stored = baggage_z6
+							baggage_vert6 = baggage_vert
+							baggage_vert6_stored = baggage_vert
 						else
 							baggage_x = x + 4.2 --
 							baggage_x_stored = baggage_x --
@@ -2986,6 +2998,12 @@ function SGES_script()
 							end
 
 							baggage_vert_stored = baggage_vert --
+							baggage_x6 = baggage_x
+							--~ baggage_z6 = baggage_z
+							baggage_x6_stored = baggage_x6
+							--~ baggage_z6_stored = baggage_z6
+							baggage_vert6 = baggage_vert
+							baggage_vert6_stored = baggage_vert
 						end
 					else -- cargo hold on the left hand side
 						if walking_direction == "boarding" then
@@ -3071,6 +3089,41 @@ function SGES_script()
 					end
 					baggage_z2 = z
 				end
+				RearLoader_x = x
+				RearLoader_z = z
+				if walking_direction == "boarding" then
+					baggage_x6 = x - 4.2
+					baggage_x6_stored = baggage_x6
+					baggage_z6 = z + 0.2
+					baggage_z6_stored = baggage_z6
+					baggage_vert6 = 0.9
+					if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then baggage_vert6 = 0.37 end -- when those are LD3 and not baggages, the path is different
+
+					-- modifier applies after new cargo loader in X-Plane 12.1 :
+					if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") then
+						baggage_x6 = baggage_x6_stored + 3.5
+						baggage_x6_stored = baggage_x6
+						baggage_vert6 = 0.52 -- moving_deck_altitude
+					end
+
+					baggage_vert6_stored = baggage_vert6
+				else
+					baggage_x6 = x + 4.2 --
+					baggage_x6_stored = baggage_x6 --
+					baggage_z6 = z + 0.2 --
+					baggage_z6_stored = baggage_z6 --
+					baggage_vert6 = 1.30 --
+					if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then baggage_vert6 = 1.74 end -- when those are LD3 and not baggages, the path is different
+
+					--~ -- modifier applies after new cargo loader in X-Plane 12.1 :
+					if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") then
+						baggage_x6 = baggage_x6_stored + 3.5
+						baggage_x6_stored = baggage_x6
+						baggage_vert6 = 1.79
+					end
+
+					baggage_vert6_stored = baggage_vert6 --
+				end
 			end
 	  end
 
@@ -3148,35 +3201,10 @@ function SGES_script()
 
 
 		  if ULDLoader_instance[0] ~= nil then
-			if PLANE_ICAO == "A321" then ULDLoaderFwdPositionFactor = 0.72
-			elseif PLANE_ICAO == "A320" then ULDLoaderFwdPositionFactor = 1.0
-			elseif PLANE_ICAO == "A20N" then ULDLoaderFwdPositionFactor = 1.0
-			elseif PLANE_ICAO == "A346" then ULDLoaderFwdPositionFactor = 0.5
-			elseif PLANE_ICAO == "A306" then ULDLoaderFwdPositionFactor = 0.96
-			elseif PLANE_ICAO == "MD11" then ULDLoaderFwdPositionFactor = 1.45
-			elseif PLANE_ICAO == "B722" then ULDLoaderFwdPositionFactor = 1.13
-			elseif PLANE_ICAO == "B738" then ULDLoaderFwdPositionFactor = 0.95
-			elseif PLANE_ICAO == "B748" then ULDLoaderFwdPositionFactor = -0.53
-			elseif PLANE_ICAO == "B742" then ULDLoaderFwdPositionFactor = -0.67 lateral_factor_ULDLoader = -1.2
-			elseif PLANE_ICAO == "B744" then ULDLoaderFwdPositionFactor = -0.7
-			elseif PLANE_ICAO == "B762" then ULDLoaderFwdPositionFactor = 0.95
-			elseif PLANE_ICAO == "B763" then ULDLoaderFwdPositionFactor = 0.9
-			elseif PLANE_ICAO == "B772" then ULDLoaderFwdPositionFactor = 1
-			elseif PLANE_ICAO == "B773" then ULDLoaderFwdPositionFactor = 1
-			elseif PLANE_ICAO == "B77L" then ULDLoaderFwdPositionFactor = -0.66
-			elseif PLANE_ICAO == "B752" then ULDLoaderFwdPositionFactor = 1.15
-			elseif PLANE_ICAO == "SF34" then ULDLoaderFwdPositionFactor = -1.1
-			elseif PLANE_ICAO == "B462" then ULDLoaderFwdPositionFactor = 1.03
-			elseif string.match(AIRCRAFT_PATH, "A310") and string.match(SGES_Author,"CremonaSoft") then ULDLoaderFwdPositionFactor = 0.95
-			else ULDLoaderFwdPositionFactor = 1.1 end
+			if ULDLoaderFwdPositionFactor == nil then ULDLoaderFwdPositionFactor = 1.1 end
 			-- then :
-			local x = targetDoorX+10
-			if PLANE_ICAO == "MD11" then x = targetDoorX+9 end
-			if PLANE_ICAO == "B752" then x = targetDoorX+9.5 end
-			if PLANE_ICAO == "B763" then x = targetDoorX+8 end
-			if PLANE_ICAO == "A306" then x = targetDoorX+8 end
-			if PLANE_ICAO == "B722" then x = targetDoorX+9.5 end
-			if PLANE_ICAO == "B77L" then x = targetDoorX+8.75 end
+			if ULDLoaderLateralPositionFactor == nil then ULDLoaderLateralPositionFactor = 10 end
+			local x = targetDoorX + ULDLoaderLateralPositionFactor
 			if string.match(AIRCRAFT_PATH, "A310") and string.match(SGES_Author,"CremonaSoft") then x = targetDoorX+11 end
 			local z = ULDLoaderFwdPositionFactor*BeltLoaderFwdPosition
 			local h = 90
@@ -4601,6 +4629,13 @@ function SGES_script()
 			--~ end -- so there will be no visual disruption
 		end
 
+
+		if BeltLoader_instance[0] == nil and show_Baggage then -- when only the rear is removed or absent
+				_,Baggage_instance[0],rampservicerefBaggage = common_unload("Baggage",Baggage_instance[0],rampservicerefBaggage)
+				_,Baggage_instance[1],rampservicerefBaggage1 = common_unload("Baggage1",Baggage_instance[1],rampservicerefBaggage1)
+				_,Baggage_instance[2],rampservicerefBaggage2 = common_unload("Baggage2",Baggage_instance[2],rampservicerefBaggage2)
+		end
+
 		if Baggage_chg == true then
 			if show_Baggage then
 			--~ if show_Baggage and show_Cart then
@@ -4649,7 +4684,7 @@ function SGES_script()
 				end
 				if baggage_x1 == nil then baggage_x1 = baggage_x-1.5 end
 				if baggage_vert1 == nil then baggage_vert1 = baggage_vert end
-				if Baggage_instance[1] ~= nil  then
+				if Baggage_instance[1] ~= nil  and ((baggage_x1 >= baggage_x_stored and walking_direction == "boarding") or walking_direction == "deboarding") then
 					Baggage_chg = draw_static_object(baggage_x1,baggage_z,baggage1_angle,Baggage_instance[1],"Baggage1")
 				end
 
@@ -4681,13 +4716,18 @@ function SGES_script()
 
 				if baggage_x < 0 then -- cargo hold on the right hand side
 
+					if sges_local_rain_ratio == nil and XPLMFindDataRef("sim/weather/view/rain_ratio") ~= nil then
+						sges_local_rain_ratio		= dataref_table("sim/weather/view/rain_ratio")
+						print("[Ground Equipment " .. version_text_SGES .. "] Loading an extra dataref: sim/weather/view/rain_ratio.")
+					end
 
-
+					local scaling_factor = 2
+					if sges_local_rain_ratio ~= nil and sges_local_rain_ratio[0] >= 0.2 then scaling_factor = 5.2 end
 					if walking_direction == "boarding" then
 						--~ baggage_x = baggage_x + (0.005 * 1.5) -- animate the baggage
-						baggage_x1 = baggage_x1 + (0.005 * 1.5) -- animate the baggage
-						baggage_vert = baggage_vert + (baggage_vertical_step * 1.5)
-						baggage_vert1 = baggage_vert1 + (baggage_vertical_step * 1.5)
+						baggage_x1 = baggage_x1 + (0.005 * scaling_factor) -- animate the baggage
+						baggage_vert = baggage_vert + (baggage_vertical_step * scaling_factor)
+						baggage_vert1 = baggage_vert1 + (baggage_vertical_step * scaling_factor)
 
 						-- the case of the LD3 altitude :
 						if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and baggage_x > baggage_x_stored + 6 then
@@ -4702,13 +4742,13 @@ function SGES_script()
 								baggage_vert = baggage_vert + 0.02 -- climbing
 								baggage_x = baggage_x  -- waiting
 							else
-								baggage_x = baggage_x + (0.005 * 1.5) -- animate the baggage
+								baggage_x = baggage_x + (0.005 * scaling_factor) -- animate the baggage
 							end
 						elseif Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then
 							baggage_vert = baggage_vert_stored
-							baggage_x = baggage_x + (0.005 * 1.5) -- animate the baggage
+							baggage_x = baggage_x + (0.005 * scaling_factor) -- animate the baggage
 						else
-							baggage_x = baggage_x + (0.005 * 1.5) -- animate the baggage
+							baggage_x = baggage_x + (0.005 * scaling_factor) -- animate the baggage
 						end
 						-- ULD loader step, one time
 
@@ -4719,7 +4759,7 @@ function SGES_script()
 							end
 							baggage_x 	= baggage_x_stored + 0.5
 							baggage_vert = baggage_vert_stored
-							load_Baggage()
+							--~ load_Baggage()
 							baggage_pass = baggage_pass + 0.5 -- make it twice as long as passenger luggage
 						elseif baggage_x > - 2 then -- once the baggage as reached the fuselage, restart
 							if Baggage_instance[0] ~= nil then
@@ -4727,7 +4767,7 @@ function SGES_script()
 							end
 							baggage_x 	= baggage_x_stored
 							baggage_vert = baggage_vert_stored
-							load_Baggage()
+							--~ load_Baggage()
 							baggage_pass = baggage_pass + 1
 						end
 
@@ -4775,7 +4815,7 @@ function SGES_script()
 							end
 							baggage_x 	= baggage_x_stored --
 							baggage_vert = baggage_vert_stored --
-							load_Baggage() -- change the luggage
+							--~ load_Baggage() -- change the luggage
 							baggage_pass = baggage_pass + 1
 							--~ print("baggage_pass + 1 D")
 						end -- once the baggage as reached the fuselage, restart
@@ -4868,7 +4908,7 @@ function SGES_script()
 								_,Baggage_instance[0],rampservicerefBaggage = common_unload("Baggage",Baggage_instance[0],rampservicerefBaggage)
 								baggage_x 	= baggage_x_stored
 								baggage_vert = baggage_vert_stored
-								load_Baggage()
+								--~ load_Baggage()
 								baggage_pass = baggage_pass + 1
 							end -- once the baggage as reached the fuselage, restart
 							if baggage_x1 < 1.7 then
@@ -4891,7 +4931,7 @@ function SGES_script()
 								_,Baggage_instance[0],rampservicerefBaggage = common_unload("Baggage",Baggage_instance[0],rampservicerefBaggage)
 								baggage_x 	= baggage_x_stored --
 								baggage_vert = baggage_vert_stored
-								load_Baggage() -- change the luggage
+								--~ load_Baggage() -- change the luggage
 								baggage_pass = baggage_pass + 1
 							end -- once the baggage as reached the fuselage, restart
 							if baggage_x1 > 10 then --
@@ -4927,6 +4967,197 @@ function SGES_script()
 		end
 
 
+	end
+
+
+
+	function service_object_physics_BaggageRear() --actuated in Simple_Ground_Equipment_and_Services_Ships_functions
+
+		local baggage_vertical_step = 0.0003 -- by belt loader slope and baggage speed
+		local baggage_vertical_step_down = 0.0004
+
+		-- when those are LD3, not baggage, the slope is 0, because we dont have a belt conveyer but a flat Cargo laoder :
+		if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then baggage_vertical_step = 0 baggage_vertical_step_down = 0 end
+
+		if baggageR_angle == nil then
+			baggageR_angle = -80
+		end
+
+		if BeltLoader_instance[2] == nil and show_Baggage then -- when only the rear is removed or absent
+			_,Baggage_instance[6],rampservicerefBaggageRear =  common_unload("BaggageRear", Baggage_instance[6],rampservicerefBaggageRear)
+			Baggage_chg,Baggage_instance[7],rampservicerefBaggageRear1 = common_unload("BaggageRear1",Baggage_instance[7],rampservicerefBaggageRear1)
+		end
+
+		if Baggage_chg == true then
+			if show_Baggage and BeltLoader_instance[2] ~= nil then
+			--~ if show_Baggage and show_Cart then
+				if Baggage_instance[6] == nil or Baggage_instance[7] == nil then
+					load_BaggageRear()
+				end
+			else
+				ULDLoader_chg,ULDLoader_instance[2],rampserviceref7222 = common_unload("ULDLoaderplateRear",ULDLoader_instance[2],rampserviceref7222)
+				_,Baggage_instance[6],rampservicerefBaggageRear =  common_unload("BaggageRear", Baggage_instance[6],rampservicerefBaggageRear)
+				Baggage_chg,Baggage_instance[7],rampservicerefBaggageRear1 = common_unload("BaggageRear1",Baggage_instance[7],rampservicerefBaggageRear1)
+			end
+
+		  -- rear baggages
+			if  show_Cart and baggage_x6 ~= nil then
+				--~ print("LOAD function service_object_physics_Baggage")
+				if Baggage_instance[6] ~= nil then
+					_ = draw_static_object(baggage_x6,baggage_z6,-92,Baggage_instance[6],"BaggageRear")
+				end
+				if (baggage_x7 == nil or baggage_x7 == baggage_x6+4) and walking_direction == "boarding" then
+					baggage_x7 = baggage_x6-4
+					baggage_vert7 = baggage_vert6-0.25
+				elseif (baggage_x7 == nil or baggage_x7 == baggage_x6-4) and walking_direction == "deboarding" then
+					baggage_x7 = baggage_x6+4
+					baggage_vert7 = baggage_vert6+0.3
+				end -- increase the space
+				if baggage_vert7 == nil and walking_direction == "boarding"  then baggage_vert7 = baggage_vert6-0.25
+				elseif baggage_vert7 == nil and walking_direction == "deboarding"  then baggage_vert7 = baggage_vert6+0.3
+				end -- take into account the departure
+
+				if Baggage_instance[7] ~= nil and
+				((baggage_x7 >= baggage_x6_stored and walking_direction == "boarding")
+				or (baggage_x7 < -1 and walking_direction == "deboarding")) then
+					_ = draw_static_object(baggage_x7,baggage_z6,baggageR_angle,Baggage_instance[7],"BaggageRear1")
+				end
+
+				  -- aft baggages ULD plate
+				local moving_deck_altitude = 0.52
+				if CargoDeck_ULDLoaderPlateObject ~= nil then
+
+					if walking_direction == "boarding" and baggage_vert6 >= moving_deck_altitude and baggage_x6 > baggage_x6_stored + 5.9 then
+						plate_vert_rear = plate_vert_rear - 0.005
+						if plate_vert_rear < moving_deck_altitude then plate_vert6 = moving_deck_altitude end
+					elseif walking_direction == "deboarding" and baggage_x6_stored - baggage_x6 < 1 then
+						plate_vert_rear = moving_deck_altitude
+					elseif walking_direction == "deboarding" and baggage_vert6 > 1.78 and plate_vert_rear <= 1.79 and baggage_x6_stored - baggage_x6 >= 1 then
+						plate_vert_rear = plate_vert_rear + 0.015
+						if plate_vert_rear > 1.79 then plate_vert_rear = 1.79 end
+					else
+						plate_vert_rear = baggage_vert6
+					end
+
+					if ULDLoader_instance[2] ~= nil and RearLoader_x ~= nil and RearLoader_z ~= nil then
+						draw_static_object(RearLoader_x,RearLoader_z,-90,ULDLoader_instance[2],"ULDLoaderplateRear")
+					end
+
+				end
+
+				if Baggage_chg == false then
+					Baggage_chg = true -- draw only once compensates
+				end
+
+				if baggage_x6 < 0 then -- cargo hold on the right hand side
+
+					if sges_local_rain_ratio == nil and XPLMFindDataRef("sim/weather/view/rain_ratio") ~= nil then
+						sges_local_rain_ratio		= dataref_table("sim/weather/view/rain_ratio")
+						print("[Ground Equipment " .. version_text_SGES .. "] Loading an extra dataref: sim/weather/view/rain_ratio.")
+					end
+
+					local scaling_factor = 3.3
+					if sges_local_rain_ratio[0] ~= nil and sges_local_rain_ratio[0] >= 0.2 then scaling_factor = 4.5 end
+					if walking_direction == "boarding" then
+						--~ baggage_x6 = baggage_x6 + (0.005 * 1.5) -- animate the baggage
+						baggage_x7 = baggage_x7 + (0.005 * scaling_factor) -- animate the baggage
+						baggage_vert6 = baggage_vert6 + (baggage_vertical_step * scaling_factor)
+						baggage_vert7 = baggage_vert7 + (baggage_vertical_step * scaling_factor)
+
+						-- the case of the LD3 altitude :
+						if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and baggage_x6 > baggage_x6_stored + 6 then
+							baggage_x6 = baggage_x6 + 0.004  -- very slowly
+						elseif Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and baggage_x6 > baggage_x6_stored + 3 then
+
+							if string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") and baggage_vert6 <= 1.79 then
+								baggage_vert6 = baggage_vert6 + 0.008 -- climbing
+								baggage_x6 = baggage_x6 + 0.004  -- waiting
+							elseif not string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") and baggage_vert6 <= 1.73 then
+								baggage_vert6 = baggage_vert6 + 0.02 -- climbing
+								baggage_x6 = baggage_x6  -- waiting
+							else
+								baggage_x6 = baggage_x6 + (0.004 * scaling_factor) -- animate the baggage
+							end
+						elseif Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then
+							baggage_vert6 = baggage_vert6_stored
+							baggage_x6 = baggage_x6 + (0.006 * scaling_factor) -- animate the baggage
+						else
+							baggage_x6 = baggage_x6 + (0.005 * scaling_factor) -- animate the baggage
+						end
+						-- ULD loader step, one time
+
+						if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and baggage_x6 > baggage_x6_stored + 7  then   -- once the LD3 as reached the fuselage, restart
+							if Baggage_instance[6] ~= nil then
+								_,Baggage_instance[6],rampservicerefBaggageRear = common_unload("BaggageRear",Baggage_instance[6],rampservicerefBaggageRear)
+							end
+							baggage_x6 	= baggage_x6_stored + 0.5
+							baggage_vert6 = baggage_vert6_stored
+						elseif baggage_x6 > - 2 then -- once the baggage as reached the fuselage, restart
+							if Baggage_instance[6] ~= nil then
+								_,Baggage_instance[6],rampservicerefBaggageRear = common_unload("BaggageRear",Baggage_instance[6],rampservicerefBaggageRear)
+							end
+							baggage_x6 	= baggage_x6_stored
+							baggage_vert6 = baggage_vert6_stored
+							--~ print("it's me!")
+						end
+						if baggage_x7 > - 2 then -- once the baggage as reached the fuselage, restart
+							if Baggage_instance[7] ~= nil then
+								_,Baggage_instance[7],rampservicerefBaggageRear1 = common_unload("BaggageRear1",Baggage_instance[7],rampservicerefBaggageRear1)
+							end
+							baggage_x7 	= baggage_x6_stored
+							baggage_vert7 = baggage_vert6_stored
+						end
+
+
+
+					else -- deboarding situation
+						--~ baggage_x6 = baggage_x6 - 0.01 -- animate the baggage --
+						baggage_x7 = baggage_x7 - (0.005 * scaling_factor) -- animate the baggage --
+						baggage_vert6 = baggage_vert6 - (baggage_vertical_step * scaling_factor)
+						baggage_vert7 = baggage_vert7 - (baggage_vertical_step * scaling_factor)
+
+						-- the case of the LD3 altitude :
+						if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and baggage_x6 < baggage_x6_stored - 4.5 then
+
+														--~ -- modifier applies after new cargo loader in X-Plane 12.1 :
+							if string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") and baggage_vert6 >= moving_deck_altitude then
+								baggage_vert6 = baggage_vert6 - 0.01 -- descending
+								baggage_x6 = baggage_x6 - (0.0001 * scaling_factor) -- animate the baggage
+								--~ print(baggage_vert)
+							elseif not string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") and baggage_vert6 >= 0.37 then -- MisterX ULD, before XP 12.1
+								baggage_vert6 = baggage_vert6 - 0.02 -- descending
+								baggage_x6 = baggage_x6 - (0.0001 * scaling_factor) -- animate the baggage
+							else
+								baggage_x6 = baggage_x6 - (0.005 * scaling_factor) -- animate the baggage
+							end
+						elseif Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then
+							baggage_vert6 = baggage_vert6_stored
+							baggage_x6 = baggage_x6 - (0.005 * scaling_factor) -- animate the baggage
+						else
+							baggage_x6 = baggage_x6 - (0.005 * scaling_factor) -- animate the baggage
+						end
+						-- ULD loader step, one time
+						local bag_destination_distance = -10
+						if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then bag_destination_distance = -9 end
+
+						if baggage_x6 < bag_destination_distance then --
+							if Baggage_instance[6] ~= nil then
+								_,Baggage_instance[6],rampservicerefBaggageRear = common_unload("BaggageRear",Baggage_instance[6],rampservicerefBaggageRear)
+							end
+							baggage_x6 	= baggage_x6_stored --
+							baggage_vert6 = baggage_vert6_stored + 0.08 --
+						end -- once the baggage as reached the fuselage, restart
+						if baggage_x7 < bag_destination_distance then --
+							if Baggage_instance[7] ~= nil then
+								_,Baggage_instance[7],rampservicerefBaggageRear1 = common_unload("BaggageRear1",Baggage_instance[7],rampservicerefBaggageRear1)
+							end
+							baggage_x7	= baggage_x6_stored --
+							baggage_vert7 = baggage_vert6_stored + 0.08
+						end -- once the baggage as reached the fuselage, restart
+					end
+				end
+			end
+		end
 	end
 
 	baggage_heading_swap = 0
@@ -5844,8 +6075,14 @@ function SGES_script()
 				if IsXPlane12 then
 					-- if it is X-Plane 12, we can use the new luggage train also to bring diversity
 					-- the X-Plane cart hasn't lights, so restrict that to the day
+
+					if sges_local_rain_ratio == nil and XPLMFindDataRef("sim/weather/view/rain_ratio") ~= nil then
+						sges_local_rain_ratio		= dataref_table("sim/weather/view/rain_ratio")
+						print("[Ground Equipment " .. version_text_SGES .. "] Loading an extra dataref: sim/weather/view/rain_ratio.")
+					end
+
 					randomView = math.random()
-					if randomView <= 0.65 and (local_time_in_simulator >= 7 and local_time_in_simulator < 19) then
+					if (randomView <= 0.65 or (sges_local_rain_ratio[0] ~= nil and sges_local_rain_ratio[0] > 0.2)) and (local_time_in_simulator >= 7 and local_time_in_simulator < 19) then
 						CartObject = XPlane_Ramp_Equipment_directory   .. "leg_lugg_train_str2.obj"
 					else
 						CartObject = Prefilled_2CartObject
@@ -6323,6 +6560,10 @@ function SGES_script()
 							Prefilled_CateringObject = XPlane12_Common_Vehicules_directory  .. "ambulance_eu_01.obj" -- Eastern Eu ambulance
 						elseif  (LATITUDE > 24 and LATITUDE < 44) and (LONGITUDE > -84 and LONGITUDE < -69) then
 							Prefilled_CateringObject = XPlane12_Common_Vehicules_directory  .. "ambulance_us_04.obj" -- -- East Coast USA FDNY-like
+						end
+						randomView = math.random()
+						if randomView < 0.1 then
+							Prefilled_CateringObject = XPlane12_Common_Vehicules_directory  .. "police_suv_2.obj"
 						end
 					end
 					PREMHighPart_is_night_lighting = false
@@ -7199,57 +7440,59 @@ function SGES_script()
 	end
 
 	function load_Baggage()
-		math.randomseed(os.time())
+		if show_BeltLoader then
+			math.randomseed(os.time())
 
-		if Baggage_instance[0] == nil and baggage_show_only_once then
-			randomView = math.random()
-			if randomView > 0.7 then
-				BaggageObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_07.obj" -- the red anbd brown
-			elseif randomView < 0.2 then
-				BaggageObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_01.obj" -- the grey
-			else
-				BaggageObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_02.obj" -- the black
-			end
-
-			-- LD3 loading instead of baggage
-			if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then
+			if Baggage_instance[0] == nil and baggage_show_only_once then
 				randomView = math.random()
-				if BeltLoaderFwdPosition > 12 then
-					if randomView > 0.4 then
-						BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3_01.obj" -- the metalic LD3
-					else
-						BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3_03.obj" -- the orange LD3
-					end
-				else -- narrow body airliners permit only small containers
-					if randomView > 0.4 then
-						BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3-45_01.obj" -- the metalic LD3-45
-					else
-						BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3-45_02.obj" -- the white LD3-45
-					end
-
+				if randomView > 0.7 then
+					BaggageObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_07.obj" -- the red anbd brown
+				elseif randomView < 0.2 then
+					BaggageObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_01.obj" -- the grey
+				else
+					BaggageObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_02.obj" -- the black
 				end
+
+				-- LD3 loading instead of baggage
+				if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then
+					randomView = math.random()
+					if BeltLoaderFwdPosition > 12 then
+						if randomView > 0.4 then
+							BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3_01.obj" -- the metalic LD3
+						else
+							BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3_03.obj" -- the orange LD3
+						end
+					else -- narrow body airliners permit only small containers
+						if randomView > 0.4 then
+							BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3-45_01.obj" -- the metalic LD3-45
+						else
+							BaggageObject=XPlane_Ramp_Equipment_directory   .. "container_LD3-45_02.obj" -- the white LD3-45
+						end
+
+					end
+				end
+
+				XPLM.XPLMLoadObjectAsync(BaggageObject,
+							function(inObject, inRefcon)
+								Baggage_instance[0] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+								rampservicerefBaggage = inObject
+							end,
+							inRefcon )
+
+
+
+				if ULDLoader_instance[1] == nil and CargoDeck_ULDLoaderPlateObject ~= nil and Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") then
+				   XPLM.XPLMLoadObjectAsync(CargoDeck_ULDLoaderPlateObject,
+							function(inObject, inRefcon)
+								ULDLoader_instance[1] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+								rampserviceref722 = inObject
+							end,
+							inRefcon )
+				end
+
+
+				baggage_show_only_once = false
 			end
-
-			XPLM.XPLMLoadObjectAsync(BaggageObject,
-						function(inObject, inRefcon)
-							Baggage_instance[0] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
-							rampservicerefBaggage = inObject
-						end,
-						inRefcon )
-
-
-
-			if ULDLoader_instance[1] == nil and CargoDeck_ULDLoaderPlateObject ~= nil and Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") then
-			   XPLM.XPLMLoadObjectAsync(CargoDeck_ULDLoaderPlateObject,
-						function(inObject, inRefcon)
-							ULDLoader_instance[1] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
-							rampserviceref722 = inObject
-						end,
-						inRefcon )
-			end
-
-
-			baggage_show_only_once = false
 		end
 
 		if Prefilled_BeltLoaderObject ~= Prefilled_ULDLoaderObject and Baggage_instance[1] == nil and baggage1_show_only_once then
@@ -7340,6 +7583,79 @@ function SGES_script()
 		end
 
 
+	end
+
+
+	function load_BaggageRear()
+		if show_RearBeltLoader then
+			local BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_08.obj" -- placeholder
+			local BaggageRear1Object=XPlane_Ramp_Equipment_directory   .. "baggage_troll_07.obj" -- the 3 luggages
+			if Baggage_instance[6] == nil and baggageRear_show_only_once then
+				randomView = math.random()
+				if randomView > 0.7 then
+					BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_03.obj" -- the red and brown
+				elseif randomView < 0.2 then
+					BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_01.obj" -- the grey
+				else
+					BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "baggage_troll_04.obj" -- the black
+				end
+
+				-- LD3 loading instead of baggage
+				if Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject then
+					randomView = math.random()
+					if BeltLoaderFwdPosition > 12 then
+						if randomView < 0.6 then
+							BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "container_LD3_01.obj" -- the metalic LD3
+						else
+							BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "container_LD3_02.obj" -- the white LD3
+						end
+					else -- narrow body airliners permit only small containers
+						if randomView < 0.75 then
+							BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "container_LD3-45_01.obj" -- the metalic LD3-45
+						else
+							BaggageRearObject=XPlane_Ramp_Equipment_directory   .. "container_LD3-45_02.obj" -- the white LD3-45
+						end
+
+					end
+				end
+
+				XPLM.XPLMLoadObjectAsync(BaggageRearObject,
+							function(inObject, inRefcon)
+								Baggage_instance[6] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+								rampservicerefBaggageRear = inObject
+							end,
+							inRefcon )
+
+				if ULDLoader_instance[2] == nil and CargoDeck_ULDLoaderPlateObject ~= nil and Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject and string.find(Prefilled_ULDLoaderObject,"cargo_loader_ch70w") then
+				   XPLM.XPLMLoadObjectAsync(CargoDeck_ULDLoaderPlateObject,
+							function(inObject, inRefcon)
+								ULDLoader_instance[2] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+								rampserviceref7222 = inObject
+							end,
+							inRefcon )
+				end
+				baggageRear_show_only_once = false
+			end
+
+			if Prefilled_BeltLoaderObject ~= Prefilled_ULDLoaderObject and Baggage_instance[7] == nil and baggageRear1_show_only_once then
+				-- that should not be changed by the other bagagge disappearance, but I can see that, strange
+				randomView = math.random()
+				if randomView > 0.8 then
+					BaggageRear1Object=XPlane_Ramp_Equipment_directory   .. "baggage_troll_07.obj" -- the 3 luggages
+				elseif randomView < 0.3 then
+					BaggageRear1Object=XPlane_Ramp_Equipment_directory   .. "baggage_troll_01.obj" -- the grey
+				else
+					BaggageRear1Object=XPlane_Ramp_Equipment_directory   .. "baggage_troll_02.obj" -- the black
+				end
+				XPLM.XPLMLoadObjectAsync(BaggageRear1Object,
+							function(inObject, inRefcon)
+								Baggage_instance[7] = XPLM.XPLMCreateInstance(inObject, datarefs_addr)
+								rampservicerefBaggageRear1 = inObject
+							end,
+							inRefcon )
+				baggageRear1_show_only_once = false
+			end
+		end
 	end
 
 	function load_ULD()
@@ -8060,31 +8376,44 @@ function SGES_script()
 			end
 
 
-			if object_name == "Baggage" then
-				objpos_target_value_y = ground + baggage_vert
-				objpos_value[0].y = objpos_target_value_y
-				if placeToBeX < 0 and not string.find(BaggageObject,"LD") then objpos_value[0].pitch = 15 elseif not string.find(BaggageObject,"LD") then objpos_value[0].pitch = 1  end
-
-			end
-
 			if object_name == "ULDLoaderplate" then
 				objpos_target_value_y = ground + plate_vert - 3.77
 				objpos_value[0].y = objpos_target_value_y
+			elseif object_name == "ULDLoaderplateRear" and plate_vert_rear ~= nil then
+				objpos_target_value_y = ground + plate_vert_rear - 3.77
+				objpos_value[0].y = objpos_target_value_y
 			end
 
 
-			if object_name == "Baggage1" then
+			if object_name == "Baggage" or object_name == "Baggage1" or object_name == "Baggage6" or object_name == "Baggage7" or object_name == "BaggageRear" or object_name == "BaggageRear1" then -- common
+				local baggage_type = "none"
+				if BaggageObject ~= nil then baggage_type = BaggageObject
+				elseif Prefilled_BeltLoaderObject == Prefilled_ULDLoaderObject   then baggage_type = "LD3" end
+
+				if placeToBeX < 0 and not string.find(baggage_type,"LD") then -- takes only the forward bagage object, when the rear could be different - not that is really the case as of 2026 code
+					objpos_value[0].pitch = 15
+				elseif not string.find(baggage_type,"LD") then
+					objpos_value[0].pitch = 1
+				else
+					objpos_value[0].pitch = 0
+				end
+			end
+			if object_name == "Baggage" then -- specifics
+				objpos_target_value_y = ground + baggage_vert
+				objpos_value[0].y = objpos_target_value_y
+			elseif object_name == "Baggage1" then
 				objpos_target_value_y = ground + baggage_vert1 - 0.05
 				objpos_value[0].y = objpos_target_value_y
-				if placeToBeX < 0 then objpos_value[0].pitch = 15 else objpos_value[0].pitch = 1  end
-			end
-
-
-			if object_name == "Baggage2" and (Baggage2Object==XPlane_Ramp_Equipment_directory   .. "baggage_8f_6.obj" or Baggage2Object==XPlane_Ramp_Equipment_directory   .. "baggage_8f_2.obj") then
+			elseif object_name == "BaggageRear" then
+				objpos_target_value_y = ground + baggage_vert6 - 0.05
+				objpos_value[0].y = objpos_target_value_y
+			elseif object_name == "BaggageRear1" then
+				objpos_target_value_y = ground + baggage_vert7 - 0.05
+				objpos_value[0].y = objpos_target_value_y
+			elseif object_name == "Baggage2" and (Baggage2Object==XPlane_Ramp_Equipment_directory   .. "baggage_8f_6.obj" or Baggage2Object==XPlane_Ramp_Equipment_directory   .. "baggage_8f_2.obj") then
 				objpos_target_value_y = ground - 0.6  -- compensate the height of the object above the ground in 3D geometry
 				objpos_value[0].y = objpos_target_value_y
-			end
-			if object_name == "Baggage3" or object_name == "Baggage4" then
+			elseif object_name == "Baggage3" or object_name == "Baggage4" then
 				objpos_target_value_y = ground -0.05
 				objpos_value[0].y = objpos_target_value_y
 			end
@@ -9172,6 +9501,12 @@ function SGES_script()
 					baggage2_show_only_once = true  -- anti crash too many callback
 					baggage3_show_only_once = true  -- anti crash too many callback
 					baggage4_show_only_once = true  -- anti crash too many callback
+					show_Baggage = true
+					Baggage_chg = true
+			end
+			if IsXPlane12 and show_RearBeltLoader and baggage_x6  ~= nil then
+					baggageRear_show_only_once = true  -- anti crash too many callback
+					baggageRear1_show_only_once = true  -- anti crash too many callback
 					show_Baggage = true
 					Baggage_chg = true
 			end
@@ -11093,6 +11428,8 @@ function SGES_script()
 				if name == "Baggage3" and show_Cart  then 	  baggage3_show_only_once = true end -- anti crash too many callback
 				if name == "Baggage4" and show_Cart  then 	  baggage4_show_only_once = true end -- anti crash too many callback
 				if name == "Baggage5" and show_Bus and show_ULDLoader then 	  baggage5_show_only_once = true end -- anti crash too many callback
+				if name == "BaggageRear" and show_Cart then 	  baggageRear_show_only_once = true end -- anti crash too many callback
+				if name == "BaggageRear1" and show_Cart  then 	  baggageRear1_show_only_once = true end -- anti crash too many callback
 
 				if name == "StairsXPJ2" then 	  StairsXPJ2_0_show_only_once = true end
 				if name == "StairsXPJ21" then 	  StairsXPJ2_1_show_only_once = true end
@@ -14370,7 +14707,7 @@ function SGES_script()
 					show_Cart = l_newval
 					Cart_chg = true
 				end
-				-- also link the rear bealot loader when defined in the aircraft set, or on removal always
+				-- also link the rear belt loader when defined in the aircraft set, or on removal always
 				if BeltLoaderRearPosition ~= nil or l_newval == false then
 					show_RearBeltLoader = l_newval
 					RearBeltLoader_chg = true
@@ -18945,8 +19282,9 @@ function SGES_script()
 				if show_ULDLoader then
 					imgui.Separator()
 					if imgui.TreeNode("ULD loader (cargo deck)") then
-						imgui.TextUnformatted("Loader position : " .. ULDLoaderFwdPositionFactor)
-						imgui.TextUnformatted("(Edited in main script).")
+						imgui.TextUnformatted("longitudinal : " .. ULDLoaderFwdPositionFactor)
+						imgui.TextUnformatted("lateral : " .. ULDLoaderLateralPositionFactor)
+						imgui.TextUnformatted("(From CONFIG_aircraft.lua).")
 						imgui.TreePop()
 					end
 				end
@@ -19646,6 +19984,21 @@ function SGES_script()
 						Buttonstring = "Save the changes"
 					end
 					--~ imgui.PopStyleColor()
+				end
+
+
+				if math.abs(BeltLoaderFwdPosition) > 5 then
+					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFFFCACA)
+					l_changed, l_newval = imgui.Checkbox(" Display loading at the rear.*",sges_use_bagage_at_rear)
+					if  l_changed then
+						sges_use_bagage_at_rear = l_newval
+						if not sges_use_bagage_at_rear then
+							ULDLoader_chg,ULDLoader_instance[2],rampserviceref7222 = common_unload("ULDLoaderplateRear",ULDLoader_instance[2],rampserviceref7222)
+							_,Baggage_instance[6],rampservicerefBaggageRear =  common_unload("BaggageRear", Baggage_instance[6],rampservicerefBaggageRear)
+							_,Baggage_instance[7],rampservicerefBaggageRear1 = common_unload("BaggageRear1",Baggage_instance[7],rampservicerefBaggageRear1)
+						end
+					end
+					imgui.PopStyleColor()
 				end
 
 
@@ -20509,6 +20862,8 @@ function SGES_script()
 		_,Baggage_instance[1],rampservicerefBaggage1 = common_unload("Baggage1",Baggage_instance[1],rampservicerefBaggage1)
 		_,Baggage_instance[2],rampservicerefBaggage2 = common_unload("Baggage2",Baggage_instance[2],rampservicerefBaggage2)
 		_,Baggage_instance[3],rampservicerefBaggage3 = common_unload("Baggage3",Baggage_instance[3],rampservicerefBaggage3)
+		_,Baggage_instance[6],rampservicerefBaggageRear = common_unload("BaggageRear",Baggage_instance[6],rampservicerefBaggageRear)
+		_,Baggage_instance[7],rampservicerefBaggageRear1 = common_unload("BaggageRear1",Baggage_instance[7],rampservicerefBaggageRear1)
 		Baggage_chg,Baggage_instance[4],rampservicerefBaggage4 = common_unload("Baggage4",Baggage_instance[4],rampservicerefBaggage4)
 		CargoULD_chg,Baggage_instance[5],rampservicerefBaggage5 = common_unload("CargoULD",Baggage_instance[5],rampservicerefBaggage5)
 		StairsXPJ_chg,StairsXPJ_instance[0],rampserviceref300 = common_unload("StairsXPJ",StairsXPJ_instance[0],rampserviceref300)
@@ -20558,6 +20913,7 @@ function SGES_script()
 		FireSmoke_chg,FireSmoke_instance[0],rampserviceref710 = common_unload("FireSmoke",FireSmoke_instance[0],rampserviceref710)
 		ULDLoader_chg,ULDLoader_instance[0],rampserviceref72 = common_unload("ULDLoader",ULDLoader_instance[0],rampserviceref72)
 		ULDLoader_chg,ULDLoader_instance[1],rampserviceref722 = common_unload("ULDLoader",ULDLoader_instance[1],rampserviceref722)
+		ULDLoader_chg,ULDLoader_instance[2],rampserviceref7222 = common_unload("ULDLoaderplateRear",ULDLoader_instance[2],rampserviceref7222)
 		People1_chg,People1_instance[0],rampserviceref73 = common_unload("People1",People1_instance[0],rampserviceref73)
 		People2_chg,People2_instance[0],rampserviceref74 = common_unload("People2",People2_instance[0],rampserviceref74)
 		People3_chg,People3_instance[0],rampserviceref75 = common_unload("People3",People3_instance[0],rampserviceref75)

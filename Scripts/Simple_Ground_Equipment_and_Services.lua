@@ -13305,6 +13305,7 @@ function SGES_script()
 	  --end
 
 	  imgui.Separator()
+	  if not config_options then
 	  if sges_gs_ias_spd[0] < 260 and sges_gs_plane_y_agl[0] < 3333 then
 		if sges_gs_gnd_spd[0] < 30 and not GUImoreShip then
 		  l_changed, l_newval = imgui.Checkbox(" Follow-me", show_FM)
@@ -14189,6 +14190,9 @@ function SGES_script()
 		imgui.PopStyleColor()
 	   end
 		imgui.TextUnformatted("")
+
+	end
+
 	if sges_gs_ias_spd[0] < 200 then --IAS24
 		if show_Automatic_sequence_start then
 			imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
@@ -18129,7 +18133,7 @@ function SGES_script()
 			end
 		end
 
-		if IsXPlane12 and sges_gs_gnd_spd[0] < 0.1 and (show_Chocks or show_PB or sges_EngineState[0] < 5) and wetness == 0 and not show_ArrestorSystem and not adjust_Strength then
+		if IsXPlane12 and sges_gs_gnd_spd[0] < 0.1 and (show_Chocks or show_PB or sges_EngineState[0] < 5) and wetness == 0 and not show_ArrestorSystem and not adjust_Strength and not config_options then
 
 
 
@@ -18242,7 +18246,7 @@ function SGES_script()
 			end
 
 		end
-		if not adjust_Strength then
+		if not adjust_Strength and not config_options then
 
 			if IsToLiSs and sges_gs_gnd_spd[0] < 10 and not show_ArrestorSystem then -- clean a little the interface at higher speeds
 				imgui.SameLine()
@@ -18928,7 +18932,7 @@ function SGES_script()
 			--~ end
 			--~ imgui.PopStyleColor()
 			--~ imgui.PopStyleColor()
-			if config_helper then
+			if config_helper and not config_options then
 
 				imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF6C6CFF)
 				imgui.PushStyleColor(imgui.constant.Col.ButtonHovered,  0xFF555555)
@@ -19785,7 +19789,10 @@ function SGES_script()
 				--~ if  imgui.Button("Look for SGES updates",230,30)  then
 					--~ dofile(SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_skinfat_updater.lua") -- threat module
 				--~ end
-				if  imgui.Button("Check for SGES updates",230,30)  then
+				if  imgui.Button("Close the options",230,25)  then
+					config_options = false
+				end
+				if  imgui.Button("Check for SGES updates",230,25)  then
 					open_that_sges_url("https://forums.x-plane.org/index.php?/files/file/62296-simple-ground-equipment-services-low-tech-services")
 				end
 				imgui.Spacing()

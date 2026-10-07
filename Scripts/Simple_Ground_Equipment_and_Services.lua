@@ -2833,9 +2833,19 @@ function SGES_script()
 			if show_BeltLoader then
 				load_BeltLoader()
 			else
-				show_Baggage = false
-				Baggage_chg = true
 				BeltLoader_chg,BeltLoader_instance[0],rampserviceref5 =  common_unload("BeltLoader",BeltLoader_instance[0],rampserviceref5)
+
+                --~ -- force to remove the bagage (DIRECT PATCH!!)
+				_,Baggage_instance[0],rampservicerefBaggage = common_unload("Baggage",Baggage_instance[0],rampservicerefBaggage)
+				_,Baggage_instance[1],rampservicerefBaggage1 = common_unload("Baggage1",Baggage_instance[1],rampservicerefBaggage1)
+				_,Baggage_instance[2],rampservicerefBaggage2 = common_unload("Baggage2",Baggage_instance[2],rampservicerefBaggage2)
+				_,Baggage_instance[3],rampservicerefBaggage3 = common_unload("Baggage3",Baggage_instance[3],rampservicerefBaggage3)
+				_,Baggage_instance[4],rampservicerefBaggage4 = common_unload("Baggage4",Baggage_instance[4],rampservicerefBaggage4)
+				ULDLoader_chg,ULDLoader_instance[1],rampserviceref722 = common_unload("ULDLoader",ULDLoader_instance[1],rampserviceref722)
+                if not show_BeltLoader  and not show_RearBeltLoader then
+                    show_Baggage = false
+                    Baggage_chg = true
+                end
 			end
 
 			if BeltLoader_instance[0] ~= nil then
@@ -3031,9 +3041,20 @@ function SGES_script()
 				load_RearBeltLoader()
 			else
 				show_RearBeltLoader = false -- for airplanes with special handlling (loader on the left side)
+
+
 			end
 		  else
 			 RearBeltLoader_chg,BeltLoader_instance[2],rampservicerefRBL =  common_unload("RearBeltLoader",BeltLoader_instance[2],rampservicerefRBL)
+
+        --~ -- force to remove the bagage (DIRECT PATCH!!)
+            _,Baggage_instance[6],rampservicerefBaggageRear =  common_unload("BaggageRear", Baggage_instance[6],rampservicerefBaggageRear)
+            _,Baggage_instance[7],rampservicerefBaggageRear1 = common_unload("BaggageRear1",Baggage_instance[7],rampservicerefBaggageRear1)
+            _,ULDLoader_instance[2],rampserviceref7222 = common_unload("ULDLoaderplateRear",ULDLoader_instance[2],rampserviceref7222)
+            if not show_BeltLoader  and not show_RearBeltLoader then
+                show_Baggage = false
+                Baggage_chg = true
+            end
 		  end
 			if BeltLoader_instance[2] ~= nil then
 				local x = -1.4*(targetDoorX + 8.6)

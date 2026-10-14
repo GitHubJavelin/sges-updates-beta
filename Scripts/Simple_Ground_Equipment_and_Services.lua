@@ -4424,11 +4424,10 @@ function SGES_script()
 					set("DWSim/m346/external/choks",0)
 				end
 
-				if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") and sges_EngineState[2] < 5 then
-					--~ print("[FlyWithLua Debug] PLANE_ICAO is B742, and we look for specific action when chocks are set, like calling the GPU as well.")
-					print("[Ground Equipment " .. version_text_SGES .. "] B747-200, calling the GPU along with chocks.")
-					set("B742/INT_PA/connect_gpu",1)
-				end
+				--~ if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") and sges_EngineState[2] < 5 then
+					--~ print("[Ground Equipment " .. version_text_SGES .. "] B747-200, calling the GPU along with chocks.")
+					--~ set("B742/INT_PA/connect_gpu",1)
+				--~ end
 
 
 				if (string.match(PLANE_ICAO,"P28") and PLANE_AUTHOR == "JustFlight") or (string.match(PLANE_AUTHOR,"Thranda") and not string.match(AIRCRAFT_PATH,"146")) then -- toggle Jusflight Piper
@@ -16155,7 +16154,7 @@ function SGES_script()
 						set("AirbusFBW/Chocks",1)
 					elseif 			   IsToLiSs then -- remove ToLiss chocks
 						set("AirbusFBW/Chocks",0)
-						print("rmove toliss chocks")
+						print("Remove toliss chocks")
 					end
 					if show_Chocks and IsSimcoders then -- toggle simcoders chocks
 						command_once("simcoders/rep/walkaround/static_elements/toggle")
@@ -16307,6 +16306,9 @@ function SGES_script()
 				if IsToLiSs then -- remove ToLiss chocks
 					set("AirbusFBW/Chocks",0)
 				end
+                if IsXPlane1220 and PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
+                    set("B742/INT_PA/set_gear_chokes",0)
+                end
 				show_PB = l_newval
 				Go_PB = l_newval
 				if Go_PB then pushback_manual = false
@@ -16436,9 +16438,15 @@ function SGES_script()
 			  if  imgui.Button("Start PB",70,18)  then
 				show_Chocks = false
 				Chocks_chg = true
+                if IsXPlane1220 then
+                    command_once("sim/flight_controls/remove_chocks")
+                end
 				if IsToLiSs then -- remove ToLiss chocks
 					set("AirbusFBW/Chocks",0)
 				end
+                if IsXPlane1220 and PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
+                    set("B742/INT_PA/set_gear_chokes",0)
+                end
 				show_PB = true
 				Go_PB = true
 				pushback_manual = false
@@ -16610,6 +16618,9 @@ function SGES_script()
 			SPB_distance = newVal1
 			show_Chocks = false
 			Chocks_chg = true
+            if show_Chocks and IsXPlane1220 and PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
+                set("B742/INT_PA/set_gear_chokes",0)
+            end
 				--~ show_PB = true
 				--~ PB_chg = true
 			TargetSelfPushback_chg = true
@@ -16661,6 +16672,7 @@ function SGES_script()
 				show_GPU = l_newval
 				GPU_chg = true
 			end
+            
 			show_RearBeltLoader = l_newval
 			RearBeltLoader_chg = true
 			show_FUEL = l_newval
@@ -16800,6 +16812,9 @@ function SGES_script()
 			StopSign_chg = true
 			show_Chocks = l_newval
 			Chocks_chg = true
+            if IsXPlane1220 and PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
+                set("B742/INT_PA/set_gear_chokes",1)
+            end
 			--if string.match(PLANE_ICAO, "B75") or string.match(PLANE_ICAO, "B76") or string.match(PLANE_ICAO, "B74") or string.match(PLANE_ICAO, "A3") then
 			--    show_StairsXPJ = l_newval
 			--    StairsXPJ_chg = true
@@ -20890,6 +20905,9 @@ function SGES_script()
 		if unload_SamObjects ~= nil then unload_SamObjects() end
 		if unload_Front_Line_Objects ~= nil then unload_Front_Line_Objects() end
 		automatic_display_EMS_acceptable = false
+        if IsXPlane1220 and PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") and show_Chocks then
+            set("B742/INT_PA/set_gear_chokes",0)
+        end
 	end
 
 	function exit_plugin_part2()

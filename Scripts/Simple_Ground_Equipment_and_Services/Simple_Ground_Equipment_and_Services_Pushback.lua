@@ -184,6 +184,13 @@ local radius_pushback = 18		-- for X-Plane 12.2.0  (push was too short), plus wh
 local maximum_speed_reduction_factor = 3 -- to avoid overrunning the aiming point, reducing the longitudinal push when approaching the target
 -- This parameter needs tuning with X-Plane versions
 local SGES_pushback_start_delay = 8
+
+if PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") then
+    --patch 2026-10-14
+    --the felis 742 has custom chocks call, so better let some time for the simulated crew to remove the chocks
+    SGES_pushback_start_delay = 35
+end
+
 local SGES_pushback_start_time = -99
 
 local	Prefilled_PushBack1Object_backup = Prefilled_PushBack1Object
@@ -607,6 +614,7 @@ function load_PB()
 						inRefcon )
 		end
 		cleared_to_start_played = false
+
 		PB_show_only_once = false
 	end
 end

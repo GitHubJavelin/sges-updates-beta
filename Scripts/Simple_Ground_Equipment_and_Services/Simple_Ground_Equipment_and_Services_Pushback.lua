@@ -1393,6 +1393,7 @@ function execute_PUSHBACK_service_objects ()
 							if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 then
 								SGES_override_engine_forces = 0
 								set("sim/operation/override/override_wing_forces",0) -- important
+								set("sim/operation/override/override_engine_forces",0) -- important
 								print("[Ground Equipment " .. version_text_SGES .. "] Set the parking brake. SGES_override_engine_forces = " .. SGES_override_engine_forces)
 							end
 					end
@@ -1433,6 +1434,7 @@ function execute_PUSHBACK_service_objects ()
 							if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 then
 								SGES_override_engine_forces = 0
 								set("sim/operation/override/override_wing_forces",0) -- important
+								set("sim/operation/override/override_engine_forces",0) -- important
 								print("[Ground Equipment " .. version_text_SGES .. "] STOP PB by vicinity. SGES_override_engine_forces = " .. SGES_override_engine_forces)
 							end
 					end
@@ -1488,7 +1490,8 @@ function execute_PUSHBACK_service_objects ()
 
 			if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 then
 				SGES_override_engine_forces = 0
-				set("sim/operation/override/override_wing_forces",0) -- important
+                set("sim/operation/override/override_wing_forces",0) -- important
+                set("sim/operation/override/override_engine_forces",0) -- important
 				print("[Ground Equipment " .. version_text_SGES .. "] Disconnecting tow. SGES_override_engine_forces = " .. SGES_override_engine_forces)
 			end
 		end

@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "81.1"
+version_text_SGES = "81.2"
 --------------------------------------------------------------------------------
 --[[
 
@@ -19843,8 +19843,13 @@ function SGES_script()
 			imgui.PopStyleColor()
 
 		end
+        
 		if config_options then
-
+            if not config_helper then
+                imgui.PopStyleColor() -- patch 20260816
+            else
+                config_helper = false
+            end
 			--~ if  imgui.Button("Look for SGES updates",230,30)  then
 				--~ dofile(SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_skinfat_updater.lua") -- threat module
 			--~ end

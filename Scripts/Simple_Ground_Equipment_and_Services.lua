@@ -1963,6 +1963,8 @@ function SGES_script()
 	SGES_HandlingSpeeds = false
 	VDGS_time = "local"
 
+    UseCustomProggyClean = false
+
 	VDGS_manual = false
 	boat_manual_control = false
 	heading_flag_selected = 0
@@ -13101,6 +13103,7 @@ function SGES_script()
 
 
 	function build_sges_menu(groundservices_float_wnd, x, y)
+       if imgui_push_font ~= nil and UseCustomProggyClean then imgui_push_font(7) end
 		-- get the current time
 	  local l_is_selected = false
 	  local l_changed = false
@@ -13161,6 +13164,7 @@ function SGES_script()
 
 	  --$--imgui.SetWindowFontScale(0.99)
 	  if groundservices_float_wnd ~= nil then
+      
 
 			imgui.PushStyleVar(imgui.constant.StyleVar.FrameRounding, 8)
 
@@ -13169,6 +13173,7 @@ function SGES_script()
 			if  imgui.Button("Move",38,18)  then
 				if adjust_sges_menu_pos then adjust_sges_menu_pos = false else adjust_sges_menu_pos = true end
 			end
+            
 			imgui.SameLine()
 			if adjust_sges_menu_pos == nil then adjust_sges_menu_pos = false end
 			if adjust_sges_menu_pos then
@@ -19801,6 +19806,24 @@ function SGES_script()
 			imgui.PopStyleColor()
 			imgui.Spacing()
 			imgui.Separator()
+             --~ imgui.ShowFontSelector("")
+			if imgui_push_font ~= nil then
+				l_changed, _ = imgui.Checkbox(" Restore the legacy font\n(This requires our ttf in\n FlyWithLua/Custom Fonts)", UseCustomProggyClean)
+				if l_changed then
+					UseCustomProggyClean = not UseCustomProggyClean
+                    Buttonstring = "Remember the font"
+				end
+				if imgui.IsItemActive() then
+					imgui.BeginTooltip()
+					imgui.PushTextWrapPos(imgui.GetFontSize() * 19)
+					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+					imgui.TextUnformatted("After FlyWithLua 2.8.16, fonts have changed, not certainely for the good. To restore the legacy font (ProggyClean.ttf), copy the Roboto-regular.ttf from our SGES archive into FlyWithLua/Custom_Fonts and enable this option. We indeed furnish the ProggyClean font disguised as Roboto, this is a work around.")
+					imgui.PopStyleColor()
+					imgui.PopTextWrapPos()
+					imgui.EndTooltip()
+				end
+            end 
+			imgui.Separator()
 			if IsXPlane1214 then
 				l_changed, l_newval = imgui.Checkbox(" Use X-Plane native vehicles", UseXplane1214DefaultObject)
 				if l_changed then
@@ -20422,8 +20445,9 @@ function SGES_script()
 				imgui.Spacing()
 			end
 
-			imgui.Separator()
 
+			imgui.Separator()
+            
 			imgui.PushStyleColor(imgui.constant.Col.Button,  0xFF505090)
 			if imgui.Button(Buttonstring .. ".",230,30)  then
 				WriteToDisk_SGES_USER_CONFIG()
@@ -20445,8 +20469,6 @@ function SGES_script()
 			elseif  imgui.SmallButton("Rebuild without custom sceneries",200,16)  then
 				includeCustomParkingPositions = false create_parking_position_cache()
 			end
-
-            imgui.ShowFontSelector("")
 
 
 
@@ -20675,6 +20697,7 @@ function SGES_script()
 		end
 		----------------------------------------------------------
 		end -- IAS24
+       if imgui_push_font ~= nil and UseCustomProggyClean then imgui.PopFont() end
 	end --function build_sges_menu
 	--------------------------------------------------------------------
 

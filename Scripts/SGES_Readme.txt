@@ -1,2 +1,9 @@
-Hello !
-The sole file skunkcrafts_updater.cfg should go into the folder "X-Plane 12/Resources/plugins/FlyWithLua", but all other files go into "X-Plane 12/Resources/plugins/FlyWithLua/Scripts/"
+skunkcrafts_updater.cfg go to :
+X-Plane 12/Resources/plugins/FlyWithLua
+
+The Roboto-Regular.ttf (inside the documentation folder) font goes into :
+X-Plane 12/Resources/plugins/FlyWithLua/Custom Fonts/Roboto-Regular.ttf
+(This is not the well-known Roboto font despite the name, Roboto is just the name of this file)
+
+The scripts and other subfolders all go to :
+X-Plane 12/Resources/plugins/FlyWithLua/Scripts

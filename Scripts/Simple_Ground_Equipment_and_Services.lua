@@ -20664,13 +20664,6 @@ function SGES_script()
 				imgui.PopStyleColor()
 			end
 			imgui.PopTextWrapPos()
-
-			--~ imgui.End()
-		--~ end
-
-		--~ do_every_frame("draw_hoppie_atis_window()")
-
-			imgui.TreePop()
 		end
 
 	-------------------------------------------------- ------------------ --------------------------

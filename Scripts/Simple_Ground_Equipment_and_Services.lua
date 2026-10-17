@@ -19807,23 +19807,22 @@ function SGES_script()
 			imgui.Spacing()
 			imgui.Separator()
              --~ imgui.ShowFontSelector("")
-			if imgui_push_font ~= nil then
-				l_changed, _ = imgui.Checkbox(" Restore the legacy font\n(This requires our ttf in\n FlyWithLua/Custom Fonts)", UseCustomProggyClean)
-				if l_changed then
-					UseCustomProggyClean = not UseCustomProggyClean
-                    Buttonstring = "Remember the font"
-				end
-				if imgui.IsItemActive() then
-					imgui.BeginTooltip()
-					imgui.PushTextWrapPos(imgui.GetFontSize() * 19)
-					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-					imgui.TextUnformatted("After FlyWithLua 2.8.16, fonts have changed, not certainely for the good. To restore the legacy font (ProggyClean.ttf), copy the Roboto-regular.ttf from our SGES archive into FlyWithLua/Custom_Fonts and enable this option. We indeed furnish the ProggyClean font disguised as Roboto, this is a work around.")
-					imgui.PopStyleColor()
-					imgui.PopTextWrapPos()
-					imgui.EndTooltip()
-				end
-            end 
-			imgui.Separator()
+			--~ if imgui_push_font ~= nil then
+				--~ l_changed, _ = imgui.Checkbox(" Restore the legacy font\n(This requires our ttf in\n FlyWithLua/Custom Fonts)", UseCustomProggyClean)
+				--~ if l_changed then
+					--~ UseCustomProggyClean = not UseCustomProggyClean
+                    --~ Buttonstring = "Remember the font"
+				--~ end
+				--~ if imgui.IsItemActive() then
+					--~ imgui.BeginTooltip()
+					--~ imgui.PushTextWrapPos(imgui.GetFontSize() * 19)
+					--~ imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+					--~ imgui.TextUnformatted("After FlyWithLua 2.8.16, fonts have changed, not certainely for the good. To restore the legacy font (ProggyClean.ttf), copy the Roboto-regular.ttf from our SGES archive into FlyWithLua/Custom_Fonts and enable this option. We indeed furnish the ProggyClean font disguised as Roboto, this is a work around.")
+					--~ imgui.PopStyleColor()
+					--~ imgui.PopTextWrapPos()
+					--~ imgui.EndTooltip()
+				--~ end
+            --~ end 
 			if IsXPlane1214 then
 				l_changed, l_newval = imgui.Checkbox(" Use X-Plane native vehicles", UseXplane1214DefaultObject)
 				if l_changed then
@@ -20142,6 +20141,26 @@ function SGES_script()
 			end
 			imgui.PopStyleColor()
 			imgui.PopStyleVar()
+
+			imgui.Spacing()
+			if imgui_push_font ~= nil then
+				_, _ = imgui.Checkbox(" How to restore the font\n sharpness ? (click to display).", False)
+				--~ if l_changed then
+					--~ UseCustomProggyClean = not UseCustomProggyClean
+                    --~ Buttonstring = "Remember the font"
+				--~ end
+				if imgui.IsItemActive() then
+					imgui.BeginTooltip()
+					imgui.PushTextWrapPos(imgui.GetFontSize() * 19)
+					imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+					imgui.TextUnformatted("After FlyWithLua 2.8.16, fonts have changed. To restore the legacy font (ProggyClean.ttf) as default font in FWL 2.8.17 and above, go into X-Plane 12/Resources/plugins/FlyWithLua/fwl_prefs.ini and change the value of ProggyCleanDefault to 1.")
+					imgui.PopStyleColor()
+					imgui.PopTextWrapPos()
+					imgui.EndTooltip()
+				end
+            end 
+			imgui.Spacing()
+            
 			l_changed, l_newval = imgui.Checkbox(" Autodetect 3rd-party assets", scan_third_party_initially)
 			if l_changed then
 				scan_third_party_initially = l_newval

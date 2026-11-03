@@ -231,6 +231,7 @@ custom_fuel_pump_finalY = 1.5 -- SecondStairsFwdPosition = -5.9
     elseif string.match(AIRCRAFT_PATH, "Do228-101") then BeltLoaderFwdPosition = -6	-- Dornier 228
 	-- ATR stuff at the final position !
     elseif string.match(PLANE_ICAO,"AT4") then BeltLoaderFwdPosition = 2.5	targetDoorZ_alternate = -11.7	targetDoorH_alternate = 1.40	-- ATR 42-500 by Rivière and henkfix
+    elseif string.match(PLANE_ICAO,"AT76") and SGES_Author == "Kostas Koronakis, Dimitris Koronakis, Andrzej Borysewicz" then BeltLoaderFwdPosition = 2.60	targetDoorZ_alternate = -0.25	targetDoorH_alternate = 1.40	-- ATR 72-600 by Delta Wings Simulation
     elseif (string.match(PLANE_ICAO,"AT7") or SGES_Author == "ATGCAB (Alfredo Torrado & Juan Alcon)") then BeltLoaderFwdPosition = 3	targetDoorZ_alternate = -16.2	targetDoorH_alternate = 1.40	-- ATR 72-500 by Rivière and henkfix or Aerosoft mods
     elseif string.match(AIRCRAFT_PATH, "Nieuport XVII") then BeltLoaderFwdPosition = -3
 

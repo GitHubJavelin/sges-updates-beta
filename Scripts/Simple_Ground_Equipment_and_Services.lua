@@ -19819,7 +19819,7 @@ function SGES_script()
             end
             if  SGESUpdater ~= nil and SGESUpdater and SGESUpdater.UpdateAvailable ~= nil and  SGESUpdater.UpdateAvailable and SGESUpdater.FilesToUpdate ~= nil then
                 local button_update_string = "Download the " .. tostring(#SGESUpdater.FilesToUpdate) .. " available files !"
-                if SGESUpdater.FilesToUpdate == 1 then button_update_string = "Download the available file !" end
+                if #SGESUpdater.FilesToUpdate == 1 then button_update_string = "Download the available file !" end
                 if imgui.Button(button_update_string) then
                     --~ SGESUpdater.CheckForUpdates("https://raw.githubusercontent.com/")
                     SGESUpdater.InstallUpdates()

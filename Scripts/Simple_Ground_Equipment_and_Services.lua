@@ -19799,7 +19799,10 @@ function SGES_script()
 				--~ open_that_sges_url("https://forums.x-plane.org/index.php?/files/file/62296-simple-ground-equipment-services-low-tech-services")
 			--~ end
 
-            if imgui.Button("Check update (stable version)") then
+			imgui.Separator()
+			imgui.Spacing()
+			imgui.TextUnformatted("SGES UPDATES")
+            if imgui.Button("Check the stable version") then
                 if not SGESUpdater then
                     dofile(
                         SCRIPT_DIRECTORY ..
@@ -19808,7 +19811,7 @@ function SGES_script()
                 end
                 SGESUpdater.CheckForUpdates("https://raw.githubusercontent.com/GitHubJavelin/sges-updates/main")
             end    
-            if imgui.Button("Check update (work-in-progress)") then
+            if imgui.Button("Check the beta version") then
                 if not SGESUpdater then
                     dofile(
                         SCRIPT_DIRECTORY ..
@@ -19818,14 +19821,13 @@ function SGES_script()
                 SGESUpdater.CheckForUpdates("https://raw.githubusercontent.com/GitHubJavelin/sges-updates-beta/main")
             end
             if  SGESUpdater ~= nil and SGESUpdater and SGESUpdater.UpdateAvailable ~= nil and  SGESUpdater.UpdateAvailable and SGESUpdater.FilesToUpdate ~= nil then
-                local button_update_string = "Download the " .. tostring(#SGESUpdater.FilesToUpdate) .. " available files !"
-                if #SGESUpdater.FilesToUpdate == 1 then button_update_string = "Download the available file !" end
+                local button_update_string = "Download the " .. tostring(#SGESUpdater.FilesToUpdate) .. " available files"
+                if #SGESUpdater.FilesToUpdate == 1 then button_update_string = "Download the available file" end
                 if imgui.Button(button_update_string) then
-                    --~ SGESUpdater.CheckForUpdates("https://raw.githubusercontent.com/")
                     SGESUpdater.InstallUpdates()
                 end
             elseif SGESUpdater ~= nil and SGESUpdater and SGESUpdater.UpdateAvailable ~= nil and  not SGESUpdater.UpdateAvailable  then
-                imgui.TextUnformatted("Nothing to update today !")
+                imgui.TextUnformatted("All good !")
             end
 			imgui.Spacing()
 			imgui.Separator()

@@ -24,7 +24,7 @@
 --------------------------------------------------------------------------------
 -- Simple Ground Equipment & Services
 -- aka The Poor Man Ground Services --------------------------------------------
-version_text_SGES = "81.3"
+version_text_SGES = "81.4"
 --------------------------------------------------------------------------------
 --[[
 
@@ -78,16 +78,23 @@ function delay_SGES_loading()
 		else
 			print("====================================\n\n[Ground Equipment " .. version_text_SGES .. "] To prevent activating me, you may write up to five aircraft codes in Simple_Ground_Equipment_and_Services_EXCLUSIONS_Aircraft_list.lua\n")
 
+
 			SGES_script()					-- Do not edit this line
 			print("[Ground Equipment " .. version_text_SGES .. "] Loading at " .. string.format("%02d",SGES_zulu_time_in_simulator_hours[0]) .. "h" .. string.format("%02d",SGES_local_time_in_simulator_mins[0]) .. " Z   " .. string.format("%02d",SGES_local_time_in_simulator_hours[0]) .. "h" .. string.format("%02d",SGES_local_time_in_simulator_mins[0]) .. " Loc.    " .. string.format("%02d",os.date("%H")) .. "h" ..  string.format("%02d",os.date("%M")) .. " at real computer time")
 			-- we need functions, even if the script is loaded in the air :
 			dofile (SCRIPT_DIRECTORY .. "Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_Specific_airports.lua") -- big airports with specific ground services
 		end
 
+
+
 	end
 
 	if os.clock() > SGES_start_time + rebours_delay * SGES_start_delay and read_the_SGES_startup_options_delayed_elapsed == false and not exclusion_exists then
 
+        release_override_engine_forces_value = get("sim/operation/override/override_engine_forces")
+        release_override_wing_forces_value = get("sim/operation/override/override_wing_forces")
+        print("[Ground Equipment " .. version_text_SGES .. "] " .. PLANE_ICAO .. ": override_engine_forces at startup is \t"  .. get("sim/operation/override/override_engine_forces") .. "\t(We will restore that value that when releasing the chocks).")
+        print("[Ground Equipment " .. version_text_SGES .. "] " .. PLANE_ICAO .. ": override_wing_forces at startup is \t"  .. get("sim/operation/override/override_wing_forces")  .. "\t(We will restore that value that when releasing the chocks).")
 		startup_options__delayed() -- important, services whished at startup
 		-- but a delay is required to allow the situation and plane to settle
 		read_the_SGES_startup_options_delayed_elapsed = true
@@ -105,7 +112,6 @@ function SGES_script()
 		local f=io.open(name,"r")
 		if f~=nil then io.close(f) return true else return false end
 	end
-
 
 	-- test it is x-plane 12 instead of 11
 	if IsXPlane12 == nil then IsXPlane12 = false  IsXPlane1209 = false IsXPlane1211 = false end-- safety
@@ -187,6 +193,8 @@ function SGES_script()
 	--~ IsXPlane12 = false  IsXPlane1209 = false IsXPlane1211 = false -- do not activate this -- only for XPJavelin
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
+
+    release_override = true
 
 	if file_exists(XPlane_Ramp_Equipment_directory  .. "heli_dolly_2_white.obj") then
 		heliDollyObject =        		XPlane_Ramp_Equipment_directory  .. "heli_dolly_2_white.obj"
@@ -667,6 +675,7 @@ function SGES_script()
 	if string.match(AIRCRAFT_PATH, "A310") then
 		ULDthresholdx = 10.9
 	end
+    local stored_AIRCRAFT_PATH = AIRCRAFT_PATH
 
 	-- many variable are just temporary set, and should not be changed here, but changed in the configuration files instead !
 	User_prefers_containerized_freight = false
@@ -16509,7 +16518,7 @@ function SGES_script()
 					imgui.PushStyleColor(imgui.constant.Col.FrameBgHovered,  0xFF444444)
 					imgui.PushStyleColor(imgui.constant.Col.FrameBgActive,  0xFF444444)
 					local slider_text = "| | | | | | |"
-					if SGES_override_engine_forces == 0 then slider_text = "Override OFF " end
+					if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 0 then slider_text = "Override OFF " end
 
 					imgui.PushStyleVar(imgui.constant.Col.Text, 0.75)
 					local changed, _ = imgui.SliderFloat("Ref", -0.02, 0.03, -0.1, slider_text)
@@ -21325,6 +21334,14 @@ function SGES_script()
         if IsXPlane1220 and PLANE_ICAO == "B742" and string.find(AIRCRAFT_FILENAME,"Felis") and show_Chocks then
             set("B742/INT_PA/set_gear_chokes",0)
         end
+        set("sim/operation/override/override_wing_forces",0)
+        if PLANE_ICAO == "AT76" and SGES_Author == "Kostas Koronakis, Dimitris Koronakis, Andrzej Borysewicz" then
+            set("sim/operation/override/override_engine_forces",1)
+        else 
+            set("sim/operation/override/override_engine_forces",0)   
+        end
+        release_override_engine_forces_value = nil
+        release_override_wing_forces_value = nil
 	end
 
 	function exit_plugin_part2()
@@ -21360,8 +21377,6 @@ function SGES_script()
 		Helicopters_chg,Helicopters_instance[3],rampservicerefXP12Helicopter3 = common_unload("Helicopter",Helicopters_instance[3],rampservicerefXP12Helicopter3)
 		Submarine_chg,Submarine_instance[0],rampservicerefSubmarine = common_unload("Submarine",Submarine_instance[0],rampservicerefSubmarine)
 		BulkLoader_chg,BeltLoader_instance[3],rampservicerefBulk =  common_unload("BulkLoader",BeltLoader_instance[3],rampservicerefBulk)
-		set("sim/operation/override/override_engine_forces",0)
-		set("sim/operation/override/override_wing_forces",0)
 		exit_plugin_part3()
 	end
 
@@ -21428,7 +21443,6 @@ function SGES_script()
 		unload_Passengers()
 		exit_plugin_part2()
 	end
-
 
 	local store_diff_X = 9000000 -- just a required initialization with something big
 	local store_diff_Z = 9000000 -- just a required initialization with something big

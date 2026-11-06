@@ -1,4 +1,3 @@
-Scripts/skuncrafts_updater_files.7z|375
 Scripts/SGES_quick_start.pdf|298600
 Scripts/Simple_Ground_Equipment_and_Services.lua|1084446
 Scripts/Simple_Ground_Equipment_and_Services/VDGS/VDGSFixed-zulu.obj|230859
@@ -512,7 +511,7 @@ Scripts/Simple_Ground_Equipment_and_Services/HMS Eagle/HMS_Eagle.png|12997514
 Scripts/Simple_Ground_Equipment_and_Services/HMS Eagle/SS-581.png|7304
 Scripts/Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_Ships_and_secondary_functions.lua|54607
 Scripts/Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services_Front_Line.lua|27060
-Scripts/SGES_manual.pdf|1410743
+Scripts/SGES_manual.pdf|1411958
 Scripts/Simple_Ground_Equipment_and_Services_expanded_documentation/Submarines_landing_zones.jpg|1313598
 Scripts/Simple_Ground_Equipment_and_Services_expanded_documentation/SGES_Deer_manual.pdf|249061
 Scripts/Simple_Ground_Equipment_and_Services_expanded_documentation/Boats_manual_V64.pdf|1744757

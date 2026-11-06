@@ -1171,7 +1171,7 @@ end
 
 
 
-function execute_PUSHBACK_service_objects ()
+function execute_PUSHBACK_service_objects()
 
 -- ////////////////////////////// PUSH-BACK ////////////////////////////////
 		--------------------------------------------------------------------------------------------------------------
@@ -1185,18 +1185,18 @@ function execute_PUSHBACK_service_objects ()
 			set("sim/flightmodel/position/local_ay",0)
 			set("sim/flightmodel/position/local_ax",0)
 			if XPLMFindDataRef("sim/operation/override/override_engine_forces") ~= nil and SGES_override_engine_forces == nil then
-				dataref("SGES_override_engine_forces","sim/operation/override/override_engine_forces","writable")
+				dataref("SGES_override_engine_forces","sim/operation/override/override_engine_forces","readonly")
 			end
-			if SGES_override_engine_forces ~= nil and (SGES_override_engine_forces == 0) then
-				SGES_override_engine_forces = 1
+			if SGES_override_engine_forces ~= nil and (release_override or SGES_override_engine_forces == 0) then
 				set("sim/operation/override/override_engine_forces",1)
 				print("[Ground Equipment " .. version_text_SGES .. "] Activating the SGES pushback. SGES_override_engine_forces = " .. SGES_override_engine_forces)
 			end
-		elseif show_PB  and sges_gs_gnd_spd[0] < 3 and wetness == 0 and SGES_parkbrake < 0.8 and SGES_XPlaneIsPaused == 0 and sges_EngineState[0] >= 80 then
+            release_override = false
+		elseif show_PB  and sges_gs_gnd_spd[0] < 3 and wetness == 0 and SGES_parkbrake < 0.8 and SGES_XPlaneIsPaused == 0 and sges_EngineState[0] >= 80 and not release_override then
 			if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 then
-				SGES_override_engine_forces = 0
-				set("sim/operation/override/override_engine_forces",0)
-				print("[Ground Equipment " .. version_text_SGES .. "] Engine force bypassing the SGES pushback. SGES_override_engine_forces = " .. SGES_override_engine_forces)
+				set("sim/operation/override/override_engine_forces",release_override_engine_forces_value)
+				print("[Ground Equipment " .. version_text_SGES .. "] Engine force bypassing the SGES pushback. SGES_override_engine_forces back to " .. SGES_override_engine_forces)
+                release_override = true
 			end
 		end
 
@@ -1395,11 +1395,11 @@ function execute_PUSHBACK_service_objects ()
 								play_sound(Set_ParkBrake_sound)
 							end
 							final_heading = false
-							if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 then
-								SGES_override_engine_forces = 0
-								set("sim/operation/override/override_wing_forces",0) -- important
-								set("sim/operation/override/override_engine_forces",0) -- important
-								print("[Ground Equipment " .. version_text_SGES .. "] Set the parking brake. SGES_override_engine_forces = " .. SGES_override_engine_forces)
+							if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 and not release_override then
+								set("sim/operation/override/override_wing_forces",release_override_wing_forces_value) -- important
+								set("sim/operation/override/override_engine_forces",release_override_engine_forces_value) -- important
+								print("[Ground Equipment " .. version_text_SGES .. "] Set the parking brake. SGES_override_engine_forces back to " .. SGES_override_engine_forces)
+                                release_override = true
 							end
 					end
 
@@ -1436,11 +1436,11 @@ function execute_PUSHBACK_service_objects ()
 							SGES_stopPB_delay = 0
 							SPB_distance = 38 -- minimal pushback to take into account the braking radius
 							SPB_orientation = 0
-							if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 then
-								SGES_override_engine_forces = 0
-								set("sim/operation/override/override_wing_forces",0) -- important
-								set("sim/operation/override/override_engine_forces",0) -- important
-								print("[Ground Equipment " .. version_text_SGES .. "] STOP PB by vicinity. SGES_override_engine_forces = " .. SGES_override_engine_forces)
+							if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 and not release_override then
+								set("sim/operation/override/override_wing_forces",release_override_wing_forces_value) -- important
+								set("sim/operation/override/override_engine_forces",release_override_engine_forces_value) -- important
+								print("[Ground Equipment " .. version_text_SGES .. "] STOP PB by vicinity. SGES_override_engine_forces back to " .. SGES_override_engine_forces)
+                                release_override = true
 							end
 					end
 
@@ -1493,11 +1493,11 @@ function execute_PUSHBACK_service_objects ()
 			SGES_stopPB_delay = 0
 			SPB_distance = 38 -- minimal pushback to take into account the braking radius
 
-			if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 then
-				SGES_override_engine_forces = 0
-                set("sim/operation/override/override_wing_forces",0) -- important
-                set("sim/operation/override/override_engine_forces",0) -- important
-				print("[Ground Equipment " .. version_text_SGES .. "] Disconnecting tow. SGES_override_engine_forces = " .. SGES_override_engine_forces)
+			if SGES_override_engine_forces ~= nil and SGES_override_engine_forces == 1 and not release_override then
+                set("sim/operation/override/override_wing_forces",release_override_wing_forces_value) -- important
+                set("sim/operation/override/override_engine_forces",release_override_engine_forces_value) -- important
+				print("[Ground Equipment " .. version_text_SGES .. "] Disconnecting tow. SGES_override_engine_forces back to " .. SGES_override_engine_forces)
+                release_override = true
 			end
 		end
 

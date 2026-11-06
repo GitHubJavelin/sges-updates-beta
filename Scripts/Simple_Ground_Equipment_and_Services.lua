@@ -18792,40 +18792,38 @@ function SGES_script()
             end
             if PLANE_ICAO == "AT76" and string.match(SGES_Author,"Koronakis") and sges_gs_gnd_spd[0] < 160 and not show_ArrestorSystem and XPLMFindDataRef("DWSim/ATR_Series/datarefs/misc/cabin/doors/catering/door") ~= nil then -- clean a little the interface at higher speeds
 
-                if nwSteeringAtrSges ~= nil then
-                    imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFCAFFCC)
-                    imgui.SameLine()
-                    if  imgui.Button("NWS",30,20) then
-                    
-                        if  nwSteeringAtrSges[0] == 1 then -- when NWS is engage
-                            if CvSteeringAtrSges[0] == 0 then -- when the cover is in normal position
-                                command_once("DWSim/ATR_Series/commands/nwSteering/cover/toggle") -- open this cover
-                            end
-                            command_begin("DWSim/ATR_Series/commands/nwSteering/switch/toggle") -- disengage the NWS
-                        else -- when the NWS is disengaged
-                            command_once("DWSim/ATR_Series/commands/nwSteering/switch/toggle") -- reengage it
-                            command_once("DWSim/ATR_Series/commands/nwSteering/cover/toggle") -- and close the cover
-                        end
-                    end    
-                    if imgui.IsItemHovered() then
-                         -- prepare the Nose Wheel steering switch by already opening the switch cover :
-                        if CvSteeringAtrSges[0] == 0 and nwSteeringAtrSges[0] == 1 then -- when the cover is in normal position
+                imgui.PushStyleColor(imgui.constant.Col.Text,  0xFFCAFFCC)
+                imgui.SameLine()
+                if  imgui.Button("NWS",30,20) then
+                
+                    if  get("DWSim/ATR_Series/datarefs/nwSteering/switch") == 1 then -- when NWS is engage
+                        if get("DWSim/ATR_Series/datarefs/nwSteering/cover") == 0 then -- when the cover is in normal position
                             command_once("DWSim/ATR_Series/commands/nwSteering/cover/toggle") -- open this cover
-                        end  
+                        end
+                        command_begin("DWSim/ATR_Series/commands/nwSteering/switch/toggle") -- disengage the NWS
+                    else -- when the NWS is disengaged
+                        command_once("DWSim/ATR_Series/commands/nwSteering/switch/toggle") -- reengage it
+                        command_once("DWSim/ATR_Series/commands/nwSteering/cover/toggle") -- and close the cover
                     end
-                    if imgui.IsItemActive() then
-                        imgui.BeginTooltip()
-                        imgui.PushTextWrapPos(imgui.GetFontSize() * 17)
-                        imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
-                        imgui.TextUnformatted("Nose Wheel steering switch toggle, captain side, side panel. Garded means ON.")
-                        imgui.PopStyleColor()
-                        imgui.PopTextWrapPos()
-                        imgui.EndTooltip()
-                    end
-
-
-                    imgui.PopStyleColor()
+                end    
+                if imgui.IsItemHovered() then
+                     -- prepare the Nose Wheel steering switch by already opening the switch cover :
+                    if get("DWSim/ATR_Series/datarefs/nwSteering/cover") == 0 and get("DWSim/ATR_Series/datarefs/nwSteering/switch") == 1 then -- when the cover is in normal position
+                        command_once("DWSim/ATR_Series/commands/nwSteering/cover/toggle") -- open this cover
+                    end  
                 end
+                if imgui.IsItemActive() then
+                    imgui.BeginTooltip()
+                    imgui.PushTextWrapPos(imgui.GetFontSize() * 17)
+                    imgui.PushStyleColor(imgui.constant.Col.Text,  0xFF01CCDD)
+                    imgui.TextUnformatted("Nose Wheel steering switch toggle, captain side, side panel. Garded means ON.")
+                    imgui.PopStyleColor()
+                    imgui.PopTextWrapPos()
+                    imgui.EndTooltip()
+                end
+
+
+                imgui.PopStyleColor()
                 ----------------------------------------------------------------
 				imgui.SameLine()
 				if  imgui.Button("EGPWS",45,20)  then 

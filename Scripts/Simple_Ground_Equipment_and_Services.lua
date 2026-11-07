@@ -19007,8 +19007,7 @@ function SGES_script()
 							debugging_passengers = false
 						end
 					end
-					imgui.PopStyleColor()
-					imgui.PopStyleColor()
+					imgui.PopStyleColor(2)
 
 					imgui.SameLine()
 					imgui.TextUnformatted("Sling load")
@@ -19089,8 +19088,7 @@ function SGES_script()
 							debugging_passengers = false
 						end
 					end
-					imgui.PopStyleColor()
-					imgui.PopStyleColor()
+					imgui.PopStyleColor(2)
 
 					if  imgui.Button("Open windows",86,18)  then
 						set_array("thranda/cockpit/animations/windowmanip",21,0)
@@ -19323,11 +19321,12 @@ function SGES_script()
 							--~ SGES_WriteToDisk()
 						--~ end
 
-					imgui.PopStyleColor()
+					--~ imgui.PopStyleColor()
 				end
 
 			end -- IAS24 --speed 200 KIAS max
 
+            imgui.PopStyleColor(1)
 		end -- ends sges_gs_ias_spd[0] < 260 and sges_gs_plane_y_agl[0] < 3333
 
 

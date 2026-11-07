@@ -1,6 +1,3 @@
-skunkcrafts_updater.cfg goes to :
-X-Plane 12/Resources/plugins/FlyWithLua
-
 The scripts and other subfolders all go to :
 X-Plane 12/Resources/plugins/FlyWithLua/Scripts
 

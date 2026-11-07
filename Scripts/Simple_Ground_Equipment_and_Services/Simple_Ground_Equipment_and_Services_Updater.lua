@@ -317,6 +317,16 @@ end
 -- INSTALL UPDATES
 --------------------------------------------------
 
+
+function SGESUpdater.EncodeURL(path)
+
+    path = path:gsub(" ", "%%20") 
+
+    return path
+
+end
+
+
 function SGESUpdater.InstallUpdates(Update_backup)
 
 
@@ -330,10 +340,11 @@ function SGESUpdater.InstallUpdates(Update_backup)
             SGESUpdater.BackupFile(f.localfile)
         end
 
+
         local url =
             SGESUpdater.BaseURL ..
             "/" ..
-            f.remote
+            SGESUpdater.EncodeURL(f.remote)
 
         print("URL      : "..url)
         print("LOCAL    : "..f.localfile)
